@@ -135,4 +135,46 @@ internal class QrSegment
 
         return new QrSegment(Mode.Alphanumeric, text.Length, bitArray);
     }
+
+    /// <summary> Calculates the total number of bits required to encode a data segment in a QR code. </summary>
+    /// <param name="numChars">The number of characters in the data segment to be encoded. For byte mode, it is the number of bytes.</param>
+    /// <param name="mode">The encoding mode used for the data segment.</param>
+    /// <param name="version">The QR code version.</param>
+    /// <returns>The total number of bits required to encode the segment, including the mode indicator, character count
+    /// indicator, and data bits. Returns -1 if the number of characters exceeds the maximum allowed for the
+    /// specified mode and version.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the specified mode is not supported for this calculation.</exception>
+    internal static int GetTotalBits(int numChars, Mode mode, int version)
+    {
+        int ccBits = mode.NumCharCountBits(version);
+        if (numChars >= 1 << ccBits)
+        {
+            return -1;  // The segment's length doesn't fit the field's bit width
+        }
+
+        int dataBits;
+        if (mode == Mode.Numeric)
+        {
+            dataBits = numChars / 3 * 10 + (numChars % 3 == 0 ? 0 : (numChars % 3 * 3 + 1));
+        }
+        else if (mode == Mode.Alphanumeric)
+        {
+            dataBits = numChars / 2 * 11 + (numChars % 2 == 0 ? 0 : 6);
+        }
+        else if (mode == Mode.Byte)
+        {
+            dataBits = numChars * 8;
+        }
+        else if (mode == Mode.Kanji)
+        {
+            dataBits = numChars * 13;
+        }
+        else
+        {
+            throw new ArgumentOutOfRangeException(nameof(mode), "Unsupported mode for this calculation");
+        }
+
+        return 4 + ccBits + dataBits;
+    }
+
 }

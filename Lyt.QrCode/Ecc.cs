@@ -19,7 +19,7 @@ public sealed class Ecc
 
     /// <summary> Ordinal number of error correction level (in the range 0 to 3). </summary>
     /// <remarks> Higher number represent a higher amount of error tolerance. </remarks>
-    public int Ordinal { get; }
+    internal int Ordinal { get; }
 
     // In the range 0 to 3 (unsigned 2-bit integer).
     internal uint FormatBits { get; }
