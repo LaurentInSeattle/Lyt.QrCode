@@ -6,6 +6,7 @@ global using System.Collections.ObjectModel;
 global using System.ComponentModel;
 global using System.Diagnostics;
 global using System.Linq;
+global using System.IO.Compression;
 global using System.Net;
 global using System.Net.NetworkInformation;
 global using System.Net.Sockets;
@@ -23,6 +24,7 @@ global using System.Threading.Tasks;
 global using Lyt.QrCode;
 global using Lyt.QrCode.Utilities;
 global using Lyt.QrCode.Encoder;
+global using Lyt.QrCode.Render;
 
 // LATER 
 // global using Lyt.QrCode.Decoder;
