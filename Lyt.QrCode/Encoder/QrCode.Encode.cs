@@ -30,7 +30,8 @@ public sealed partial class QrCode
     // NOT Discarded when constructor finishes to prevent nullable warnings all over.
     private readonly bool[,] isFunction;
 
-    /// <summary> Constructs a QR code with the specified version number, error correction level, data codeword bytes, and mask number.
+    /// <summary> 
+    /// Constructs a QR code with the specified version number, error correction level, data codeword bytes, and mask number.
     /// </summary>
     /// <param name="version">The version (size) to use (between 1 to 40).</param>
     /// <param name="ecl">The error correction level to use.</param>
@@ -171,7 +172,7 @@ public sealed partial class QrCode
     /// encoding parameters.
     /// </summary>
     /// <param name="segments">The segments to encode.</param>
-    /// <param name="ecl">The minimal or fixed error correction level to use .</param>
+    /// <param name="ecc">The minimal or fixed error correction level to use .</param>
     /// <param name="minVersion">The minimum version (size) of the QR code (between 1 and 40).</param>
     /// <param name="maxVersion">The maximum version (size) of the QR code (between 1 and 40).</param>
     /// <param name="mask">The mask number to use (between 0 and 7), or -1 for automatic mask selection.</param>
@@ -183,7 +184,7 @@ public sealed partial class QrCode
     /// at the specified error correction level.</exception>
     internal static QrCode EncodeSegments(
         List<QrSegment> segments, 
-        Ecc ecl, 
+        Ecc ecc, 
         int minVersion = QrCode.MinVersion, 
         int maxVersion = QrCode.MaxVersion, 
         int mask = -1, 
@@ -202,81 +203,82 @@ public sealed partial class QrCode
             throw new ArgumentOutOfRangeException(nameof(mask), "Invalid value");
         }
 
-        // TODO: CONTINUE HERE 
-
         // Find the minimal version number to use
-        //int version, dataUsedBits;
-        //for (version = minVersion; version <= maxVersion ; version++)
-        //{
-        //    int numDataBits = GetNumDataCodewords(version, ecl) * 8;  // Number of data bits available
-        //    dataUsedBits = QrSegment.GetTotalBits(segments, version);
-        //    if (dataUsedBits != -1 && dataUsedBits <= numDataBits)
-        //    {
-        //        break;  // This version number is found to be suitable
-        //    }
+        int foundVersion = 0;
+        int dataUsedBits = 0;
+        for (int version = minVersion; version <= maxVersion; version++)
+        {
+            int numDataBits = GetNumDataCodewords(version, ecc) * 8;  // Number of data bits available
+            dataUsedBits = QrSegment.GetTotalBits(segments, version);
+            if (dataUsedBits != -1 && dataUsedBits <= numDataBits)
+            {
+                foundVersion = version;
+                break;  // This version number is found to be suitable
+            }
 
-        //    if (version < maxVersion)
-        //    {
-        //        continue;
-        //    }
+            if (version < maxVersion)
+            {
+                continue;
+            }
 
-        //    // All versions in the range could not fit the given data
-        //    string msg = "Segment too long";
-        //    if (dataUsedBits != -1)
-        //    {
-        //        msg = $"Data length = {dataUsedBits} bits, Max capacity = {numDataBits} bits";
-        //    }
+            // All versions in the range could not fit the given data
+            string msg = "Segment too long";
+            if (dataUsedBits != -1)
+            {
+                msg = $"Data length = {dataUsedBits} bits, Max capacity = {numDataBits} bits";
+            }
 
-        //    throw new ArgumentException(msg);
-        //}
+            throw new ArgumentException(msg);
+        }
 
-        //Debug.Assert(dataUsedBits != -1);
+        Debug.Assert(dataUsedBits != -1);
 
-        //// Increase the error correction level while the data still fits in the current version number
-        //foreach (var newEcl in Ecc.AllValues)
-        //{  // From low to high
-        //    if (boostEcl && dataUsedBits <= GetNumDataCodewords(version, newEcl) * 8)
-        //    {
-        //        ecl = newEcl;
-        //    }
-        //}
+        // Increase the error correction level while the data still fits in the current version number
+        foreach (Ecc newEcc in Ecc.AllValues)
+        {  
+            // From low to high
+            if (boostEcl && dataUsedBits <= GetNumDataCodewords(foundVersion, newEcc) * 8)
+            {
+                ecc = newEcc;
+            }
+        }
 
-        //// Concatenate all segments to create the data bit string
-        //var ba = new BitArray(0);
-        //foreach (var seg in segments)
-        //{
-        //    ba.AppendBits(seg.EncodingMode.ModeBits, 4);
-        //    ba.AppendBits((uint)seg.NumChars, seg.EncodingMode.NumCharCountBits(version));
-        //    ba.AppendData(seg.GetData());
-        //}
+        // Concatenate all segments to create the data bit string
+        var bitArray = new BitArray(0);
+        foreach (var seg in segments)
+        {
+            bitArray.AppendBits(seg.EncodingMode.ModeBits, 4);
+            bitArray.AppendBits((uint)seg.NumChars, seg.EncodingMode.NumCharCountBits(foundVersion));
+            bitArray.AppendData(seg.GetData());
+        }
 
-        //Debug.Assert(ba.Length == dataUsedBits);
+        Debug.Assert(bitArray.Length == dataUsedBits);
 
-        //// Add terminator and pad up to a byte if applicable
-        //var dataCapacityBits = GetNumDataCodewords(version, ecl) * 8;
-        //Debug.Assert(ba.Length <= dataCapacityBits);
-        //ba.AppendBits(0, Math.Min(4, dataCapacityBits - ba.Length));
-        //ba.AppendBits(0, (8 - ba.Length % 8) % 8);
-        //Debug.Assert(ba.Length % 8 == 0);
+        // Add terminator and pad up to a byte if applicable
+        int dataCapacityBits = GetNumDataCodewords(foundVersion, ecc) * 8;
+        Debug.Assert(bitArray.Length <= dataCapacityBits);
+        bitArray.AppendBits(0, Math.Min(4, dataCapacityBits - bitArray.Length));
+        bitArray.AppendBits(0, (8 - bitArray.Length % 8) % 8);
+        Debug.Assert(bitArray.Length % 8 == 0);
 
-        //// Pad with alternating bytes until data capacity is reached
-        //for (uint padByte = 0xEC; ba.Length < dataCapacityBits; padByte ^= 0xEC ^ 0x11)
-        //{
-        //    ba.AppendBits(padByte, 8);
-        //}
+        // Pad with alternating bytes until data capacity is reached
+        for (uint padByte = 0xEC; bitArray.Length < dataCapacityBits; padByte ^= 0xEC ^ 0x11)
+        {
+            bitArray.AppendBits(padByte, 8);
+        }
 
-        //// Pack bits into bytes in big endian
-        //var dataCodewords = new byte[ba.Length / 8];
-        //for (var i = 0; i < ba.Length; i++)
-        //{
-        //    if (ba.Get(i))
-        //    {
-        //        dataCodewords[i >> 3] |= (byte)(1 << (7 - (i & 7)));
-        //    }
-        //}
+        // Pack bits into bytes in big endian
+        byte[] dataCodewords = new byte[bitArray.Length / 8];
+        for (int i = 0; i < bitArray.Length; i++)
+        {
+            if (bitArray.Get(i))
+            {
+                dataCodewords[i >> 3] |= (byte)(1 << (7 - (i & 7)));
+            }
+        }
 
         // Create the QR code object
-        return new QrCode(version, ecl, new byte [111] /*dataCodewords */, mask);
+        return new QrCode(foundVersion, ecc, dataCodewords, mask);
     }
 
     // Reads this object's version field, and draws and marks all function modules.

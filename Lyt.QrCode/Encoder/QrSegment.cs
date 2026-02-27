@@ -39,6 +39,10 @@ internal class QrSegment
     // The data bits of this segment. Accessed through GetData().
     private readonly BitArray data;
 
+    /// <summary> Returns a copy of this segment's data bits. </summary>
+    public BitArray GetData()
+        => (BitArray) this.data.Clone();  // Make defensive copy => WHY ??? NeCESSARY ? 
+    
     /// <summary>
     /// Creates a list of zero or more segments representing the specified text string.
     /// The text may contain the full range of Unicode characters.
@@ -134,6 +138,37 @@ internal class QrSegment
         }
 
         return new QrSegment(Mode.Alphanumeric, text.Length, bitArray);
+    }
+
+    /// <summary>
+    /// Calculates the number of bits needed to encode the given segments.
+    /// <para>
+    /// Returns a non-negative number if successful. Otherwise returns -1 if a segment has too
+    /// many characters to fit its length field, or the total bits exceeds int.MaxValue.
+    /// </para>
+    /// </summary>
+    /// <param name="segments">The segements.</param>
+    /// <param name="version">The version number.</param>
+    /// <returns>The number of bits, or -1.</returns>
+    internal static int GetTotalBits(List<QrSegment> segments, int version)
+    {
+        long result = 0;
+        foreach (var seg in segments)
+        {
+            int ccBits = seg.EncodingMode.NumCharCountBits(version);
+            if (seg.NumChars >= 1 << ccBits)
+            {
+                return -1;  // The segment's length doesn't fit the field's bit width
+            }
+
+            result += 4L + ccBits + seg.data.Length;
+            if (result > int.MaxValue)
+            {
+                return -1;  // The sum will overflow an int type
+            }
+        }
+
+        return (int)result;
     }
 
     /// <summary> Calculates the total number of bits required to encode a data segment in a QR code. </summary>

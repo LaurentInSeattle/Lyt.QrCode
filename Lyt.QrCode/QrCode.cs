@@ -27,4 +27,19 @@ public sealed partial class QrCode
     /// this property returns the effective mask used.
     /// </summary>
     public int Mask { get; }
+
+    /// <summary>
+    /// Gets the color of the module (pixel) at the specified coordinates.
+    /// The top left corner has the coordinates (x=0, y=0). <i>x</i>-coordinates extend from left to right,
+    /// <i>y</i>-coordinates extend from top to bottom.
+    /// If coordinates outside the bounds of this QR code are specified, light (<c>false</c>) is returned.
+    /// </summary>
+    /// <param name="x">The x coordinate.</param>
+    /// <param name="y">The y coordinate.</param>
+    /// <returns>The color of the specified module: <c>true</c> for dark modules and <c>false</c>
+    /// for light modules (or if the coordinates are outside the bounds).</returns>
+    public bool GetModule(int x, int y)
+        => 0 <= x && x < this.Size && 0 <= y && y < this.Size && this.modules[y, x];
+
+    public bool[,] GetModules() => this.modules;
 }
