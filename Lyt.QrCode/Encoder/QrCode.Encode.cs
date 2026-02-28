@@ -139,6 +139,8 @@ public sealed partial class QrCode
         // _isFunction = null;
     }
 
+    // TODO Fix this stupid list thing !!!
+
     /// <summary>
     /// Creates a QR code representing the specified text using the specified error correction level.
     /// As a conservative upper bound, this function is guaranteed to succeed for strings with up to 738
@@ -156,6 +158,12 @@ public sealed partial class QrCode
     {
         text.ThrowIfNullOrWhiteSpace();
         var segments = QrSegment.MakeSegments(text);
+        return EncodeSegments(segments, ecc);
+    }
+
+    public static QrCode EncodeBytes(byte[] bytes, Ecc ecc)
+    {
+        var segments = new List<QrSegment>() { QrSegment.MakeBytes(bytes) } ;
         return EncodeSegments(segments, ecc);
     }
 
