@@ -27,39 +27,75 @@ internal sealed class PathBuilder
     /// <param name="border">The border width, as a factor of the module (QR code pixel) size.</param>
     /// <param name="foreground">The foreground color (dark modules), in RGB value (little endian).</param>
     /// <param name="background">The background color (light modules), in RGB value (little endian).</param>
-    internal static string ToSvgImageString(QrCode qrCode, int border, int foreground = 0, int background = 0xFFFFFF)
+    internal static string ToSvgImageString(
+        QrCode qrCode, int border, 
+        int foreground = 0, int background = 0xFFFFFF, 
+        RenderParameters.Format pathFormat = RenderParameters.Format.Svg)
     {
         var builder = new PathBuilder(qrCode.Size, qrCode.GetModules());
         string foregroundHex = $"#{foreground:X6}";
         string backgroundHex = $"#{background:X6}";
-        return builder.ToSvgString(border, foregroundHex, backgroundHex);
+        return builder.ToSvgString(border, foregroundHex, backgroundHex, pathFormat);
     }
 
-    private string ToSvgString(int border, string foreground, string background)
+    private string ToSvgString(int border, string foreground, string background, RenderParameters.Format pathFormat)
     {
-        if (border < 0)
+        if ((border < 0) || (border > 1024))
         {
-            throw new ArgumentOutOfRangeException(nameof(border), "Border must be non-negative");
+            throw new ArgumentOutOfRangeException(nameof(border), "Border must be non-negative and less than 1024.");
         }
 
-        int dim = size + border * 2;
-        var sb = new StringBuilder()
-            .Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-            .Append("<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n")
-            .Append($"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 {dim} {dim}\" stroke=\"none\">\n")
-            .Append($"\t<rect width=\"100%\" height=\"100%\" fill=\"{background}\"/>\n")
-            .Append("\t<path d=\"");
+        if (!Enum.IsDefined(pathFormat))
+        {
+            throw new InvalidEnumArgumentException(nameof(pathFormat), (int)pathFormat, typeof(RenderParameters.Format));
+        }
 
-        CreatePath(sb, this.modules, border);
+        var sb = new StringBuilder(); 
+        
+        // TODO: Implement MicrosoftXaml and AvaloniaAxaml path formats.
+        switch (pathFormat)
+        {
+            default:
+            case RenderParameters.Format.Svg:
+                int dim = size + border * 2;
+                sb.Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+                  .Append("<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n")
+                  .Append($"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 {dim} {dim}\" stroke=\"none\">\n")
+                  .Append($"\t<rect width=\"100%\" height=\"100%\" fill=\"{background}\"/>\n")
+                  .Append("\t<path d=\"");
+                break;
 
-        return sb
-            .Append($"\" fill=\"{foreground}\"/>\n")
-            .Append("</svg>\n")
-            .ToString();
+            case RenderParameters.Format.MicrosoftXaml:
+                break;
+
+            case RenderParameters.Format.AvaloniaAxaml:
+                break;
+        }
+
+
+        CreatePath(sb, this.modules, border, pathFormat);
+
+        // TODO: Implement MicrosoftXaml and AvaloniaAxaml path formats.
+        switch (pathFormat)
+        {
+            default:
+            case RenderParameters.Format.Svg:
+                sb.Append($"\" fill=\"{foreground}\"/>\n")
+                  .Append("</svg>\n"); 
+                break;
+
+            case RenderParameters.Format.MicrosoftXaml:
+                break;
+
+            case RenderParameters.Format.AvaloniaAxaml:
+                break;
+        }
+
+        return sb.ToString();
     }
 
     // Append a SVG/XAML path for the QR code to the provided string builder
-    private static void CreatePath(StringBuilder path, bool[,] modules, int border)
+    private static void CreatePath(StringBuilder path, bool[,] modules, int border, RenderParameters.Format pathFormat)
     {
         // Simple algorithm to reduce the number of rectangles for drawing the QR code and reduce SVG/XAML size.
         int size = modules.GetLength(0);

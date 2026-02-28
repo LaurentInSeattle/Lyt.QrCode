@@ -54,8 +54,7 @@ public sealed class TestSegmentEncoding
         string svg = PathBuilder.ToSvgImageString(qrCode, 16, 2);
         File.WriteAllText("C:\\Users\\Laurent\\Desktop\\test.svg", svg);
 
-        var webLinkContent = new WebLinkContent(new WebLink(text, "Jigsaw"));
-        image = QrFactory.CreateQrCodePngImage(webLinkContent);
+        image = QrFactory.CreateQrCodePngImage(new WebLink(text, "Jigsaw"));
         File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image);
     }
 
