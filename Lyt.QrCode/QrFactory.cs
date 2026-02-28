@@ -6,22 +6,24 @@
 using Lyt.QrCode.Content;
 
 /// Factory class for creating QR code images and vector paths from various content types.
-public static class QrFactory
+public static partial class QrFactory
 {
-    public static byte[] CreateQrCodePngImage(
-        string content, RenderParameters renderParameters = default)
+    public static byte[] CreateQrCodePngImage(string content, RenderParameters renderParameters = default)
         => QrFactory.CreateQrCodePngImage(new StringContent(content), renderParameters);
 
-    public static string CreateQrCodeVectorPath(
-        string content, RenderParameters renderParameters = default)
+    public static string CreateQrCodeVectorPath(string content, RenderParameters renderParameters = default)
         => QrFactory.CreateQrCodeVectorPath(new StringContent(content), renderParameters);
 
-    public static byte[] CreateQrCodePngImage(
-        WebLink weblink, RenderParameters renderParameters = default)
+    public static byte[] CreateQrCodePngImage(byte[] content, RenderParameters renderParameters = default)
+        => QrFactory.CreateQrCodePngImage(new BytesContent(content), renderParameters);
+
+    public static string CreateQrCodeVectorPath(byte[] content, RenderParameters renderParameters = default)
+        => QrFactory.CreateQrCodeVectorPath(new BytesContent(content), renderParameters);
+
+    public static byte[] CreateQrCodePngImage(WebLink weblink, RenderParameters renderParameters = default)
         => QrFactory.CreateQrCodePngImage(new WebLinkContent(weblink), renderParameters);
 
-    public static string CreateQrCodeVectorPath(
-        WebLink weblink, RenderParameters renderParameters = default)
+    public static string CreateQrCodeVectorPath(WebLink weblink, RenderParameters renderParameters = default)
         => QrFactory.CreateQrCodeVectorPath(new WebLinkContent(weblink), renderParameters);
 
     public static byte[] CreateQrCodePngImage<T>(

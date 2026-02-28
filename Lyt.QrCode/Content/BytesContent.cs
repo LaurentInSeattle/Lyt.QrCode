@@ -1,16 +1,16 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public class StringContent(string content) : QrContent<string>(content)
+public class BytesContent(byte[] content) : QrContent<byte[]>(content)
 {
     public override string RawString
     {
-        get => this.Content;
+        get => Encoding.UTF8.GetString(this.Content);
         set { /* do nothing */ }
-    } 
+    }
 
     public override byte[] RawBytes
     {
-        get => Encoding.UTF8.GetBytes(this.Content);
+        get => this.Content;
         set { /* do nothing */ }
     }
 }
