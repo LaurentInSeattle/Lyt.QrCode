@@ -8,7 +8,7 @@ internal class GrayscaleImage
 
     public byte[] Pixels { get; }
 
-    internal GrayscaleImage(int width, int height, byte[] pixels)
+    internal GrayscaleImage(int width, int height, byte[] pixels, bool isLocked = false)
     {
         if ((width <= 0) || (height <= 0))
         {
@@ -22,7 +22,46 @@ internal class GrayscaleImage
 
         this.Width = width;
         this.Height = height;
-        this.Pixels = pixels;
+
+        if (isLocked)
+        {
+            // Copy the pixel data bacause the input array is locked in memory by the graphics framework of the app.
+            byte[] clonedPixels = new byte[pixels.Length];
+            Array.Copy(pixels, clonedPixels, pixels.Length);
+            this.Pixels = clonedPixels;
+        }
+        else
+        {
+            this.Pixels = pixels;
+        }
+    }
+
+    internal GrayscaleImage(int width, int height, int stride, byte[] pixels)
+    {
+        if ((width <= 0) || (height <= 0))
+        {
+            throw new ArgumentOutOfRangeException(nameof(width), "Width and Height must be positive.");
+        }
+        if (pixels.Length != height * stride)
+        {
+            throw new ArgumentException("Pixel data length does not match height and stride.", nameof(pixels));
+        } 
+    
+        this.Width = width;
+        this.Height = height;
+        this.Pixels = new byte[width * height];
+        
+        for (int j = 0; j < height; j++)
+        {
+            Array.Copy(pixels, j * stride, this.Pixels, j * width, width);
+        }
+    }
+
+    internal GrayscaleImage Clone()
+    {
+        byte[] clonedPixels = new byte[this.Pixels.Length];
+        Array.Copy(this.Pixels, clonedPixels, this.Pixels.Length);
+        return new GrayscaleImage(this.Width, this.Height, clonedPixels);
     }
 
     internal GrayscaleImage Crop(int x, int y, int width, int height)
