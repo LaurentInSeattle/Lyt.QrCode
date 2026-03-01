@@ -122,3 +122,90 @@ internal class GrayscaleImage
         return row;
     }
 }
+
+/*
+
+    public class MyBitplane
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
+
+        public byte[,] PixelData { get; set; }
+
+        public MyBitplane(MyBitplane bitplane)
+        {
+            this.Width = bitplane.Width;
+            this.Height = bitplane.Height;
+
+            for (int y = 0; y < this.Height; ++y)
+                for (int x = 0; x < this.Width; ++x)
+                    SetPixel(x, y, bitplane.GetPixel(x, y));
+        }
+
+        public MyBitplane(int w, int h)
+        {
+            Width = w;
+            Height = h;
+
+            PixelData = new byte[Height, Width];
+        }
+
+        public byte GetPixel(int x, int y)
+        {
+            return PixelData[y, x];
+        }
+
+        public void SetPixel(int x, int y, byte value)
+        {
+            PixelData[y, x] = value;
+        }
+    }
+}
+
+    /// Histogram Equalization
+        /// </summary>
+        /// <param name="bitplane">bitplane of current image</param>
+        private static void HE(ref MyBitplane bitplane)
+        {
+            // Histogram
+            double[] histogram = calculateHistogram(bitplane);
+
+            // Probability
+            double totalElements = bitplane.Width * bitplane.Height;
+            double[] probability = new double[256];
+            int i;
+            for (i = 0; i < 256; i++)
+                probability[i] = histogram[i] / totalElements;
+
+            // Comulative probability
+            double[] comulativeProbability = calculateComulativeFrequency(probability);
+
+            // Multiply comulative probability by 256
+            int[] floorProbability = new int[256];
+            for (i = 0; i < 256; i++)
+                floorProbability[i] = (int)Math.Floor(comulativeProbability[i] * 255);
+
+            // Transform old value to new value
+            int x;
+            for (int y = 0; y < bitplane.Height; y++)
+                for (x = 0; x < bitplane.Width; x++)
+                    bitplane.SetPixel(x, y, (byte)floorProbability[bitplane.GetPixel(x, y)]);
+        }
+ 
+        /// <summary>
+        /// Calculates histogram based on input bitplane
+        /// </summary>
+        /// <param name="bitplane">bitplane of current image</param>
+        /// <returns>double array histogram of input bitplane</returns>
+        public static double[] calculateHistogram(MyBitplane bitplane)
+        }
+
+        /// <summary>
+        /// Calculate comulative frequency of input array
+        /// </summary>
+        /// <param name="array">double array of frequencies</param>
+        /// <returns>double array for comulative frequencies</returns>
+        public static double[] calculateComulativeFrequency(double[] array)
+
+
+        } */
