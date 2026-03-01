@@ -1,0 +1,16 @@
+﻿
+- Decoder and detector 
+
+- More encoders / parsers for common types of data, such as URLs, contact information, calendar events, etc.
+
+- Code generators for API entries 
+
+- Support for JSon data, allowing users to encode structured data into QR codes.
+
+- Support for compressed JSON 
+
+- Sample code in Console project 
+
+- Sample code in Avalonia project
+
+- Histogram equalization (CLAHE) for better image processing in the decoder
