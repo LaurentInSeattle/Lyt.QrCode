@@ -30,7 +30,18 @@ internal sealed class PngBuilder
         return builder.GetBytes();
     }
 
-    /// <summary> Creates an uncompressed 1-bit per pixel bitmap of the QR code. </summary>
+    /// <summary>  Creates a PNG image for the provided Pixel Provider. Mostly for testing BitMatrix images. </summary>
+    internal static byte[] ToPngImage(IPixelProvider pixelProvider, int foreground = 0, int background = 0xFFFFFF)
+    {
+        var builder = new PngBuilder();
+        builder.WriteHeader(pixelProvider.Width, pixelProvider.Height, 1, 3);
+        builder.WritePalette([background, foreground]);
+        builder.WriteData(CreateBitmap(pixelProvider, border: 0, scale: 1));
+        builder.WriteEnd();
+        return builder.GetBytes();
+    }
+
+    /// <summary> Creates an uncompressed 1-bit per pixel bitmap of the provided Pixel Provider. (usually a QR code) </summary>
     /// <param name="qrCode">The QR code</param>
     /// <param name="border">The border</param>
     /// <param name="scale">The scale</param>

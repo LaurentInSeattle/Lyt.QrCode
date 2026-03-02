@@ -82,7 +82,8 @@ public static partial class QrFactory
     {
         var grayscaleImage = sourceImage.ToGrayscale();
         grayscaleImage.HistogramEqualization();
-        var bitMatrixImage = grayscaleImage.ToBitMatrix();
+        var bitMatrixImage1 = grayscaleImage.ToBitMatrixBasicThresholding();
+        var bitMatrixImage2 = grayscaleImage.ToBitMatrixBasicThresholding();
         return "TODO: Implement QR code decoding from image";
     }
 }

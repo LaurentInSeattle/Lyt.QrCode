@@ -10,7 +10,7 @@
 ///   <p>The ordering of bits is row-major. Within each int, the least significant bits are used first,
 /// meaning they represent lower x values. This is compatible with <see cref="BitArray"/>'s implementation.</p>
 /// </summary>
-internal sealed class BitMatrixImage
+internal sealed class BitMatrixImage : IPixelProvider
 {
     internal int Width { get; }
 
@@ -19,6 +19,12 @@ internal sealed class BitMatrixImage
     internal int Height { get; }
 
     internal int[] Bits { get; }
+
+    int IPixelProvider.Width => this.Width;
+
+    int IPixelProvider.Height => this.Height;
+
+    bool IPixelProvider.GetPixel(int x, int y) => this[x,y];
 
     internal BitMatrixImage(int width, int height)
     {
@@ -42,5 +48,32 @@ internal sealed class BitMatrixImage
         this.Height = height;
         this.Stride = (width + 31) >> 5;
         this.Bits = bits;
+    }
+
+    /// <summary>Gets or sets the requested bit, where true means black. </summary>
+    /// <param name="x">The horizontal component (i.e. which column)
+    /// </param>
+    /// <param name="y">The vertical component (i.e. which row)
+    /// </param>
+    internal bool this[int x, int y]
+    {
+        get
+        {
+            int offset = y * this.Stride + (x >> 5);
+            return (((int)((uint)(this.Bits[offset]) >> (x & 0x1f))) & 1) != 0;
+        }
+        set
+        {
+            if (value)
+            {
+                int offset = y * this.Stride + (x >> 5);
+                this.Bits[offset] |= 1 << (x & 0x1f);
+            }
+            else
+            {
+                int offset = y * this.Stride + (x / 32);
+                this.Bits[offset] &= ~(1 << (x & 0x1f));
+            }
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Image;
 
-internal class GrayscaleImage
+internal sealed partial class GrayscaleImage
 {
     public int Width { get; }
 
@@ -62,26 +62,6 @@ internal class GrayscaleImage
         byte[] clonedPixels = new byte[this.Pixels.Length];
         Array.Copy(this.Pixels, clonedPixels, this.Pixels.Length);
         return new GrayscaleImage(this.Width, this.Height, clonedPixels);
-    }
-
-    internal BitMatrixImage ToBitMatrix()
-    {
-        var bitMatrix = new BitMatrixImage(this.Width, this.Height);
-        for (int y = 0; y < this.Height; y++)
-        {
-            for (int x = 0; x < this.Width; x++)
-            {
-                // TODO:
-                // Implement adaptive thresholding for better performance in different lighting conditions.
-                if (this.Pixels[y * this.Width + x] < 128) // Thresholding at 128
-                {
-                    int index = y * bitMatrix.Stride + (x >> 5);
-                    bitMatrix.Bits[index] |= (1 << (x & 0x1F));
-                }
-            }
-        }
-
-        return bitMatrix;
     }
 
     internal GrayscaleImage Crop(int x, int y, int width, int height)

@@ -42,4 +42,13 @@ public static class PixelFormatExtensions
             _ => throw new ArgumentOutOfRangeException(nameof(format), "Unsupported pixel format.")
         };
     }
+
+    public static bool IsColor (this PixelFormat format)
+    {
+        return format switch
+        {
+            PixelFormat.Gray8 or PixelFormat.Gray16 => false,
+            _ => true 
+        };
+    }
 }
