@@ -26,9 +26,9 @@ public sealed class SourceImage
             throw new ArgumentOutOfRangeException(nameof(width), "Width and Height are limited to 8K pixels.");
         }
 
-        if (pixels.Length != height * stride * format.BytesPerPixel())
+        if (pixels.Length != height * stride)
         {
-            throw new ArgumentNullException(nameof(pixels), "Pixel data inconsistent with provided dimensions.");
+            throw new ArgumentNullException(nameof(pixels), "Pixel data length inconsistent with provided dimensions.");
         }
 
         this.Width = width;

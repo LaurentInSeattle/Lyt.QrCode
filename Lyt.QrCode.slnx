@@ -3,6 +3,7 @@
     <File Path="Notes.txt" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="Lyt.QrCode.DebugApp/Lyt.QrCode.DebugApp.csproj" Id="79b926e5-1279-4aaa-8ee6-12ca100d2e94" />
   <Project Path="Lyt.QrCode.Tests/Lyt.QrCode.Tests.csproj" Id="5c5a37a2-7022-4f52-8777-1cb2368e8aac" />
   <Project Path="Lyt.QrCode/Lyt.QrCode.csproj" Id="27f847e5-5342-4a3f-9ebd-232a96e1d03a" />
 </Solution>

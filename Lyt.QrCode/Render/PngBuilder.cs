@@ -48,6 +48,8 @@ internal sealed class PngBuilder
     /// <returns>Bitmap, as a byte array</returns>
     private static byte[] CreateBitmap(IPixelProvider pixelProvider, int border, int scale)
     {
+        // TODO: This assumes that the image is square , which is the case for QR codes,
+        // but not necessarily for all Pixel Providers.
         int size = pixelProvider.Width;
         int imageSize = (size + border * 2) * scale;
 

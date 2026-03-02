@@ -32,13 +32,8 @@ internal sealed partial class GrayscaleImage
             for (int x = 0; x < this.Width; x++)
             {
                 // Basic thresholding at mid point (128) for simplicity.
-                // This can be improved with adaptive thresholding if needed.
-                if (this.Pixels[y * this.Width + x] < 128) // Thresholding at 128
-                {
-                    // True means black, so set the corresponding bit in the BitMatrix.
-                    int index = y * bitMatrix.Stride + (x >> 5);
-                    bitMatrix.Bits[index] |= (1 << (x & 0x1F));
-                }
+                // True means black, so set the corresponding bit in the BitMatrix.
+                bitMatrix[x,y] = this.Pixels[y * this.Width + x] < 128;
             }
         }
 
