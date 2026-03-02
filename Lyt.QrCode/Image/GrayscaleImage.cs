@@ -18,7 +18,7 @@ internal class GrayscaleImage
         if (pixels.Length != width * height)
         {
             throw new ArgumentException("Pixel data length does not match width and height.", nameof(pixels));
-        } 
+        }
 
         this.Width = width;
         this.Height = height;
@@ -45,12 +45,12 @@ internal class GrayscaleImage
         if (pixels.Length != height * stride)
         {
             throw new ArgumentException("Pixel data length does not match height and stride.", nameof(pixels));
-        } 
-    
+        }
+
         this.Width = width;
         this.Height = height;
         this.Pixels = new byte[width * height];
-        
+
         for (int j = 0; j < height; j++)
         {
             Array.Copy(pixels, j * stride, this.Pixels, j * width, width);
@@ -62,6 +62,26 @@ internal class GrayscaleImage
         byte[] clonedPixels = new byte[this.Pixels.Length];
         Array.Copy(this.Pixels, clonedPixels, this.Pixels.Length);
         return new GrayscaleImage(this.Width, this.Height, clonedPixels);
+    }
+
+    internal BitMatrixImage ToBitMatrix()
+    {
+        var bitMatrix = new BitMatrixImage(this.Width, this.Height);
+        for (int y = 0; y < this.Height; y++)
+        {
+            for (int x = 0; x < this.Width; x++)
+            {
+                // TODO:
+                // Implement adaptive thresholding for better performance in different lighting conditions.
+                if (this.Pixels[y * this.Width + x] < 128) // Thresholding at 128
+                {
+                    int index = y * bitMatrix.Stride + (x >> 5);
+                    bitMatrix.Bits[index] |= (1 << (x & 0x1F));
+                }
+            }
+        }
+
+        return bitMatrix;
     }
 
     internal GrayscaleImage Crop(int x, int y, int width, int height)
@@ -92,7 +112,7 @@ internal class GrayscaleImage
         {
             Array.Copy(this.Pixels, y * this.Width, flippedPixels, (this.Height - 1 - y) * this.Width, this.Width);
         }
-     
+
         return new GrayscaleImage(this.Width, this.Height, flippedPixels);
     }
 
@@ -106,7 +126,7 @@ internal class GrayscaleImage
                 flippedPixels[y * this.Width + (this.Width - 1 - x)] = this.Pixels[y * this.Width + x];
             }
         }
-     
+
         return new GrayscaleImage(this.Width, this.Height, flippedPixels);
     }
 
@@ -120,11 +140,11 @@ internal class GrayscaleImage
                 rotatedPixels[x * this.Height + (this.Height - 1 - y)] = this.Pixels[y * this.Width + x];
             }
         }
-     
+
         return new GrayscaleImage(this.Height, this.Width, rotatedPixels);
     }
 
-    internal GrayscaleImage Rotate180() 
+    internal GrayscaleImage Rotate180()
     {
         byte[] rotatedPixels = new byte[this.Pixels.Length];
         for (int y = 0; y < this.Height; y++)
@@ -134,7 +154,7 @@ internal class GrayscaleImage
                 rotatedPixels[(this.Height - 1 - y) * this.Width + (this.Width - 1 - x)] = this.Pixels[y * this.Width + x];
             }
         }
-     
+
         return new GrayscaleImage(this.Width, this.Height, rotatedPixels);
     }
 
@@ -145,11 +165,26 @@ internal class GrayscaleImage
         {
             invertedPixels[i] = (byte)(255 - this.Pixels[i]);
         }
-     
+
         return new GrayscaleImage(this.Width, this.Height, invertedPixels);
     }
 
-    internal byte[] GetRow (int y)
+#if DEBUG
+    internal byte GetPixel(int x, int y)
+    {
+        if ((x < 0) || (x >= this.Width) || (y < 0) || (y >= this.Height))
+        {
+            throw new ArgumentOutOfRangeException(nameof(x), "Pixel coordinates are out of bounds.");
+        }
+
+        return this.Pixels[y * this.Width + x];
+    }
+#else
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal byte GetPixel(int x, int y) => this.Pixels[y * this.Width + x];
+#endif 
+
+    internal byte[] GetRow(int y)
     {
         if ((y < 0) || (y >= this.Height))
         {
@@ -160,91 +195,57 @@ internal class GrayscaleImage
         Array.Copy(this.Pixels, y * this.Width, row, 0, this.Width);
         return row;
     }
-}
 
-/*
-
-    public class MyBitplane
+    /// <summary> Enhances the contrast of the grayscale image by redistributing pixel intensity values using histogram equalization. </summary>
+    /// <remarks> 
+    /// This method modifies the pixel values in place to achieve a more uniform distribution of
+    /// intensities, which can improve the visibility of features in images with poor contrast. The image must be in
+    /// grayscale format prior to calling this method. Histogram equalization is commonly used in image processing to
+    /// normalize lighting and improve detail in photographs or scanned documents.
+    /// </remarks>
+    internal void HistogramEqualization()
     {
-        public int Width { get; set; }
-        public int Height { get; set; }
-
-        public byte[,] PixelData { get; set; }
-
-        public MyBitplane(MyBitplane bitplane)
+        // Calculate Histogram 
+        double[] histogram = new double[256];
+        for (int y = 0; y < this.Height; ++y)
         {
-            this.Width = bitplane.Width;
-            this.Height = bitplane.Height;
-
-            for (int y = 0; y < this.Height; ++y)
-                for (int x = 0; x < this.Width; ++x)
-                    SetPixel(x, y, bitplane.GetPixel(x, y));
+            for (int x = 0; x < this.Width; ++x)
+            {
+                byte pixelValue = this.Pixels[y * this.Width + x];
+                ++histogram[pixelValue];
+            }
         }
 
-        public MyBitplane(int w, int h)
+        // Probability
+        double totalElements = this.Width * this.Height;
+        double[] probability = new double[256];
+        for (int i = 0; i < 256; i++)
         {
-            Width = w;
-            Height = h;
-
-            PixelData = new byte[Height, Width];
+            probability[i] = histogram[i] / totalElements;
         }
 
-        public byte GetPixel(int x, int y)
+        // Calculate comulative frequency of probability array
+        double[] cumulativeProbability = new double[256];
+        cumulativeProbability[0] = probability[0];
+        for (int i = 1; i < 256; ++i)
         {
-            return PixelData[y, x];
+            cumulativeProbability[i] = cumulativeProbability[i - 1] + probability[i];
+        }
+    
+        // Multiply all cumulative probabilities by 255
+        int[] floorProbability = new int[256];
+        for (int i = 0; i < 256; i++)
+        {
+            floorProbability[i] = (int)Math.Floor(cumulativeProbability[i] * 255);
         }
 
-        public void SetPixel(int x, int y, byte value)
+        // Adjust all pixel values in the original image based on the floor probability array
+        for (int y = 0; y < this.Height; y++)
         {
-            PixelData[y, x] = value;
+            for (int x = 0; x < this.Width; x++)
+            {
+                this.Pixels[y * this.Width + x] = (byte)floorProbability[this.Pixels[y * this.Width + x]];
+            }
         }
     }
 }
-
-    /// Histogram Equalization
-        /// </summary>
-        /// <param name="bitplane">bitplane of current image</param>
-        private static void HE(ref MyBitplane bitplane)
-        {
-            // Histogram
-            double[] histogram = calculateHistogram(bitplane);
-
-            // Probability
-            double totalElements = bitplane.Width * bitplane.Height;
-            double[] probability = new double[256];
-            int i;
-            for (i = 0; i < 256; i++)
-                probability[i] = histogram[i] / totalElements;
-
-            // Comulative probability
-            double[] comulativeProbability = calculateComulativeFrequency(probability);
-
-            // Multiply comulative probability by 256
-            int[] floorProbability = new int[256];
-            for (i = 0; i < 256; i++)
-                floorProbability[i] = (int)Math.Floor(comulativeProbability[i] * 255);
-
-            // Transform old value to new value
-            int x;
-            for (int y = 0; y < bitplane.Height; y++)
-                for (x = 0; x < bitplane.Width; x++)
-                    bitplane.SetPixel(x, y, (byte)floorProbability[bitplane.GetPixel(x, y)]);
-        }
- 
-        /// <summary>
-        /// Calculates histogram based on input bitplane
-        /// </summary>
-        /// <param name="bitplane">bitplane of current image</param>
-        /// <returns>double array histogram of input bitplane</returns>
-        public static double[] calculateHistogram(MyBitplane bitplane)
-        }
-
-        /// <summary>
-        /// Calculate comulative frequency of input array
-        /// </summary>
-        /// <param name="array">double array of frequencies</param>
-        /// <returns>double array for comulative frequencies</returns>
-        public static double[] calculateComulativeFrequency(double[] array)
-
-
-        } */

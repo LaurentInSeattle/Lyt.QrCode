@@ -1,4 +1,6 @@
 ﻿
+- Coder: Remove multiple segments 
+
 - Decoder and detector 
 
 - More encoders / parsers for common types of data, such as URLs, contact information, calendar events, etc.
@@ -7,10 +9,12 @@
 
 - Support for JSon data, allowing users to encode structured data into QR codes.
 
-- Support for compressed JSON 
+- Support for Compressed JSON 
 
 - Sample code in Console project 
 
 - Sample code in Avalonia project
 
 - Histogram equalization (CLAHE) for better image processing in the decoder
+
+

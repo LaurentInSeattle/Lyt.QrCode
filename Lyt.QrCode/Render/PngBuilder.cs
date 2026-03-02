@@ -35,9 +35,9 @@ internal sealed class PngBuilder
     /// <param name="border">The border</param>
     /// <param name="scale">The scale</param>
     /// <returns>Bitmap, as a byte array</returns>
-    private static byte[] CreateBitmap(QrCode qrCode, int border, int scale)
+    private static byte[] CreateBitmap(IPixelProvider pixelProvider, int border, int scale)
     {
-        int size = qrCode.Size;
+        int size = pixelProvider.Width;
         int imageSize = (size + border * 2) * scale;
 
         // additional byte at the start for filter type
@@ -50,7 +50,7 @@ internal sealed class PngBuilder
 
             for (int x = 0; x < size; x++)
             {
-                if (!qrCode.GetModule(x, y))
+                if (!pixelProvider.GetPixel(x, y))
                 {
                     continue;
                 }

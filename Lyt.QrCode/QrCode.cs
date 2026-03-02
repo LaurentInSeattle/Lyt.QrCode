@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode;
 
-public sealed partial class QrCode
+public sealed partial class QrCode: IPixelProvider
 {
     /// <summary> The minimum version (size) supported in the QR Code Model 2 standard – namely 1. </summary>
     public const int MinVersion = 1;
@@ -42,4 +42,10 @@ public sealed partial class QrCode
         => 0 <= x && x < this.Size && 0 <= y && y < this.Size && this.modules[y, x];
 
     public bool[,] GetModules() => this.modules;
+
+    public int Width => this.Size;
+
+    public int Height => this.Size;
+
+    public bool GetPixel(int x, int y) => this.GetModule(x,y);
 }
