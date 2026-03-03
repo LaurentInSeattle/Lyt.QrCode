@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Image;
 
-public sealed class SourceImage
+public sealed partial class SourceImage
 {
     public int Width { get; }
 

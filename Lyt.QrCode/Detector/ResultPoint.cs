@@ -1,10 +1,10 @@
 ﻿namespace Lyt.QrCode.Detector;
 
-internal sealed class ResultPoint(float x, float y)
+public sealed class ResultPoint(float x, float y)
 {
-    internal float X { get; } = x;
+    public float X { get; } = x;
 
-    internal float Y { get; } = y;
+    public float Y { get; } = y;
 
     public override string ToString() => $"({this.X}, {this.Y})";
 }

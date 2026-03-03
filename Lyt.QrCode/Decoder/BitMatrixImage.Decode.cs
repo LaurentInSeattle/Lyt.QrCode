@@ -2,7 +2,7 @@
 
 internal sealed partial class BitMatrixImage
 {
-    internal DecoderResult Decode()
+    internal DecoderResult Decode(bool skipDetector)
     {
         // TODO 
         // 

@@ -1,7 +1,7 @@
 ﻿namespace Lyt.QrCode.Decoder;
 
 /// <summary> Encapsulates the result of decoding a QrCode within an image. </summary>
-internal sealed class DecoderResult
+public sealed class DecoderResult
 {
     /// <summary>  raw text encoded by the barcode, if applicable, otherwise <code>null</code><summary> 
     public string Text { get; set; } = string.Empty;

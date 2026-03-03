@@ -41,6 +41,8 @@ public static partial class QrFactory
                 QrCode.EncodeText(content.RawString, Ecc.Quartile);
         if (!renderParameters.Validate())
         {
+            // Invalid parameters - use default values
+            if ( Debugger.IsAttached) { Debugger.Break(); }
             renderParameters = new RenderParameters();
         }
 
@@ -65,6 +67,8 @@ public static partial class QrFactory
                 QrCode.EncodeText(content.RawString, Ecc.Quartile);
         if (!renderParameters.Validate())
         {
+            // Invalid parameters - use default values
+            if (Debugger.IsAttached) { Debugger.Break(); }
             renderParameters = new RenderParameters();
         }
 
@@ -78,12 +82,16 @@ public static partial class QrFactory
         return vectorPath;
     }
 
-    public static string DecodeQrCodeFromImage(SourceImage sourceImage)
+    public static DecoderResult DecodeQrCodeFromImage(
+        SourceImage sourceImage, DecodeParameters decodeParameters = default)
     {
-        var grayscaleImage = sourceImage.ToGrayscale();
-        grayscaleImage.HistogramEqualization();
-        var bitMatrixImage1 = grayscaleImage.ToBitMatrixBasicThresholding();
-        var bitMatrixImage2 = grayscaleImage.ToBitMatrixBasicThresholding();
-        return "TODO: Implement QR code decoding from image";
+        if (!decodeParameters.Validate())
+        {
+            // Invalid parameters - use default values
+            if (Debugger.IsAttached) { Debugger.Break(); }
+            decodeParameters = new DecodeParameters();
+        }
+
+        return sourceImage.Decode(decodeParameters.SkipDetector);
     }
 }
