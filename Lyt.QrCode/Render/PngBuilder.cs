@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Render;
 
-/// <summary> Creates a PNG file from a given QR code. </summary>
+/// <summary> Creates a PNG file from a given QR code or any Pixel Provider. </summary>
 internal sealed class PngBuilder
 {
     private static readonly byte[] Signature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
@@ -48,20 +48,20 @@ internal sealed class PngBuilder
     /// <returns>Bitmap, as a byte array</returns>
     private static byte[] CreateBitmap(IPixelProvider pixelProvider, int border, int scale)
     {
-        // TODO: This assumes that the image is square , which is the case for QR codes,
-        // but not necessarily for all Pixel Providers.
-        int size = pixelProvider.Width;
-        int imageSize = (size + border * 2) * scale;
+        int width = pixelProvider.Width;
+        int height = pixelProvider.Height;
+        int imageWidth = (width + border * 2) * scale;
+        int imageHeight = (height + border * 2) * scale;
 
         // additional byte at the start for filter type
-        int bytesPerLine = (imageSize + 7) / 8 + 1; 
-        byte[] data = new byte[bytesPerLine * imageSize];
+        int bytesPerLine = (imageWidth + 7) / 8 + 1; 
+        byte[] data = new byte[bytesPerLine * imageHeight];
 
-        for (int y = 0; y < size; y++)
+        for (int y = 0; y < height; y++)
         {
-            int offset = (border + y) * scale * bytesPerLine;
+            int yOffset = (border + y) * scale * bytesPerLine;
 
-            for (int x = 0; x < size; x++)
+            for (int x = 0; x < width; x++)
             {
                 if (!pixelProvider.GetPixel(x, y))
                 {
@@ -74,7 +74,7 @@ internal sealed class PngBuilder
                 // set pixels for module ('scale' times)
                 for (; pos < end; pos++)
                 {
-                    int index = offset + pos / 8 + 1;
+                    int index = yOffset + pos / 8 + 1;
                     data[index] |= (byte)(0x80U >> (pos % 8));
                 }
             }
@@ -82,7 +82,7 @@ internal sealed class PngBuilder
             // replicate line 'scale' times
             for (int i = 1; i < scale; i++)
             {
-                Array.Copy(data, offset, data, offset + i * bytesPerLine, bytesPerLine);
+                Array.Copy(data, yOffset, data, yOffset + i * bytesPerLine, bytesPerLine);
             }
         }
 

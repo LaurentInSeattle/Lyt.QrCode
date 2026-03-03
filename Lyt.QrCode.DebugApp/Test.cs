@@ -21,24 +21,35 @@ internal sealed class Test
         //image = QrFactory.CreateQrCodePngImage(new WebLink(text, "Jigsaw"));
         //File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image);
 
-        string imagePathLoad = "screen.png";
+        this.Thresholding("screen");
+        this.Thresholding("Sample");
+    }
+
+    private void Thresholding (string filename)
+    {
+        string imagePathLoad = filename + ".png";
         var sourceImage = this.LoadSourceImage(imagePathLoad);
-        string imagePathSave = "screenSave.png";
+        string imagePathSave = filename + "Save.png";
         this.SaveSourceImage(imagePathSave, sourceImage);
 
         var grayscaleImage = sourceImage.ToGrayscale();
-        string imagePathSaveGray = "screenGray.png";
+        string imagePathSaveGray = filename + "Gray.png";
         this.SaveGrayscaleImage(imagePathSaveGray, grayscaleImage);
-        grayscaleImage.HistogramEqualization();
-        string imagePathSaveGrayEQ = "screenGrayEQ.png";
-        this.SaveGrayscaleImage(imagePathSaveGrayEQ, grayscaleImage);
+
+        var grayscaleImageEQ = sourceImage.ToGrayscale();
+        grayscaleImageEQ.HistogramEqualization();
+        string imagePathSaveGrayEQ = filename + "GrayEQ.png";
+        this.SaveGrayscaleImage(imagePathSaveGrayEQ, grayscaleImageEQ);
 
         var bitMatrixImage1 = grayscaleImage.ToBitMatrixBasicThresholding();
-        byte[] bwImage = PngBuilder.ToPngImage(bitMatrixImage1);
-        string bwPath = Path.Combine(rootPath, "screenBw.png");
-        File.WriteAllBytes(bwPath, bwImage);
+        byte[] bwImage1 = PngBuilder.ToPngImage(bitMatrixImage1);
+        string bwPath1 = Path.Combine(rootPath, filename + "Bw1.png");
+        File.WriteAllBytes(bwPath1, bwImage1);
 
-        //var bitMatrixImage2 = grayscaleImage.ToBitMatrixBasicThresholding();
+        var bitMatrixImage2 = grayscaleImage.ToBitMatrixAdaptiveThresholding();
+        byte[] bwImage2 = PngBuilder.ToPngImage(bitMatrixImage2);
+        string bwPath2 = Path.Combine(rootPath, filename + "Bw2.png");
+        File.WriteAllBytes(bwPath2, bwImage2);
     }
 
     private SourceImage LoadSourceImage(string imagePath)
