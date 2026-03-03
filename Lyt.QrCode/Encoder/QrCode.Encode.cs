@@ -139,8 +139,6 @@ public sealed partial class QrCode
         // _isFunction = null;
     }
 
-    // TODO Fix this stupid list thing !!!
-
     /// <summary>
     /// Creates a QR code representing the specified text using the specified error correction level.
     /// As a conservative upper bound, this function is guaranteed to succeed for strings with up to 738
@@ -157,15 +155,11 @@ public sealed partial class QrCode
     public static QrCode EncodeText(string text, Ecc ecc)
     {
         text.ThrowIfNullOrWhiteSpace();
-        var segments = QrSegment.MakeSegments(text);
-        return EncodeSegments(segments, ecc);
+        return EncodeSegment(QrSegment.MakeSegment(text), ecc);
     }
 
     public static QrCode EncodeBytes(byte[] bytes, Ecc ecc)
-    {
-        var segments = new List<QrSegment>() { QrSegment.MakeBytes(bytes) } ;
-        return EncodeSegments(segments, ecc);
-    }
+        => EncodeSegment(QrSegment.MakeBytes(bytes), ecc);
 
     /// <summary>
     /// Creates a QR code representing the specified segments with the specified encoding parameters.
@@ -190,8 +184,8 @@ public sealed partial class QrCode
     /// or -1 &#x2264; mask &#x2264; 7 is violated.</exception>
     /// <exception cref="DataTooLongException">The segments are too long to fit in the largest QR code size (version)
     /// at the specified error correction level.</exception>
-    internal static QrCode EncodeSegments(
-        List<QrSegment> segments, 
+    internal static QrCode EncodeSegment(
+        QrSegment segment, 
         Ecc ecc, 
         int minVersion = QrCode.MinVersion, 
         int maxVersion = QrCode.MaxVersion, 
@@ -217,7 +211,7 @@ public sealed partial class QrCode
         for (int version = minVersion; version <= maxVersion; version++)
         {
             int numDataBits = GetNumDataCodewords(version, ecc) * 8;  // Number of data bits available
-            dataUsedBits = QrSegment.GetTotalBits(segments, version);
+            dataUsedBits = QrSegment.GetTotalBits(segment, version);
             if (dataUsedBits != -1 && dataUsedBits <= numDataBits)
             {
                 foundVersion = version;
@@ -230,7 +224,7 @@ public sealed partial class QrCode
             }
 
             // All versions in the range could not fit the given data
-            string msg = "Segment too long";
+            string msg = "Segment is too long";
             if (dataUsedBits != -1)
             {
                 msg = $"Data length = {dataUsedBits} bits, Max capacity = {numDataBits} bits";
@@ -251,14 +245,11 @@ public sealed partial class QrCode
             }
         }
 
-        // Concatenate all segments to create the data bit string
+        // Create the data bit string
         var bitArray = new BitArray(0);
-        foreach (var seg in segments)
-        {
-            bitArray.AppendBits(seg.EncodingMode.ModeBits, 4);
-            bitArray.AppendBits((uint)seg.NumChars, seg.EncodingMode.NumCharCountBits(foundVersion));
-            bitArray.AppendData(seg.GetData());
-        }
+        bitArray.AppendBits(segment.EncodingMode.ModeBits, 4);
+        bitArray.AppendBits((uint)segment.NumChars, segment.EncodingMode.NumCharCountBits(foundVersion));
+        bitArray.AppendData(segment.GetData());
 
         Debug.Assert(bitArray.Length == dataUsedBits);
 

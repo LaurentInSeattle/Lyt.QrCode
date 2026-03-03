@@ -1,13 +1,26 @@
 ﻿namespace Lyt.QrCode.DebugApp;
 
-using static System.Net.Mime.MediaTypeNames;
-
 internal sealed class Test
 {
-    string rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests"; 
+    private const string rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests"; 
 
     internal void Run ()     
     {
+        string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw";
+
+        var qrCode = QrCode.EncodeText(text, Ecc.Quartile);
+        byte[] image = PngBuilder.ToPngImage(qrCode, 16, 2);
+
+        string fullPath = Path.Combine(rootPath, "test.png");
+        File.WriteAllBytes(fullPath, image);
+
+        fullPath = Path.Combine(rootPath, "test.svg");
+        string svg = PathBuilder.ToSvgImageString(qrCode, 16, 2);
+        File.WriteAllText(fullPath, svg);
+
+        //image = QrFactory.CreateQrCodePngImage(new WebLink(text, "Jigsaw"));
+        //File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image);
+
         string imagePathLoad = "screen.png";
         var sourceImage = this.LoadSourceImage(imagePathLoad);
         string imagePathSave = "screenSave.png";
@@ -44,24 +57,20 @@ internal sealed class Test
     private void SaveSourceImage(string imagePath, SourceImage sourceImage)
     {
         string fullPath = Path.Combine(rootPath, imagePath);
-        using (var image =
+        using var image =
                SixLabors.ImageSharp.Image.LoadPixelData<Rgba32>(
-                   sourceImage.Pixels,sourceImage.Width, sourceImage.Height))
-        {
-            image.Save(fullPath);
-            Console.WriteLine($"Saved image: {fullPath}, Size: {image.Width}x{image.Height}");
-        }
+                   sourceImage.Pixels, sourceImage.Width, sourceImage.Height);
+        image.Save(fullPath);
+        Console.WriteLine($"Saved image: {fullPath}, Size: {image.Width}x{image.Height}");
     }
 
     private void SaveGrayscaleImage(string imagePath, GrayscaleImage grayscaleImage)
     {
         string fullPath = Path.Combine(rootPath, imagePath);
-        using (var image =
+        using var image =
                SixLabors.ImageSharp.Image.LoadPixelData<L8>(
-                   grayscaleImage.Pixels, grayscaleImage.Width, grayscaleImage.Height))
-        {
-            image.Save(fullPath);
-            Console.WriteLine($"Saved image: {fullPath}, Size: {image.Width}x{image.Height}");
-        }
+                   grayscaleImage.Pixels, grayscaleImage.Width, grayscaleImage.Height);
+        image.Save(fullPath);
+        Console.WriteLine($"Saved image: {fullPath}, Size: {image.Width}x{image.Height}");
     }
 }

@@ -44,33 +44,27 @@ internal class QrSegment
         => (BitArray) this.data.Clone();  // Make defensive copy => WHY ??? NeCESSARY ? 
     
     /// <summary>
-    /// Creates a list of zero or more segments representing the specified text string.
+    /// Creates a segment representing the specified text string.
     /// The text may contain the full range of Unicode characters.
-    /// The result may consist of multiple segments with various encoding modes in order to minimize the length of the bit stream.
     /// </summary>
     /// <param name="text">The text to be encoded.</param>
-    /// <returns>The created mutable list of segments representing the specified text.</returns>
+    /// <returns>The segment representing the specified text.</returns>
     /// <exception cref="ArgumentNullException"><c>text</c> is <c>null</c>.</exception>
-    /// TODO: 
-    /// <remarks> The current implementation does not create multiple segments. </remarks>
-    internal static List<QrSegment> MakeSegments(string text)
+    internal static QrSegment MakeSegment(string text)
     {
-        // Select the most efficient segment encoding automatically
-        var result = new List<QrSegment>();
+        // Select the most efficient segment encoding 
         if (text.IsNumeric())
         {
-            result.Add(QrSegment.MakeNumeric(text));
+            return QrSegment.MakeNumeric(text);
         }
         else if (text.IsAlphanumeric())
         {
-            result.Add(MakeAlphanumeric(text));
+            return QrSegment.MakeAlphanumeric(text);
         }
         else
         {
-            result.Add(MakeBytes(Encoding.UTF8.GetBytes(text)));
+            return QrSegment.MakeBytes(Encoding.UTF8.GetBytes(text));
         }
-
-        return result;
     }
 
     /// <summary>
@@ -140,32 +134,28 @@ internal class QrSegment
         return new QrSegment(Mode.Alphanumeric, text.Length, bitArray);
     }
 
-    /// <summary>
-    /// Calculates the number of bits needed to encode the given segments.
+    /// <summary> Calculates the number of bits needed to encode the given segment. 
     /// <para>
     /// Returns a non-negative number if successful. Otherwise returns -1 if a segment has too
     /// many characters to fit its length field, or the total bits exceeds int.MaxValue.
     /// </para>
     /// </summary>
-    /// <param name="segments">The segements.</param>
+    /// <param name="segment">The segment.</param>
     /// <param name="version">The version number.</param>
     /// <returns>The number of bits, or -1.</returns>
-    internal static int GetTotalBits(List<QrSegment> segments, int version)
+    internal static int GetTotalBits(QrSegment segment, int version)
     {
         long result = 0;
-        foreach (var seg in segments)
+        int ccBits = segment.EncodingMode.NumCharCountBits(version);
+        if (segment.NumChars >= 1 << ccBits)
         {
-            int ccBits = seg.EncodingMode.NumCharCountBits(version);
-            if (seg.NumChars >= 1 << ccBits)
-            {
-                return -1;  // The segment's length doesn't fit the field's bit width
-            }
+            return -1;  // The segment's length doesn't fit the field's bit width
+        }
 
-            result += 4L + ccBits + seg.data.Length;
-            if (result > int.MaxValue)
-            {
-                return -1;  // The sum will overflow an int type
-            }
+        result += 4L + ccBits + segment.data.Length;
+        if (result > int.MaxValue)
+        {
+            return -1;  // The sum will overflow an int type
         }
 
         return (int)result;

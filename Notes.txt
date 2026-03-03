@@ -1,5 +1,4 @@
 ﻿
-- Coder: Remove multiple segments 
 
 - Decoder and detector 
 
