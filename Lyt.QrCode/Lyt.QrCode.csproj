@@ -7,11 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Decoder\" />
-    <Folder Include="Detector\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="Lyt.QrCode.DebugApp" />
     <InternalsVisibleTo Include="Lyt.QrCode.Tests" />
   </ItemGroup>

@@ -2,9 +2,9 @@
 
 internal sealed class Test
 {
-    private const string rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests"; 
+    private const string rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests";
 
-    internal void Run ()     
+    internal void Run()
     {
         string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw";
 
@@ -21,25 +21,25 @@ internal sealed class Test
         //image = QrFactory.CreateQrCodePngImage(new WebLink(text, "Jigsaw"));
         //File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image);
 
-        this.Thresholding("screen");
-        this.Thresholding("Sample");
+        Thresholding("screen");
+        Thresholding("Sample");
     }
 
-    private void Thresholding (string filename)
+    private static void Thresholding(string filename)
     {
         string imagePathLoad = filename + ".png";
-        var sourceImage = this.LoadSourceImage(imagePathLoad);
+        var sourceImage = LoadSourceImage(imagePathLoad);
         string imagePathSave = filename + "Save.png";
-        this.SaveSourceImage(imagePathSave, sourceImage);
+        SaveSourceImage(imagePathSave, sourceImage);
 
         var grayscaleImage = sourceImage.ToGrayscale();
         string imagePathSaveGray = filename + "Gray.png";
-        this.SaveGrayscaleImage(imagePathSaveGray, grayscaleImage);
+        SaveGrayscaleImage(imagePathSaveGray, grayscaleImage);
 
         var grayscaleImageEQ = sourceImage.ToGrayscale();
         grayscaleImageEQ.HistogramEqualization();
         string imagePathSaveGrayEQ = filename + "GrayEQ.png";
-        this.SaveGrayscaleImage(imagePathSaveGrayEQ, grayscaleImageEQ);
+        SaveGrayscaleImage(imagePathSaveGrayEQ, grayscaleImageEQ);
 
         var bitMatrixImage1 = grayscaleImage.ToBitMatrixBasicThresholding();
         byte[] bwImage1 = PngBuilder.ToPngImage(bitMatrixImage1);
@@ -52,9 +52,9 @@ internal sealed class Test
         File.WriteAllBytes(bwPath2, bwImage2);
     }
 
-    private SourceImage LoadSourceImage(string imagePath)
+    private static SourceImage LoadSourceImage(string imagePath)
     {
-        string fullPath = Path.Combine(rootPath ,  imagePath) ; 
+        string fullPath = Path.Combine(rootPath, imagePath);
         using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(fullPath);
         byte[] pixels = new byte[image.Width * image.Height * 4];
         image.CopyPixelDataTo(pixels);
@@ -65,7 +65,7 @@ internal sealed class Test
         return sourceImage;
     }
 
-    private void SaveSourceImage(string imagePath, SourceImage sourceImage)
+    private static void SaveSourceImage(string imagePath, SourceImage sourceImage)
     {
         string fullPath = Path.Combine(rootPath, imagePath);
         using var image =
@@ -75,7 +75,7 @@ internal sealed class Test
         Console.WriteLine($"Saved image: {fullPath}, Size: {image.Width}x{image.Height}");
     }
 
-    private void SaveGrayscaleImage(string imagePath, GrayscaleImage grayscaleImage)
+    private static void SaveGrayscaleImage(string imagePath, GrayscaleImage grayscaleImage)
     {
         string fullPath = Path.Combine(rootPath, imagePath);
         using var image =

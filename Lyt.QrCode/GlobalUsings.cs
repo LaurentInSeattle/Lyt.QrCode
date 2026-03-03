@@ -21,11 +21,11 @@ global using System.Threading.Tasks;
 
 global using Lyt.QrCode;
 global using Lyt.QrCode.Content;
+global using Lyt.QrCode.Decoder;
 global using Lyt.QrCode.Encoder;
+global using Lyt.QrCode.Detector;
 global using Lyt.QrCode.Image;
 global using Lyt.QrCode.Render;
 global using Lyt.QrCode.Utilities;
 
 // LATER 
-// global using Lyt.QrCode.Decoder;
-// global using Lyt.QrCode.Detector;

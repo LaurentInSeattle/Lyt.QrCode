@@ -10,7 +10,7 @@
 ///   <p>The ordering of bits is row-major. Within each int, the least significant bits are used first,
 /// meaning they represent lower x values. This is compatible with <see cref="BitArray"/>'s implementation.</p>
 /// </summary>
-internal sealed class BitMatrixImage : IPixelProvider
+internal sealed partial class BitMatrixImage : IPixelProvider
 {
     internal int Width { get; }
 
