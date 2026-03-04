@@ -5,6 +5,7 @@ global using System.Collections.Generic;
 global using System.Collections.ObjectModel;
 global using System.ComponentModel;
 global using System.Diagnostics;
+global using System.Diagnostics.CodeAnalysis;
 global using System.Globalization;
 global using System.Linq;
 global using System.IO.Compression;
@@ -27,5 +28,3 @@ global using Lyt.QrCode.Detector;
 global using Lyt.QrCode.Image;
 global using Lyt.QrCode.Render;
 global using Lyt.QrCode.Utilities;
-
-// LATER 

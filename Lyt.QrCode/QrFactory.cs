@@ -5,6 +5,12 @@
 // Present in GlobalUsings.cs: BUT KEEP for avoiding ambiguous reference to System.Net
 using Lyt.QrCode.Content;
 
+/// <summary> 
+/// Callback which is invoked when a possible result point (significant
+/// point in the QR code image such as a corner) is found.
+/// </summary>
+public delegate void DetectorCallback(ResultPoint point);
+
 /// Factory class for creating QR code images and vector paths from various content types.
 public static partial class QrFactory
 {
@@ -83,7 +89,9 @@ public static partial class QrFactory
     }
 
     public static DecoderResult DecodeQrCodeFromImage(
-        SourceImage sourceImage, DecodeParameters decodeParameters = default)
+        SourceImage sourceImage,
+        DetectorCallback? detectorCallback = null,
+        DecodeParameters decodeParameters = default)
     {
         if (!decodeParameters.Validate())
         {
@@ -92,6 +100,6 @@ public static partial class QrFactory
             decodeParameters = new DecodeParameters();
         }
 
-        return sourceImage.Decode(decodeParameters.SkipDetector);
+        return sourceImage.Decode(decodeParameters.SkipDetector, detectorCallback);
     }
 }

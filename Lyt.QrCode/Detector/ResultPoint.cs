@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Detector;
 
-public sealed class ResultPoint(float x, float y)
+public class ResultPoint(float x, float y)
 {
     public float X { get; } = x;
 
