@@ -1,6 +1,6 @@
 # Lyt.QrCode
 
-QrCode Library, zero dependencies, all written in C#.
+QrCode Library, Encode and Decode, zero dependencies, all written in C#.
 
 # Just Started ~ Work in progress...
 
@@ -9,4 +9,6 @@ QrCode Library, zero dependencies, all written in C#.
 - Decoding is not implemented yet.
 
 - No documentation, automated tests, or examples yet.
+
+- No finalized API's, so expect breaking changes.
 

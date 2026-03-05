@@ -23,6 +23,43 @@ internal sealed class Test
 
         Thresholding("screen");
         Thresholding("Sample");
+
+        Detect("screen");
+        Detect("Sample");
+    }
+
+    private static void OnDetect (ResultPoint resultPoint)
+        => Console.WriteLine("Detected: " + resultPoint.ToString());
+
+    private static void Detect (string filename)
+    {
+        // Screen 
+        // Should return: (331.5, 430.5), (333, 285.5), (486.5, 277)
+        // Returns: 
+        //10:44:14:249    Detected: (486.5, 277)
+        //10:44:14:492    Detected: (333, 285.5)
+        //10:44:14:492    Detected: (331.5, 430.5)
+        //10:44:14:492    patternInfo: (331.5, 430.5), (333, 285.5), (486.5, 277)
+
+        // Sample
+        // Should return: (190, 366.5), (205, 162), (421.5, 165)
+        // Returns:
+        //10:47:44:389    Detected: (205, 162)
+        //10:47:44:389    Detected: (421.5, 165)
+        //10:47:44:389    Detected: (190, 366.5)
+        //10:47:44:389    patternInfo: (190, 366.5), (205, 162), (421.5, 165)
+
+        string imagePathLoad = filename + ".png";
+        var sourceImage = LoadSourceImage(imagePathLoad);
+        if (QrFactory.DecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
+        {
+            // TODO: Print out results 
+            Console.WriteLine("Detected ");
+        }
+        else
+        {
+            Console.WriteLine("Failed to Detect ");
+        } 
     }
 
     private static void Thresholding(string filename)

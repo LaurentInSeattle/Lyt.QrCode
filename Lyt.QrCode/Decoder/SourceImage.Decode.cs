@@ -2,8 +2,12 @@
 
 public sealed partial class SourceImage
 {
-    public DecoderResult Decode(bool skipDetector, DetectorCallback? detectorCallback)
+    public bool TryDecode(
+        bool skipDetector, 
+        DetectorCallback? detectorCallback, 
+        [NotNullWhen(true)] out DecoderResult? decoderResult)
     {
+        decoderResult= null;
         // TODO : Still need to cleanup the API !
         // 
         var grayscaleImage = this.ToGrayscale();
@@ -11,9 +15,10 @@ public sealed partial class SourceImage
         bool result = bitMatrixImage.TryDetect(detectorCallback, out var detectorResult); 
         if (result) 
         {
-            return bitMatrixImage.Decode(skipDetector);
+            decoderResult = new DecoderResult(detectorResult);
+            return true; //  bitMatrixImage.Decode(skipDetector);
         }
 
-        return new DecoderResult();
+        return false;
     }
 }

@@ -88,11 +88,13 @@ public static partial class QrFactory
         return vectorPath;
     }
 
-    public static DecoderResult DecodeQrCodeFromImage(
+    public static bool DecodeQrCodeFromImage(
         SourceImage sourceImage,
+        [NotNullWhen(true)] out DecoderResult? decoderResult,
         DetectorCallback? detectorCallback = null,
         DecodeParameters decodeParameters = default)
     {
+        decoderResult = null;
         if (!decodeParameters.Validate())
         {
             // Invalid parameters - use default values
@@ -100,6 +102,11 @@ public static partial class QrFactory
             decodeParameters = new DecodeParameters();
         }
 
-        return sourceImage.Decode(decodeParameters.SkipDetector, detectorCallback);
+        if ( sourceImage.TryDecode(decodeParameters.SkipDetector, detectorCallback, out decoderResult))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

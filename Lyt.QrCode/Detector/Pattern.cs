@@ -35,4 +35,17 @@ internal sealed class Pattern(float x, float y, float estimatedModuleSize, int c
         float combinedModuleSize = (this.Count * this.EstimatedModuleSize + newModuleSize) / combinedCount;
         return new Pattern(combinedX, combinedY, combinedModuleSize, combinedCount);
     }
+
+    /// <summary>
+    /// Get square of distance between a and b.
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    internal static double SquaredDistance(Pattern a, Pattern b)
+    {
+        double x = a.X - b.X;
+        double y = a.Y - b.Y;
+        return x * x + y * y;
+    }
 }

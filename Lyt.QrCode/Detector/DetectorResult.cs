@@ -18,4 +18,8 @@ internal sealed class DetectorResult
         this.Bits = bits;
         this.Points = points;
     }
+
+    internal DetectorResult(Patterns patterns)
+    {
+    }
 }

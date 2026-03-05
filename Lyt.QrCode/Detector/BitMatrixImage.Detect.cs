@@ -5,7 +5,7 @@ internal sealed partial class BitMatrixImage
     internal bool TryDetect(
         DetectorCallback? detectorCallback, [NotNullWhen(true)] out DetectorResult? detectorResult)
     {
-        detectorResult = null; 
+        detectorResult = null;
         return this.TryFindPatterns(detectorCallback, out var patterns);
     }
 
@@ -61,20 +61,21 @@ internal sealed partial class BitMatrixImage
             stateCount[4] = 0;
         }
 
-        void DoClearCrossCheckStateCounts() => Array.Clear(crossCheckStateCount, 0, crossCheckStateCount.Length);
-
+        /// <summary>
         /// Returns true iff the proportions of the counts is close enough to the 1/1/3/1/1 ratios
         /// used by finder patterns to be considered a match
-        bool FoundPatternCross()
+        /// <param name="stateCountArray">count of black/white/black/white/black pixels just read</param>
+        bool FoundPatternCross(int[] stateCountArray)
         {
             int totalModuleSize = 0;
             for (int i = 0; i < 5; i++)
             {
-                int count = stateCount[i];
+                int count = stateCountArray[i];
                 if (count == 0)
                 {
                     return false;
                 }
+
                 totalModuleSize += count;
             }
 
@@ -83,15 +84,49 @@ internal sealed partial class BitMatrixImage
                 return false;
             }
 
+            // Allow less than 50% variance from 1-1-3-1-1 proportions
             int moduleSize = (totalModuleSize << INTEGER_MATH_SHIFT) / 7;
             int maxVariance = moduleSize / 2;
+            return Math.Abs(moduleSize - (stateCountArray[0] << INTEGER_MATH_SHIFT)) < maxVariance &&
+                   Math.Abs(moduleSize - (stateCountArray[1] << INTEGER_MATH_SHIFT)) < maxVariance &&
+                   Math.Abs(3 * moduleSize - (stateCountArray[2] << INTEGER_MATH_SHIFT)) < 3 * maxVariance &&
+                   Math.Abs(moduleSize - (stateCountArray[3] << INTEGER_MATH_SHIFT)) < maxVariance &&
+                   Math.Abs(moduleSize - (stateCountArray[4] << INTEGER_MATH_SHIFT)) < maxVariance;
+        }
 
-            // Allow less than 50% variance from 1-1-3-1-1 proportions
-            return Math.Abs(moduleSize - (stateCount[0] << INTEGER_MATH_SHIFT)) < maxVariance &&
-                   Math.Abs(moduleSize - (stateCount[1] << INTEGER_MATH_SHIFT)) < maxVariance &&
-                   Math.Abs(3 * moduleSize - (stateCount[2] << INTEGER_MATH_SHIFT)) < 3 * maxVariance &&
-                   Math.Abs(moduleSize - (stateCount[3] << INTEGER_MATH_SHIFT)) < maxVariance &&
-                   Math.Abs(moduleSize - (stateCount[4] << INTEGER_MATH_SHIFT)) < maxVariance;
+        /// <summary>
+        /// Returns true if the proportions of the counts is close enough to the 1/1/3/1/1 ratios
+        /// by finder patterns to be considered a match</returns>
+        /// <param name="stateCountArray">count of black/white/black/white/black pixels just read</param>
+        /// </summary>
+        bool FoundPatternDiagonal(int[] stateCountArray)
+        {
+            int totalModuleSize = 0;
+            for (int i = 0; i < 5; i++)
+            {
+                int count = stateCountArray[i];
+                if (count == 0)
+                {
+                    return false;
+                }
+
+                totalModuleSize += count;
+            }
+
+            if (totalModuleSize < 7)
+            {
+                return false;
+            }
+
+            // Allow less than 75% variance from 1-1-3-1-1 proportions
+            float moduleSize = totalModuleSize / 7.0f;
+            float maxVariance = moduleSize / 1.333f;
+            return
+                Math.Abs(moduleSize - stateCountArray[0]) < maxVariance &&
+                Math.Abs(moduleSize - stateCountArray[1]) < maxVariance &&
+                Math.Abs(3.0f * moduleSize - stateCountArray[2]) < 3 * maxVariance &&
+                Math.Abs(moduleSize - stateCountArray[3]) < maxVariance &&
+                Math.Abs(moduleSize - stateCountArray[4]) < maxVariance;
         }
 
         /// <summary>
@@ -120,55 +155,324 @@ internal sealed partial class BitMatrixImage
                 return float.IsNaN(result) ? null : result;
             }
 
+            void ClearCrossCheckStateCounts() => Array.Clear(crossCheckStateCount, 0, crossCheckStateCount.Length);
+
+            /// <summary> 
+            /// Given a count of black/white/black/white/black pixels just seen and an end position,
+            /// figures the location of the center of this run.
+            /// </summary>
+            float? CenterFromEndCrossCheckState(int end)
+            {
+                float result = (end - crossCheckStateCount[4] - crossCheckStateCount[3]) - crossCheckStateCount[2] / 2.0f;
+                return float.IsNaN(result) ? null : result;
+            }
+
+            /// <summary>
+            /// After a vertical and horizontal scan finds a potential finder pattern, this method
+            /// "cross-cross-cross-checks" by scanning down diagonally through the center of the possible
+            /// finder pattern to see if the same proportion is detected.
+            /// </summary>
+            /// <param name="centerI">row where a finder pattern was detected</param>
+            /// <param name="centerJ">center of the section that appears to cross a finder pattern</param>
+            /// <returns>true if proportions are withing expected limits</returns>
+            bool CrossCheckDiagonal(int centerI, int centerJ)
+            {
+                ClearCrossCheckStateCounts();
+
+                // Start counting up, left from center finding black center mass
+                int i = 0;
+                while (centerI >= i && centerJ >= i && this[centerJ - i, centerI - i])
+                {
+                    crossCheckStateCount[2]++;
+                    i++;
+                }
+
+                if (crossCheckStateCount[2] == 0)
+                {
+                    return false;
+                }
+
+                // Continue up, left finding white space
+                while (centerI >= i && centerJ >= i && !this[centerJ - i, centerI - i])
+                {
+                    crossCheckStateCount[1]++;
+                    i++;
+                }
+
+                if (crossCheckStateCount[1] == 0)
+                {
+                    return false;
+                }
+
+                // Continue up, left finding black border
+                while (centerI >= i && centerJ >= i && this[centerJ - i, centerI - i])
+                {
+                    crossCheckStateCount[0]++;
+                    i++;
+                }
+
+                if (crossCheckStateCount[0] == 0)
+                {
+                    return false;
+                }
+
+                int maxI = this.Height;
+                int maxJ = this.Width;
+
+                // Now also count down, right from center
+                i = 1;
+                while (centerI + i < maxI && centerJ + i < maxJ && this[centerJ + i, centerI + i])
+                {
+                    crossCheckStateCount[2]++;
+                    i++;
+                }
+
+                while (centerI + i < maxI && centerJ + i < maxJ && !this[centerJ + i, centerI + i])
+                {
+                    crossCheckStateCount[3]++;
+                    i++;
+                }
+
+                if (crossCheckStateCount[3] == 0)
+                {
+                    return false;
+                }
+
+                while (centerI + i < maxI && centerJ + i < maxJ && this[centerJ + i, centerI + i])
+                {
+                    crossCheckStateCount[4]++;
+                    i++;
+                }
+
+                if (crossCheckStateCount[4] == 0)
+                {
+                    return false;
+                }
+
+                return FoundPatternDiagonal(crossCheckStateCount);
+            }
+
+            /// <summary>
+            ///   <p>After a horizontal scan finds a potential finder pattern, this method
+            /// "cross-checks" by scanning down vertically through the center of the possible
+            /// finder pattern to see if the same proportion is detected.</p>
+            /// </summary>
+            /// <param name="startI">row where a finder pattern was detected</param>
+            /// <param name="centerJ">center of the section that appears to cross a finder pattern</param>
+            /// <param name="maxCount">maximum reasonable number of modules that should be
+            /// observed in any reading state, based on the results of the horizontal scan</param>
+            /// <param name="originalStateCountTotal">The original state count total.</param>
+            /// <returns>
+            /// vertical center of finder pattern, or null if not found
+            /// </returns>
+            float? CrossCheckVertical(int startI, int centerJ, int maxCount, int originalStateCountTotal)
+            {
+                ClearCrossCheckStateCounts();
+
+                // Start counting up from center
+                int maxI = this.Height;
+                int i = startI;
+                while (i >= 0 && this[centerJ, i])
+                {
+                    crossCheckStateCount[2]++;
+                    i--;
+                }
+                if (i < 0)
+                {
+                    return null;
+                }
+                while (i >= 0 && !this[centerJ, i] && crossCheckStateCount[1] <= maxCount)
+                {
+                    crossCheckStateCount[1]++;
+                    i--;
+                }
+                // If already too many modules in this state or ran off the edge:
+                if (i < 0 || crossCheckStateCount[1] > maxCount)
+                {
+                    return null;
+                }
+                while (i >= 0 && this[centerJ, i] && crossCheckStateCount[0] <= maxCount)
+                {
+                    crossCheckStateCount[0]++;
+                    i--;
+                }
+                if (crossCheckStateCount[0] > maxCount)
+                {
+                    return null;
+                }
+
+                // Now also count down from center
+                i = startI + 1;
+                while (i < maxI && this[centerJ, i])
+                {
+                    crossCheckStateCount[2]++;
+                    i++;
+                }
+                if (i == maxI)
+                {
+                    return null;
+                }
+                while (i < maxI && !this[centerJ, i] && crossCheckStateCount[3] < maxCount)
+                {
+                    crossCheckStateCount[3]++;
+                    i++;
+                }
+                if (i == maxI || crossCheckStateCount[3] >= maxCount)
+                {
+                    return null;
+                }
+                while (i < maxI && this[centerJ, i] && crossCheckStateCount[4] < maxCount)
+                {
+                    crossCheckStateCount[4]++;
+                    i++;
+                }
+                if (crossCheckStateCount[4] >= maxCount)
+                {
+                    return null;
+                }
+
+                // If we found a finder-pattern-like section, but its size is more than 40% different than
+                // the original, assume it's a false positive
+                int stateCountTotal = crossCheckStateCount[0] + crossCheckStateCount[1] + crossCheckStateCount[2] + crossCheckStateCount[3] + crossCheckStateCount[4];
+                if (5 * Math.Abs(stateCountTotal - originalStateCountTotal) >= 2 * originalStateCountTotal)
+                {
+                    return null;
+                }
+
+                return FoundPatternCross(crossCheckStateCount) ? CenterFromEndCrossCheckState(i) : null;
+            }
+
+            /// <summary> <p>Like {@link #crossCheckVertical(int, int, int, int)}, and in fact is basically identical,
+            /// except it reads horizontally instead of vertically. This is used to cross-cross
+            /// check a vertical cross check and locate the real center of the alignment pattern.</p>
+            /// </summary>
+            float? CrossCheckHorizontal(int startJ, int centerI, int maxCount, int originalStateCountTotal)
+            {
+                ClearCrossCheckStateCounts();
+
+                int j = startJ;
+                int maxJ = this.Width;
+                while (j >= 0 && this[j, centerI])
+                {
+                    crossCheckStateCount[2]++;
+                    j--;
+                }
+
+                if (j < 0)
+                {
+                    return null;
+                }
+
+                while (j >= 0 && !this[j, centerI] && crossCheckStateCount[1] <= maxCount)
+                {
+                    crossCheckStateCount[1]++;
+                    j--;
+                }
+
+                if (j < 0 || crossCheckStateCount[1] > maxCount)
+                {
+                    return null;
+                }
+
+                while (j >= 0 && this[j, centerI] && crossCheckStateCount[0] <= maxCount)
+                {
+                    crossCheckStateCount[0]++;
+                    j--;
+                }
+
+                if (crossCheckStateCount[0] > maxCount)
+                {
+                    return null;
+                }
+
+                j = startJ + 1;
+                while (j < maxJ && this[j, centerI])
+                {
+                    crossCheckStateCount[2]++;
+                    j++;
+                }
+
+                if (j == maxJ)
+                {
+                    return null;
+                }
+
+                while (j < maxJ && !this[j, centerI] && crossCheckStateCount[3] < maxCount)
+                {
+                    crossCheckStateCount[3]++;
+                    j++;
+                }
+
+                if (j == maxJ || crossCheckStateCount[3] >= maxCount)
+                {
+                    return null;
+                }
+
+                while (j < maxJ && this[j, centerI] && crossCheckStateCount[4] < maxCount)
+                {
+                    crossCheckStateCount[4]++;
+                    j++;
+                }
+
+                if (crossCheckStateCount[4] >= maxCount)
+                {
+                    return null;
+                }
+
+                // If we found a finder-pattern-like section, but its size is significantly different than
+                // the original, assume it's a false positive
+                int stateCountTotal = crossCheckStateCount[0] + crossCheckStateCount[1] + crossCheckStateCount[2] + crossCheckStateCount[3] + crossCheckStateCount[4];
+                if (5 * Math.Abs(stateCountTotal - originalStateCountTotal) >= originalStateCountTotal)
+                {
+                    return null;
+                }
+
+                return FoundPatternCross(crossCheckStateCount) ? CenterFromEndCrossCheckState(j) : null;
+            }
+
             int stateCountTotal =
-                stateCount[0] + stateCount[1] + stateCount[2] + stateCount[3] + stateCount[4];
+                        stateCount[0] + stateCount[1] + stateCount[2] + stateCount[3] + stateCount[4];
             float? centerJ = CenterFromEndState(j);
             if (centerJ == null)
             {
                 return false;
             }
 
-            // TODO : CONTINUE HERE ! 
+            float? centerI = CrossCheckVertical(i, (int)centerJ.Value, stateCount[2], stateCountTotal);
+            if (centerI != null)
+            {
+                // Re-cross check
+                centerJ = CrossCheckHorizontal(
+                    (int)centerJ.Value, (int)centerI.Value, stateCount[2], stateCountTotal);
+                if (centerJ != null && CrossCheckDiagonal((int)centerI, (int)centerJ))
+                {
+                    float estimatedModuleSize = stateCountTotal / 7.0f;
+                    bool found = false;
+                    for (int index = 0; index < possibleCenters.Count; index++)
+                    {
+                        var center = possibleCenters[index];
+                        // Look for about the same center and module size:
+                        if (center.AboutEquals(estimatedModuleSize, centerI.Value, centerJ.Value))
+                        {
+                            possibleCenters.RemoveAt(index);
+                            possibleCenters.Insert(index, center.CombineEstimate(centerI.Value, centerJ.Value, estimatedModuleSize));
 
-            //float? centerI = CrossCheckVertical(i, (int)centerJ.Value, stateCount[2], stateCountTotal);
-            //if (centerI != null)
-            //{
-            //    // Re-cross check
-            //    centerJ = CrossCheckHorizontal(
-            //        (int)centerJ.Value, (int)centerI.Value, stateCount[2], stateCountTotal);
-            //    if (centerJ != null && CrossCheckDiagonal((int)centerI, (int)centerJ))
-            //    {
-            //        float estimatedModuleSize = stateCountTotal / 7.0f;
-            //        bool found = false;
-            //        for (int index = 0; index < possibleCenters.Count; index++)
-            //        {
-            //            var center = possibleCenters[index];
-            //            // Look for about the same center and module size:
-            //            if (center.AboutEquals(estimatedModuleSize, centerI.Value, centerJ.Value))
-            //            {
-            //                possibleCenters.RemoveAt(index);
-            //                possibleCenters.Insert(index, center.CombineEstimate(centerI.Value, centerJ.Value, estimatedModuleSize));
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                    {
+                        var point = new Pattern(centerJ.Value, centerI.Value, estimatedModuleSize);
+                        possibleCenters.Add(point);
 
-            //                found = true;
-            //                break;
-            //            }
-            //        }
-            //        if (!found)
-            //        {
-            //            var point = new Pattern(centerJ.Value, centerI.Value, estimatedModuleSize);
+                        // CONSIDER: Use the pattern object in the delegate 
+                        detectorCallback?.Invoke(point);
+                    }
 
-            //            possibleCenters.Add(point);
-
-                        detectorCallback?.Invoke(new ResultPoint(0,0) /*  point */ );
-            //            //if (resultPointCallback != null)
-            //            //{
-            //            //    resultPointCallback(point);
-            //            //}
-            //        }
-
-            //        return true;
-            //    }
-            //}
+                    return true;
+                }
+            }
 
             return false;
         }
@@ -257,7 +561,7 @@ internal sealed partial class BitMatrixImage
             int currentState = 0;
             for (int j = 0; j < maxJ; j++)
             {
-                bool pixelIsBlack = this[i, j];
+                bool pixelIsBlack = this[j , i];
                 if (pixelIsBlack)
                 {
                     // Black pixel
@@ -277,7 +581,7 @@ internal sealed partial class BitMatrixImage
                         if (currentState == 4)
                         {
                             // A winner?
-                            if (FoundPatternCross())
+                            if (FoundPatternCross(stateCount))
                             {
                                 // Yes
                                 bool confirmed = HandlePossibleCenter(i, j);
@@ -339,7 +643,7 @@ internal sealed partial class BitMatrixImage
                 }
             }
 
-            if (FoundPatternCross())
+            if (FoundPatternCross(stateCount))
             {
                 bool confirmed = HandlePossibleCenter(i, maxJ);
                 if (confirmed)
@@ -354,16 +658,138 @@ internal sealed partial class BitMatrixImage
             }
         }
 
-        // TODO 
-        var patternInfo = new Pattern[3]; //  SelectBestPatterns();
-        if (patternInfo == null)
+        /// Returns the 3 best {@link FinderPattern}s from our list of candidates. The "best" are
+        /// those have similar module size and form a shape closer to a isosceles right triangle.
+        /// Can return null if 3 such patterns cannot be found.
+        Pattern[]? SelectBestPatterns()
+        {
+            int startSize = possibleCenters.Count;
+            if (startSize < 3)
+            {
+                // Couldn't find enough finder patterns
+                return null;
+            }
+
+            for (int i = 0; i < possibleCenters.Count; i++)
+            {
+                if (possibleCenters[i].Count < CENTER_QUORUM)
+                {
+                    possibleCenters.RemoveAt(i);
+                    i--;
+                }
+            }
+
+            startSize = possibleCenters.Count;
+            if (startSize < 3)
+            {
+                // Couldn't find enough finder patterns
+                return null;
+            }
+
+            possibleCenters.Sort(new PatternComparer());
+
+            double distortion = double.MaxValue;
+            var bestPatterns = new Pattern[3];
+
+            for (int i = 0; i < possibleCenters.Count - 2; i++)
+            {
+                Pattern fpi = possibleCenters[i];
+                float minModuleSize = fpi.EstimatedModuleSize;
+
+                for (int j = i + 1; j < possibleCenters.Count - 1; j++)
+                {
+                    Pattern fpj = possibleCenters[j];
+                    double squares0 = Pattern.SquaredDistance(fpi, fpj);
+
+                    for (int k = j + 1; k < possibleCenters.Count; k++)
+                    {
+                        Pattern fpk = possibleCenters[k];
+                        float maxModuleSize = fpk.EstimatedModuleSize;
+                        if (maxModuleSize > minModuleSize * 1.4f)
+                        {
+                            // module size is not similar
+                            continue;
+                        }
+
+                        double a = squares0;
+                        double b = Pattern.SquaredDistance(fpj, fpk);
+                        double c = Pattern.SquaredDistance(fpi, fpk);
+
+                        // sorts ascending - inlined
+                        if (a < b)
+                        {
+                            if (b > c)
+                            {
+                                if (a < c)
+                                {
+                                    (c, b) = (b, c);
+                                }
+                                else
+                                {
+                                    double temp = a;
+                                    a = c;
+                                    c = b;
+                                    b = temp;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (b < c)
+                            {
+                                if (a < c)
+                                {
+                                    (b, a) = (a, b);
+                                }
+                                else
+                                {
+                                    double temp = a;
+                                    a = b;
+                                    b = c;
+                                    c = temp;
+                                }
+                            }
+                            else
+                            {
+                                (c, a) = (a, c);
+                            }
+                        }
+
+                        // a^2 + b^2 = c^2 (Pythagorean theorem), and a = b (isosceles triangle).
+                        // Since any right triangle satisfies the formula c^2 - b^2 - a^2 = 0,
+                        // we need to check both two equal sides separately.
+                        // The value of |c^2 - 2 * b^2| + |c^2 - 2 * a^2| increases as dissimilarity
+                        // from isosceles right triangle.
+                        // Heuristically it seems that the following formula works better (although it's
+                        // not clear any more why...)
+                        double d = Math.Abs(c - 2 * b) + Math.Abs(c - 2 * a);
+                        if (d < distortion)
+                        {
+                            distortion = d;
+                            bestPatterns[0] = fpi;
+                            bestPatterns[1] = fpj;
+                            bestPatterns[2] = fpk;
+                        }
+                    }
+                }
+            }
+
+            if (distortion == double.MaxValue)
+            {
+                return null;
+            }
+
+            return bestPatterns;
+        }
+
+        var patternInfo = SelectBestPatterns();
+        if (patternInfo is null)
         {
             return false;
         }
 
-        // TODO : Why In REsult Point ? 
-        // ResultPoint.OrderBestPatterns(patternInfo);
-
+        ResultPoint.OrderBestPatterns(patternInfo);
+        Debug.WriteLine("patternInfo: " + patternInfo[0] + ", " + patternInfo[1] + ", " + patternInfo[2]);
         patterns = new Patterns(patternInfo[0], patternInfo[1], patternInfo[2]);
         return true;
     }

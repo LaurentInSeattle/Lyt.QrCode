@@ -3,6 +3,10 @@
 /// <summary> Encapsulates the result of decoding a QrCode within an image. </summary>
 public sealed class DecoderResult
 {
+    internal DecoderResult(DetectorResult? detectorResult)
+    {
+    }
+
     /// <summary>  raw text encoded by the barcode, if applicable, otherwise <code>null</code><summary> 
     public string Text { get; set; } = string.Empty;
 
