@@ -1,4 +1,4 @@
-﻿namespace Lyt.QrCode;
+﻿namespace Lyt.QrCode.API;
 
 // See:  https://en.wikipedia.org/wiki/QR_code 
 

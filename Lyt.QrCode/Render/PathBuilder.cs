@@ -1,5 +1,7 @@
 ﻿namespace Lyt.QrCode.Render;
 
+using Lyt.QrCode.API;
+
 internal sealed class PathBuilder
 {
     private readonly int size;

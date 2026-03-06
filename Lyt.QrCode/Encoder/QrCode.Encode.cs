@@ -1,5 +1,7 @@
 ﻿namespace Lyt.QrCode;
 
+using Lyt.QrCode.Data;
+
 public sealed partial class QrCode
 {
     private static readonly byte[,] EccCodewordsPerBlock = 

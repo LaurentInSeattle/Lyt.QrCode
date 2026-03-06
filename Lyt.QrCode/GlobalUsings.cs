@@ -21,7 +21,9 @@ global using System.Threading.Tasks;
 
 
 global using Lyt.QrCode;
+global using Lyt.QrCode.API;
 global using Lyt.QrCode.Content;
+global using Lyt.QrCode.Data;
 global using Lyt.QrCode.Decoder;
 global using Lyt.QrCode.Encoder;
 global using Lyt.QrCode.Detector;

@@ -1,5 +1,4 @@
-﻿namespace Lyt.QrCode;
-
+﻿namespace Lyt.QrCode.Data;
 /// <summary> Error correction capacity in QR code symbol. </summary>
 public sealed class Ecc
 {

@@ -1,4 +1,4 @@
-﻿namespace Lyt.QrCode;
+﻿namespace Lyt.QrCode.API;
 
 public readonly struct DecodeParameters
 {

@@ -4,7 +4,7 @@ QrCode Library, Encode and Decode, zero dependencies, all written in C#.
 
 # Just Started ~ Work in progress...
 
-- Encoding works, but many options, such as content payload management are still missing.
+- Encoding works, but many options, such as content (payload) management are still missing.
 
 - Decoding is not implemented yet.
 

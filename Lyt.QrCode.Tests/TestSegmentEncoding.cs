@@ -1,5 +1,7 @@
 ﻿namespace Lyt.QrCode.Tests;
 
+using Lyt.QrCode.Data;
+
 [TestClass]
 public sealed class TestSegmentEncoding
 {

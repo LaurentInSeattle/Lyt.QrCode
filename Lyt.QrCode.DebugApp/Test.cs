@@ -6,20 +6,7 @@ internal sealed class Test
 
     internal void Run()
     {
-        string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw";
-
-        var qrCode = QrCode.EncodeText(text, Ecc.Quartile);
-        byte[] image = PngBuilder.ToPngImage(qrCode, 16, 2);
-
-        string fullPath = Path.Combine(rootPath, "test.png");
-        File.WriteAllBytes(fullPath, image);
-
-        fullPath = Path.Combine(rootPath, "test.svg");
-        string svg = PathBuilder.ToSvgImageString(qrCode, 16, 2);
-        File.WriteAllText(fullPath, svg);
-
-        //image = QrFactory.CreateQrCodePngImage(new WebLink(text, "Jigsaw"));
-        //File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image);
+        Encode("test");
 
         Thresholding("screen");
         Thresholding("Sample");
@@ -87,6 +74,20 @@ internal sealed class Test
         byte[] bwImage2 = PngBuilder.ToPngImage(bitMatrixImage2);
         string bwPath2 = Path.Combine(rootPath, filename + "Bw2.png");
         File.WriteAllBytes(bwPath2, bwImage2);
+    }
+
+    private static void Encode (string filename)
+    {
+        string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw";
+        var qrCode = QrCode.EncodeText(text, Ecc.Quartile);
+        byte[] image = PngBuilder.ToPngImage(qrCode, 16, 2);
+
+        string fullPath = Path.Combine(rootPath, filename + ".png");
+        File.WriteAllBytes(fullPath, image);
+
+        fullPath = Path.Combine(rootPath, filename + ".svg");
+        string svg = PathBuilder.ToSvgImageString(qrCode, 16, 2);
+        File.WriteAllText(fullPath, svg);
     }
 
     private static SourceImage LoadSourceImage(string imagePath)

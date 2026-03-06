@@ -1,5 +1,7 @@
 ﻿namespace Lyt.QrCode;
 
+using Lyt.QrCode.Data;
+
 public sealed partial class QrCode: IPixelProvider
 {
     /// <summary> The minimum version (size) supported in the QR Code Model 2 standard – namely 1. </summary>

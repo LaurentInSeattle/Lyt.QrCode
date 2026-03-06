@@ -3,10 +3,19 @@
 internal sealed partial class BitMatrixImage
 {
     internal bool TryDetect(
-        DetectorCallback? detectorCallback, [NotNullWhen(true)] out DetectorResult? detectorResult)
+        DetectorCallback? detectorCallback, 
+        [NotNullWhen(true)] out DetectorResult? detectorResult)
     {
         detectorResult = null;
-        return this.TryFindPatterns(detectorCallback, out var patterns);
+        if ( this.TryFindPatterns(detectorCallback, out var patterns))
+        {
+            if (patterns.TryProcess(this, out detectorResult))
+            {
+                return true;
+            }
+        }
+
+        return false; 
     }
 
     // private static readonly EstimatedModuleComparator moduleComparator = new EstimatedModuleComparator();
