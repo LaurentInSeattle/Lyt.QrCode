@@ -29,7 +29,7 @@ internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottom
             return false;
         }
 
-        QrVersion provisionalVersion = new (dimension);
+        var provisionalVersion = QrVersion.FromDimension (dimension);
         int modulesBetweenFPCenters = provisionalVersion.DimensionForVersion - 7;
 
         // TODO : CONTINUE Here 
@@ -40,20 +40,25 @@ internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottom
 
         // Anything above version 1 has an alignment pattern
         AlignmentPattern? alignmentPattern = null;
-        //if (provisionalVersion.AlignmentPatternCenters.Length > 0)
-        //{
 
+        // TODO:
+        // Figure out whether or not this is required for detection accuracy.
+        // The code below attempts to find an alignment pattern, but it's not clear to me that
+        // this is critical to detection at all.
+        // It may be sufficient to find the three finder patterns and just do perspective transform sampling without it.
+        // it seems like it might be possible to skip it entirely and just do perspective transform sampling based on
+        // the three finder patterns.
+
+        //if (provisionalVersion.HasAlignmentPatternCenters)
+        //{
         //    // Guess where a "bottom right" finder pattern would have been
         //    float bottomRightX = topRight.X - topLeft.X + bottomLeft.X;
         //    float bottomRightY = topRight.Y - topLeft.Y + bottomLeft.Y;
 
         //    // Estimate that alignment pattern is closer by 3 modules
         //    // from "bottom right" to known top left location
-        //    //UPGRADE_WARNING: Data types in Visual C# might be different.  Verify the accuracy of narrowing conversions. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1042'"
         //    float correctionToTopLeft = 1.0f - 3.0f / (float)modulesBetweenFPCenters;
-        //    //UPGRADE_WARNING: Data types in Visual C# might be different.  Verify the accuracy of narrowing conversions. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1042'"
         //    int estAlignmentX = (int)(topLeft.X + correctionToTopLeft * (bottomRightX - topLeft.X));
-        //    //UPGRADE_WARNING: Data types in Visual C# might be different.  Verify the accuracy of narrowing conversions. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1042'"
         //    int estAlignmentY = (int)(topLeft.Y + correctionToTopLeft * (bottomRightY - topLeft.Y));
 
         //    // Kind of arbitrary -- expand search radius before giving up
@@ -61,11 +66,15 @@ internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottom
         //    {
         //        alignmentPattern = findAlignmentInRegion(moduleSize, estAlignmentX, estAlignmentY, (float)i);
         //        if (alignmentPattern == null)
+        //        {
         //            continue;
+        //        }
+
         //        break;
         //    }
-        //    // If we didn't find alignment pattern... well try anyway without it
         //}
+
+        // If we didn't find alignment pattern... well try anyway without it
 
         /*
          * 
