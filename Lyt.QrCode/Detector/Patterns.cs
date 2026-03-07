@@ -1,7 +1,5 @@
 ﻿namespace Lyt.QrCode.Detector;
 
-using Lyt.QrCode.Data;
-
 internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottomLeft)
 {
     internal Pattern TopLeft { get; } = topLeft;
@@ -18,8 +16,33 @@ internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottom
         {
             return false;
         }
-        
-        if ( !this.CalculateDimension(moduleSize, out int dimension)) 
+
+        bool CalculateDimension(out int dimension)
+        {
+            int tltrCentersDimension =
+                MathExtensions.Round(ResultPoint.Distance(this.TopLeft, this.TopRight) / moduleSize);
+            int tlblCentersDimension =
+                MathExtensions.Round(ResultPoint.Distance(this.TopLeft, this.BottomLeft) / moduleSize);
+            dimension = ((tltrCentersDimension + tlblCentersDimension) >> 1) + 7;
+            switch (dimension & 0x03)
+            {
+                // mod 4
+                case 0:
+                    dimension++;
+                    break;
+                // 1? do nothing
+                case 2:
+                    dimension--;
+                    break;
+                case 3:
+                    dimension -= 2;
+                    break;
+            }
+
+            return true;
+        }
+
+        if ( !CalculateDimension( out int dimension)) 
         { 
             return false; 
         }
@@ -29,18 +52,6 @@ internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottom
             return false;
         }
 
-        var provisionalVersion = QrVersion.FromDimension (dimension);
-        int modulesBetweenFPCenters = provisionalVersion.DimensionForVersion - 7;
-
-        // TODO : CONTINUE Here 
-        // TODO : CONTINUE Here 
-        // TODO : CONTINUE Here 
-        // TODO : CONTINUE Here 
-
-
-        // Anything above version 1 has an alignment pattern
-        AlignmentPattern? alignmentPattern = null;
-
         // TODO:
         // Figure out whether or not this is required for detection accuracy.
         // The code below attempts to find an alignment pattern, but it's not clear to me that
@@ -49,6 +60,11 @@ internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottom
         // it seems like it might be possible to skip it entirely and just do perspective transform sampling based on
         // the three finder patterns.
 
+        // var provisionalVersion = QrVersion.FromDimension (dimension);
+        // int modulesBetweenFPCenters = provisionalVersion.DimensionForVersion - 7;
+
+        // Anything above version 1 has an alignment pattern
+        // AlignmentPattern? alignmentPattern = null;
         //if (provisionalVersion.HasAlignmentPatternCenters)
         //{
         //    // Guess where a "bottom right" finder pattern would have been
@@ -75,30 +91,17 @@ internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottom
         //}
 
         // If we didn't find alignment pattern... well try anyway without it
+        var transform = PerspectiveTransform.Create(
+            this.TopLeft, this.TopRight, this.BottomLeft, alignmentPattern: null, dimension);
+        if (!image.TryResample(dimension, transform, out BitMatrixImage? resampled ))
+        {
+            return false;
+        }
 
-        /*
-         * 
-                    PerspectiveTransform transform = createTransform(topLeft, topRight, bottomLeft, alignmentPattern, dimension);
-
-                    BitMatrix bits = sampleGrid(image, transform, dimension);
-                    if (bits == null)
-                        return null;
-
-                    ResultPoint[] points;
-                    if (alignmentPattern == null)
-                    {
-                        points = new ResultPoint[] { bottomLeft, topLeft, topRight };
-                    }
-                    else
-                    {
-                        points = new ResultPoint[] { bottomLeft, topLeft, topRight, alignmentPattern };
-                    }
-                    return new DetectorResult(bits, points);
-
-         */
-
+        detectorResult = new DetectorResult(resampled, this);
         return true;
     }
+
 
     /// <summary>
     /// Computes an average estimated module size based on estimated derived from the positions
@@ -120,12 +123,8 @@ internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottom
             bool steep = Math.Abs(toY - fromY) > Math.Abs(toX - fromX);
             if (steep)
             {
-                int temp = fromX;
-                fromX = fromY;
-                fromY = temp;
-                temp = toX;
-                toX = toY;
-                toY = temp;
+                (fromY, fromX) = (fromX, fromY);
+                (toY, toX) = (toX, toY);
             }
 
             int dx = Math.Abs(toX - fromX);
@@ -135,8 +134,8 @@ internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottom
             int ystep = fromY < toY ? 1 : -1;
 
             // In black pixels, looking for white, first or second time.
-            int state = 0;
             // Loop up until x == toX, but not beyond
+            int state = 0;
             int xLimit = toX + xstep;
             for (int x = fromX, y = fromY; x != xLimit; x += xstep)
             {
@@ -154,6 +153,7 @@ internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottom
                     }
                     state++;
                 }
+
                 error += dy;
                 if (error > 0)
                 {
@@ -250,31 +250,6 @@ internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottom
         // Take the average
         return (CalculateModuleSizeOneWay(this.TopLeft, this.TopRight) +
                 CalculateModuleSizeOneWay(this.TopLeft, this.BottomLeft)) / 2.0f;
-    }
-
-    private bool CalculateDimension(float moduleSize, out int dimension)
-    {
-        int tltrCentersDimension = 
-            MathExtensions.Round(ResultPoint.Distance(this.TopLeft, this.TopRight) / moduleSize);
-        int tlblCentersDimension = 
-            MathExtensions.Round(ResultPoint.Distance(this.TopLeft, this.BottomLeft) / moduleSize);
-        dimension = ((tltrCentersDimension + tlblCentersDimension) >> 1) + 7;
-        switch (dimension & 0x03)
-        {
-            // mod 4
-            case 0:
-                dimension++;
-                break;
-            // 1? do nothing
-            case 2:
-                dimension--;
-                break;
-            case 3:
-                dimension -= 2;
-                break;
-        }
-
-        return true;
     }
 }
 

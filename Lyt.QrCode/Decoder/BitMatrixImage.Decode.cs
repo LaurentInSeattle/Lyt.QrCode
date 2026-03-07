@@ -8,4 +8,12 @@ internal sealed partial class BitMatrixImage
     //    // 
     //    return new DecoderResult();
     //}
+
+    internal bool TryResample (
+        int dimension, PerspectiveTransform transform, [NotNullWhen(true)] out BitMatrixImage? resampled)
+    {
+        // TODO 
+        resampled = null;
+        return false;
+    }   
 }
