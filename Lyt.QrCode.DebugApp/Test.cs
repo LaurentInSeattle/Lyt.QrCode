@@ -42,6 +42,10 @@ internal sealed class Test
         {
             // TODO: Print out results 
             Console.WriteLine("Detected ");
+            var resampledImage = result.DetectorResult.Resampled;
+            byte[] resImage = PngBuilder.ToPngImage(resampledImage);
+            string resPath = Path.Combine(rootPath, filename + "Resampled.png");
+            File.WriteAllBytes(resPath, resImage);
         }
         else
         {

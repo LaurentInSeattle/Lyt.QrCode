@@ -3,16 +3,17 @@
 /// <summary> Encapsulates the result of decoding a QrCode within an image. </summary>
 public sealed class DecoderResult
 {
-    internal DecoderResult(DetectorResult? detectorResult)
+    internal DecoderResult(DetectorResult detectorResult)
     {
+        this.DetectorResult = detectorResult;
     }
 
     /// <summary>  raw text encoded by the barcode, if applicable, otherwise <code>null</code><summary> 
-    public string Text { get; set; } = string.Empty;
+    public string Text { get; internal set; } = string.Empty;
 
     /// <summary>  raw bytes encoded by the barcode, if applicable, otherwise <code>null</code><summary> 
-    public byte[]? RawBytes { get; set; } = null;
+    public byte[]? RawBytes { get; internal set; } = null;
 
     /// <summary>  The points identifying finder patterns of the corners of the QrCode.  <summary> 
-    public ResultPoint[] ResultPoints { get; set; } = new ResultPoint [4] ; 
+    public DetectorResult DetectorResult { get; private set; }
 }

@@ -3,7 +3,7 @@
 public sealed partial class SourceImage
 {
     public bool TryDecode(
-        bool skipDetector, 
+        bool skipDetector, // Needed ??? 
         DetectorCallback? detectorCallback, 
         [NotNullWhen(true)] out DecoderResult? decoderResult)
     {
@@ -12,8 +12,8 @@ public sealed partial class SourceImage
         // 
         var grayscaleImage = this.ToGrayscale();
         var bitMatrixImage = grayscaleImage.ToBitMatrixAdaptiveThresholding();
-        bool result = bitMatrixImage.TryDetect(detectorCallback, out var detectorResult); 
-        if (result) 
+        bool detected = bitMatrixImage.TryDetect(detectorCallback, out var detectorResult); 
+        if (detected && detectorResult is not null)
         {
             decoderResult = new DecoderResult(detectorResult);
             return true; //  bitMatrixImage.Decode(skipDetector);

@@ -13,7 +13,7 @@ public class ResultPoint(float x, float y)
     /// BC is less than AC and the angle between BC and BA is less than 180 degrees.
     /// </summary>
     /// <param name="patterns">array of three <see cref="ResultPoint" /> to order</param>
-    public static void OrderBestPatterns(ResultPoint[] patterns)
+    internal static void OrderBestPatterns(ResultPoint[] patterns)
     {
         // Find distances between pattern centers
         double zeroOneDistance = Distance(patterns[0], patterns[1]);

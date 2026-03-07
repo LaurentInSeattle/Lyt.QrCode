@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Image;
 
-internal sealed partial class BitMatrixImage
+public sealed partial class BitMatrixImage
 {
     internal bool TryDetect(
         DetectorCallback? detectorCallback, 

@@ -5,7 +5,7 @@
 /// module, x is the column position, and y is the row position. The ordering is always x, y.
 /// The origin is at the top-left.
 /// </summary>
-internal sealed partial class BitMatrixImage : IPixelProvider
+public sealed partial class BitMatrixImage : IPixelProvider
 {
     internal int Width { get; }
 

@@ -1,12 +1,12 @@
 ﻿namespace Lyt.QrCode.Detector;
 
-internal sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottomLeft)
+public sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottomLeft)
 {
-    internal Pattern TopLeft { get; } = topLeft;
+    public Pattern TopLeft { get; } = topLeft;
 
-    internal Pattern TopRight { get; } = topRight;
+    public Pattern TopRight { get; } = topRight;
 
-    internal Pattern BottomLeft { get; } = bottomLeft;
+    public Pattern BottomLeft { get; } = bottomLeft;
 
     internal bool TryProcess(BitMatrixImage image, [NotNullWhen(true)] out DetectorResult? detectorResult)
     {
