@@ -797,6 +797,7 @@ public sealed partial class BitMatrixImage
             return false;
         }
 
+        // Order: Pattern bottomLeft, Pattern topLeft, Pattern topRight
         ResultPoint.OrderBestPatterns(patternInfo);
         Debug.WriteLine("patternInfo: " + patternInfo[0] + ", " + patternInfo[1] + ", " + patternInfo[2]);
         patterns = new Patterns(patternInfo[0], patternInfo[1], patternInfo[2]);

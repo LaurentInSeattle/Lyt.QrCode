@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Detector;
 
-public sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottomLeft)
+public sealed class Patterns(Pattern bottomLeft, Pattern topLeft, Pattern topRight)
 {
     public Pattern TopLeft { get; } = topLeft;
 
@@ -52,47 +52,42 @@ public sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottomLe
             return false;
         }
 
-        // TODO:
-        // Figure out whether or not this is required for detection accuracy.
-        // The code below attempts to find an alignment pattern, but it's not clear to me that
-        // this is critical to detection at all.
-        // It may be sufficient to find the three finder patterns and just do perspective transform sampling without it.
-        // it seems like it might be possible to skip it entirely and just do perspective transform sampling based on
-        // the three finder patterns.
-
-        // var provisionalVersion = QrVersion.FromDimension (dimension);
-        // int modulesBetweenFPCenters = provisionalVersion.DimensionForVersion - 7;
-
         // Anything above version 1 has an alignment pattern
-        // AlignmentPattern? alignmentPattern = null;
-        //if (provisionalVersion.HasAlignmentPatternCenters)
-        //{
-        //    // Guess where a "bottom right" finder pattern would have been
-        //    float bottomRightX = topRight.X - topLeft.X + bottomLeft.X;
-        //    float bottomRightY = topRight.Y - topLeft.Y + bottomLeft.Y;
+        var provisionalVersion = QrVersion.FromDimension(dimension);
+        int modulesBetweenFPCenters = provisionalVersion.DimensionForVersion - 7;
+        AlignmentPattern? alignmentPattern = null;
+        if (provisionalVersion.HasAlignmentPatternCenters)
+        {
+            // Guess where a "bottom right" finder pattern would have been
+            float bottomRightX = this.TopRight.X - this.TopLeft.X + this.BottomLeft.X;
+            float bottomRightY = this.TopRight.Y - this.TopLeft.Y + this.BottomLeft.Y;
 
-        //    // Estimate that alignment pattern is closer by 3 modules
-        //    // from "bottom right" to known top left location
-        //    float correctionToTopLeft = 1.0f - 3.0f / (float)modulesBetweenFPCenters;
-        //    int estAlignmentX = (int)(topLeft.X + correctionToTopLeft * (bottomRightX - topLeft.X));
-        //    int estAlignmentY = (int)(topLeft.Y + correctionToTopLeft * (bottomRightY - topLeft.Y));
+            // Estimate that alignment pattern is closer by 3 modules
+            // from "bottom right" to known top left location
+            float correctionToTopLeft = 1.0f - 3.0f / (float)modulesBetweenFPCenters;
+            int estAlignmentX = (int)(this.TopLeft.X + correctionToTopLeft * (bottomRightX - this.TopLeft.X));
+            int estAlignmentY = (int)(this.TopLeft.Y + correctionToTopLeft * (bottomRightY - this.TopLeft.Y));
 
-        //    // Kind of arbitrary -- expand search radius before giving up
-        //    for (int i = 4; i <= 16; i <<= 1)
-        //    {
-        //        alignmentPattern = findAlignmentInRegion(moduleSize, estAlignmentX, estAlignmentY, (float)i);
-        //        if (alignmentPattern == null)
-        //        {
-        //            continue;
-        //        }
+            // Kind of arbitrary -- expand search radius before giving up
+            for (int i = 4; i <= 16; i <<= 1)
+            {
+                // TODO: 
 
-        //        break;
-        //    }
-        //}
+                // NEEDED ! 
+
+                //alignmentPattern = findAlignmentInRegion(moduleSize, estAlignmentX, estAlignmentY, (float)i);
+                //if (alignmentPattern == null)
+                //{
+                //    continue;
+                //}
+
+                break;
+            }
+        }
 
         // If we didn't find alignment pattern... well try anyway without it
         var transform = PerspectiveTransform.Create(
-            this.TopLeft, this.TopRight, this.BottomLeft, alignmentPattern: null, dimension);
+            this.TopLeft, this.TopRight, this.BottomLeft, alignmentPattern, dimension);
         if (!image.TryResample(dimension, transform, out BitMatrixImage? resampled ))
         {
             return false;
@@ -101,7 +96,6 @@ public sealed class Patterns(Pattern topLeft, Pattern topRight, Pattern bottomLe
         detectorResult = new DetectorResult(resampled, this);
         return true;
     }
-
 
     /// <summary>
     /// Computes an average estimated module size based on estimated derived from the positions
