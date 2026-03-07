@@ -19,8 +19,8 @@ internal sealed class AlignmentPattern : ResultPoint
     {
         if (Math.Abs(i - this.Y) <= moduleSize && Math.Abs(j - this.X) <= moduleSize)
         {
-            float moduleSizeDiff = Math.Abs(moduleSize - estimatedModuleSize);
-            return moduleSizeDiff <= 1.0f || moduleSizeDiff <= estimatedModuleSize;
+            float moduleSizeDiff = Math.Abs(moduleSize - this.estimatedModuleSize);
+            return moduleSizeDiff <= 1.0f || moduleSizeDiff <= this.estimatedModuleSize;
         }
 
         return false;
@@ -35,7 +35,7 @@ internal sealed class AlignmentPattern : ResultPoint
     {
         float combinedX = (this.X + j) / 2.0f;
         float combinedY = (this.Y + i) / 2.0f;
-        float combinedModuleSize = (estimatedModuleSize + newModuleSize) / 2.0f;
+        float combinedModuleSize = (this.estimatedModuleSize + newModuleSize) / 2.0f;
         return new AlignmentPattern(combinedX, combinedY, combinedModuleSize);
     }
 }
