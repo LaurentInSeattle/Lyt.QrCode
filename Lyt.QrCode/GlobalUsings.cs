@@ -28,5 +28,6 @@ global using Lyt.QrCode.Decoder;
 global using Lyt.QrCode.Encoder;
 global using Lyt.QrCode.Detector;
 global using Lyt.QrCode.Image;
+global using Lyt.QrCode.ReedSolomon;
 global using Lyt.QrCode.Render;
 global using Lyt.QrCode.Utilities;

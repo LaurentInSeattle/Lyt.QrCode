@@ -2,8 +2,16 @@
 
 public sealed partial class BitMatrixImage
 {
-    internal bool Decode ([NotNullWhen(true)] out DecoderResult? decoderResult)
+#pragma warning disable CS8618 
+    // Non-nullable field must contain a non-null value when exiting constructor. 
+    // Created static when decoding for the first time 
+    private static ReedSolomonDecoder RsDecoder;
+#pragma warning restore CS8618 
+
+    internal bool Decode([NotNullWhen(true)] out DecoderResult? decoderResult)
     {
+        BitMatrixImage.RsDecoder ??= new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256); 
+
         decoderResult = null;
         int dimension = this.Height;
         if (dimension < 21 || (dimension & 0x03) != 1)
@@ -11,7 +19,7 @@ public sealed partial class BitMatrixImage
             return false;
         }
 
-        if (!this.TryReadVersion( out var qrVersion))
+        if (!this.TryReadVersion(out var qrVersion))
         {
             return false;
         }
@@ -25,6 +33,45 @@ public sealed partial class BitMatrixImage
 
         this.parsedFormatInfo = formatInformation;
 
+        if (!this.TryReadCodewords(out byte[]? codewords))
+        {
+            return false;
+        }
+
+        // Separate into data blocks
+        ErrorCorrectionLevel ecLevel = formatInformation.ErrorCorrectionLevel;
+        var dataBlocks = DataBlock.GetDataBlocks(codewords, qrVersion, ecLevel);
+
+        // Count total number of data bytes
+        int totalBytes = 0;
+        foreach (var dataBlock in dataBlocks)
+        {
+            totalBytes += dataBlock.NumDataCodewords;
+        }
+        byte[] resultBytes = new byte[totalBytes];
+        int resultOffset = 0;
+
+        // Error-correct and copy data blocks together into a stream of bytes
+        int errorsCorrected = 0;
+        foreach (var dataBlock in dataBlocks)
+        {
+            byte[] codewordBytes = dataBlock.Codewords;
+            int numDataCodewords = dataBlock.NumDataCodewords;
+            int errorsCorrectedLastRun = 0;
+            if (!this.TryCorrectErrors(codewordBytes, numDataCodewords, out errorsCorrectedLastRun))
+            {
+                Debug.WriteLine("Failed to correct errors"); 
+                return false;
+            }
+
+            errorsCorrected += errorsCorrectedLastRun;
+            for (int i = 0; i < numDataCodewords; i++)
+            {
+                resultBytes[resultOffset++] = codewordBytes[i];
+            }
+        }
+
+        // return result;
         // TODO : CONTINUE HERE ! 
         // TODO : CONTINUE HERE ! 
         // TODO : CONTINUE HERE ! 
@@ -38,7 +85,46 @@ public sealed partial class BitMatrixImage
         // TODO : CONTINUE HERE ! 
         // TODO : CONTINUE HERE ! 
 
+        // Decode the contents of that stream of bytes
+        //var result = DecodedBitStreamParser.decode(resultBytes, version, ecLevel, hints);
+        //result.ErrorsCorrected = errorsCorrected;
+
         return false;
+    }
+
+    /// <summary>
+    ///   <p>Given data and error-correction codewords received, possibly corrupted by errors, attempts to
+    /// correct the errors in-place using Reed-Solomon error correction.</p>
+    /// </summary>
+    /// <param name="codewordBytes">data and error correction codewords</param>
+    /// <param name="numDataCodewords">number of codewords that are data bytes</param>
+    /// <param name="errorsCorrected">the number of errors corrected</param>
+    /// <returns></returns>
+    private bool TryCorrectErrors(byte[] codewordBytes, int numDataCodewords, out int errorsCorrected)
+    {
+        int numCodewords = codewordBytes.Length;
+
+        // First read into an array of ints
+        int[] codewordsInts = new int[numCodewords];
+        for (int i = 0; i < numCodewords; i++)
+        {
+            codewordsInts[i] = codewordBytes[i] & 0xFF;
+        }
+        int numECCodewords = codewordBytes.Length - numDataCodewords;
+
+        if (!RsDecoder.decodeWithECCount(codewordsInts, numECCodewords, out errorsCorrected))
+        {
+            return false;
+        }
+
+        // Copy back into array of bytes -- only need to worry about the bytes that were data
+        // We don't care about errors in the error-correction codewords
+        for (int i = 0; i < numDataCodewords; i++)
+        {
+            codewordBytes[i] = (byte)codewordsInts[i];
+        }
+
+        return true;
     }
 
     // TODO: Make local vars of Decode 
@@ -115,12 +201,12 @@ public sealed partial class BitMatrixImage
         {
             formatInfoBits1 = this.CopyBit(i, 8, formatInfoBits1);
         }
-        
+
         // .. and skip a bit in the timing pattern ...
         formatInfoBits1 = this.CopyBit(7, 8, formatInfoBits1);
         formatInfoBits1 = this.CopyBit(8, 8, formatInfoBits1);
         formatInfoBits1 = this.CopyBit(8, 7, formatInfoBits1);
-        
+
         // .. and skip a bit in the timing pattern ...
         for (int j = 5; j >= 0; j--)
         {
@@ -135,7 +221,7 @@ public sealed partial class BitMatrixImage
         {
             formatInfoBits2 = this.CopyBit(8, j, formatInfoBits2);
         }
-        
+
         for (int i = dimension - 8; i < dimension; i++)
         {
             formatInfoBits2 = this.CopyBit(i, 8, formatInfoBits2);
@@ -146,11 +232,17 @@ public sealed partial class BitMatrixImage
         {
             return true;
         }
-        
+
         return false;
     }
 
-    internal bool TryResample (
+    internal bool TryReadCodewords([NotNullWhen(true)] out byte[]? codewords)
+    {
+        codewords = null;
+        return false;
+    }
+
+    internal bool TryResample(
         int dimension, PerspectiveTransform transform, [NotNullWhen(true)] out BitMatrixImage? resampled)
     {
         resampled = null;
@@ -180,7 +272,7 @@ public sealed partial class BitMatrixImage
             if (!CheckAndNudgePoints(this, points))
             {
                 return false;
-            } 
+            }
 
             try
             {
@@ -210,7 +302,7 @@ public sealed partial class BitMatrixImage
                 // This results in an ugly runtime exception despite our clever checks above -- can't have
                 // that. We could check each point's coordinates but that feels duplicative. We settle for
                 // catching and wrapping ArrayIndexOutOfBoundsException.
-                if (Debugger.IsAttached) {  Debug.WriteLine($"Exception in TryResample: {ex}"); }
+                if (Debugger.IsAttached) { Debug.WriteLine($"Exception in TryResample: {ex}"); }
                 return false;
             }
         }

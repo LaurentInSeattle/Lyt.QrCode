@@ -120,6 +120,10 @@ public sealed class QrVersion
         return null;
     }
 
+    /// <summary> Gets the EC blocks for the specified level. </summary>
+    internal  ECBlocks ECBlocksForLevel(ErrorCorrectionLevel ecLevel) => this.Blocks[ecLevel.Ordinal];
+
+
     #region All QR versions, from 1 to 40
 
     /// <summary> See ISO 18004:2006 6.5.1 Table 9</summary>
