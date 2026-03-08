@@ -4,6 +4,20 @@
 
 public sealed class QrVersion
 {
+    /// <summary> See ISO 18004:2006 Annex D.
+    /// Element i represents the raw version bits that specify version i + 7
+    /// </summary>
+    private static readonly int[] VERSION_DECODE_INFO =
+        [
+            0x07C94, 0x085BC, 0x09A99, 0x0A4D3, 0x0BBF6,
+            0x0C762, 0x0D847, 0x0E60D, 0x0F928, 0x10B78,
+            0x1145D, 0x12A17, 0x13532, 0x149A6, 0x15683,
+            0x168C9, 0x177EC, 0x18EC4, 0x191E1, 0x1AFAB,
+            0x1B08E, 0x1CC1A, 0x1D33F, 0x1ED75, 0x1F250,
+            0x209D5, 0x216F0, 0x228BA, 0x2379F, 0x24B0B,
+            0x2542E, 0x26A64, 0x27541, 0x28C69
+        ];
+
     private static readonly QrVersion[] Versions = CreateQrVersions();
 
     private QrVersion(int versionNumber, int[] alignmentPatternCenters, params ECBlocks[] ecBlocks)
@@ -70,6 +84,41 @@ public sealed class QrVersion
 
     public static bool IsValidVersionNumber(int versionNumber)
         => versionNumber >= 1 && versionNumber <= 40 ;
+
+    // TODO: Use Try Pattern 
+    internal static QrVersion? DecodeVersionInformation(int versionBits)
+    {
+        int bestDifference = int.MaxValue;
+        int bestVersion = 0;
+        for (int i = 0; i < VERSION_DECODE_INFO.Length; i++)
+        {
+            int targetVersion = VERSION_DECODE_INFO[i];
+            // Do the version info bits match exactly? done.
+            if (targetVersion == versionBits)
+            {
+                return QrVersion.FromVersionNumber(i + 7);
+            }
+
+            // Otherwise see if this is the closest to a real version info bit string
+            // we have seen so far
+            int bitsDifference = FormatInformation.NumBitsDiffering(versionBits, targetVersion);
+            if (bitsDifference < bestDifference)
+            {
+                bestVersion = i + 7;
+                bestDifference = bitsDifference;
+            }
+        }
+
+        // We can tolerate up to 3 bits of error since no two version info codewords will
+        // differ in less than 8 bits.
+        if (bestDifference <= 3)
+        {
+            return QrVersion.FromVersionNumber(bestVersion);
+        }
+
+        // If we didn't find a close enough match, fail
+        return null;
+    }
 
     #region All QR versions, from 1 to 40
 
@@ -283,4 +332,3 @@ public sealed class QrVersion
 
     #endregion All QR versions, from 1 to 40
 }
-

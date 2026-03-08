@@ -2,12 +2,153 @@
 
 public sealed partial class BitMatrixImage
 {
-    //internal DecoderResult Decode(bool skipDetector)
-    //{
-    //    // TODO 
-    //    // 
-    //    return new DecoderResult();
-    //}
+    internal bool Decode ([NotNullWhen(true)] out DecoderResult? decoderResult)
+    {
+        decoderResult = null;
+        int dimension = this.Height;
+        if (dimension < 21 || (dimension & 0x03) != 1)
+        {
+            return false;
+        }
+
+        if (!this.TryReadVersion( out var qrVersion))
+        {
+            return false;
+        }
+
+        this.parsedVersion = qrVersion;
+
+        if (!this.TryReadFormatInformation(out var formatInformation))
+        {
+            return false;
+        }
+
+        this.parsedFormatInfo = formatInformation;
+
+        // TODO : CONTINUE HERE ! 
+        // TODO : CONTINUE HERE ! 
+        // TODO : CONTINUE HERE ! 
+        // TODO : CONTINUE HERE ! 
+        // TODO : CONTINUE HERE ! 
+        // TODO : CONTINUE HERE ! 
+        // TODO : CONTINUE HERE ! 
+        // TODO : CONTINUE HERE ! 
+        // TODO : CONTINUE HERE ! 
+        // TODO : CONTINUE HERE ! 
+        // TODO : CONTINUE HERE ! 
+        // TODO : CONTINUE HERE ! 
+
+        return false;
+    }
+
+    // TODO: Make local vars of Decode 
+    private QrVersion parsedVersion;
+    private FormatInformation parsedFormatInfo;
+    private bool mirrored;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int CopyBit(int i, int j, int versionBits)
+    {
+        bool bit = this.mirrored ? this[j, i] : this[i, j];
+        return bit ? (versionBits << 1) | 0x1 : versionBits << 1;
+    }
+
+    /// <summary>
+    /// Reads version information from one of its two locations within the QR Code.
+    /// </summary>
+    /// <returns> QR Version encapsulating the QR Code's version </returns>
+    /// <throws>  ReaderException if both version information locations cannot be parsed as </throws>
+    internal bool TryReadVersion([NotNullWhen(true)] out QrVersion? qrVersion)
+    {
+        int dimension = this.Height;
+        int provisionalVersion = (dimension - 17) >> 2;
+        if (provisionalVersion <= 6)
+        {
+            qrVersion = QrVersion.FromVersionNumber(provisionalVersion);
+            return true;
+        }
+
+        // Read top-right version info: 3 wide by 6 tall
+        int versionBits = 0;
+        int ijMin = dimension - 11;
+        for (int j = 5; j >= 0; j--)
+        {
+            for (int i = dimension - 9; i >= ijMin; i--)
+            {
+                versionBits = this.CopyBit(i, j, versionBits);
+            }
+        }
+
+        qrVersion = QrVersion.DecodeVersionInformation(versionBits);
+        if (qrVersion is not null && qrVersion.DimensionForVersion == dimension)
+        {
+            return true;
+        }
+
+        // Failed. Try bottom left: 6 wide by 3 tall
+        versionBits = 0;
+        for (int i = 5; i >= 0; i--)
+        {
+            for (int j = dimension - 9; j >= ijMin; j--)
+            {
+                versionBits = this.CopyBit(i, j, versionBits);
+            }
+        }
+
+        qrVersion = QrVersion.DecodeVersionInformation(versionBits);
+        if (qrVersion is not null && qrVersion.DimensionForVersion == dimension)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary> Reads format information from one of its two locations within the QR Code. </summary>
+    /// <returns> FormatInformation encapsulating the QR Code's format info </returns>
+    /// <throws>  ReaderException if both format information locations cannot be parsed as </throws>
+    internal bool TryReadFormatInformation([NotNullWhen(true)] out FormatInformation? formatInformation)
+    {
+        // Read top-left format info bits
+        int formatInfoBits1 = 0;
+        for (int i = 0; i < 6; i++)
+        {
+            formatInfoBits1 = this.CopyBit(i, 8, formatInfoBits1);
+        }
+        
+        // .. and skip a bit in the timing pattern ...
+        formatInfoBits1 = this.CopyBit(7, 8, formatInfoBits1);
+        formatInfoBits1 = this.CopyBit(8, 8, formatInfoBits1);
+        formatInfoBits1 = this.CopyBit(8, 7, formatInfoBits1);
+        
+        // .. and skip a bit in the timing pattern ...
+        for (int j = 5; j >= 0; j--)
+        {
+            formatInfoBits1 = this.CopyBit(8, j, formatInfoBits1);
+        }
+
+        // Read the top-right/bottom-left pattern too
+        int dimension = this.Height;
+        int formatInfoBits2 = 0;
+        int jMin = dimension - 7;
+        for (int j = dimension - 1; j >= jMin; j--)
+        {
+            formatInfoBits2 = this.CopyBit(8, j, formatInfoBits2);
+        }
+        
+        for (int i = dimension - 8; i < dimension; i++)
+        {
+            formatInfoBits2 = this.CopyBit(i, 8, formatInfoBits2);
+        }
+
+        formatInformation = FormatInformation.DecodeFormatInformation(formatInfoBits1, formatInfoBits2);
+        if (formatInformation is not null)
+        {
+            return true;
+        }
+        
+        return false;
+    }
 
     internal bool TryResample (
         int dimension, PerspectiveTransform transform, [NotNullWhen(true)] out BitMatrixImage? resampled)
@@ -77,20 +218,20 @@ public sealed partial class BitMatrixImage
         return true;
     }
 
-    /// <summary> <p>Checks a set of points that have been transformed to sample points on an image against
-    /// the image's dimensions to see if the point are even within the image.</p>
+    /// <summary> Checks a set of points that have been transformed to sample points on an image against
+    /// the image's dimensions to see if the point are even within the image.
     /// 
-    /// <p>This method will actually "nudge" the endpoints back onto the image if they are found to be
+    /// This method will actually "nudge" the endpoints back onto the image if they are found to be
     /// barely (less than 1 pixel) off the image. This accounts for imperfect detection of finder
-    /// patterns in an image where the QR Code runs all the way to the image border.</p>
+    /// patterns in an image where the QR Code runs all the way to the image border.
     /// 
-    /// <p>For efficiency, the method will check points from either end of the line until one is found
-    /// to be within the image. Because the set of points are assumed to be linear, this is valid.</p>
+    /// For efficiency, the method will check points from either end of the line until one is found
+    /// to be within the image. Because the set of points are assumed to be linear, this is valid.
     /// </summary>
-    /// <param name="image">image into which the points should map
-    /// </param>
-    /// <param name="points">actual points in x1,y1,...,xn,yn form
-    /// </param>
+    /// <param name="image">image into which the points should map </param>
+    /// <param name="points">actual points in x1,y1,...,xn,yn form </param>
+    /// 
+    // TODO: Make local 
     private static bool CheckAndNudgePoints(BitMatrixImage image, float[] points)
     {
         int width = image.Width;
