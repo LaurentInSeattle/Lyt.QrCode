@@ -1,10 +1,9 @@
 ﻿namespace Lyt.QrCode.Detector;
 
 /// <summary> 
-/// Encapsulates an alignment pattern, which are the smaller square patterns found in
-/// all but the simplest QR Codes.</p>
+/// Encapsulates an alignment pattern, which are the smaller square patterns found in all but the simplest QR Codes.
 /// </summary>
-internal sealed class AlignmentPattern : ResultPoint
+public sealed class AlignmentPattern : ResultPoint
 {
     private readonly float estimatedModuleSize;
 

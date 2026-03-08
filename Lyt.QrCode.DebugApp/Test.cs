@@ -11,7 +11,7 @@ internal sealed class Test
         Thresholding("screen");
         Thresholding("Sample");
 
-        Detect("screen");
+        //Detect("screen");
         Detect("Sample");
     }
 

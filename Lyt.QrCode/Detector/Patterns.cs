@@ -1,6 +1,7 @@
 ﻿namespace Lyt.QrCode.Detector;
 
-public sealed class Patterns(Pattern bottomLeft, Pattern topLeft, Pattern topRight)
+public sealed class Patterns(
+    Pattern bottomLeft, Pattern topLeft, Pattern topRight, AlignmentPattern? alignmentPattern)
 {
     public Pattern TopLeft { get; } = topLeft;
 
@@ -8,7 +9,12 @@ public sealed class Patterns(Pattern bottomLeft, Pattern topLeft, Pattern topRig
 
     public Pattern BottomLeft { get; } = bottomLeft;
 
-    internal bool TryProcess(BitMatrixImage image, [NotNullWhen(true)] out DetectorResult? detectorResult)
+    public AlignmentPattern? AlignmentPattern { get; } = alignmentPattern;
+
+    internal bool TryProcess(
+        BitMatrixImage image, 
+        DetectorCallback? detectorCallback,
+        [NotNullWhen(true)] out DetectorResult? detectorResult)
     {
         detectorResult = null;
         float moduleSize = this.CalculateModuleSize(image);
@@ -68,24 +74,61 @@ public sealed class Patterns(Pattern bottomLeft, Pattern topLeft, Pattern topRig
             int estAlignmentX = (int)(this.TopLeft.X + correctionToTopLeft * (bottomRightX - this.TopLeft.X));
             int estAlignmentY = (int)(this.TopLeft.Y + correctionToTopLeft * (bottomRightY - this.TopLeft.Y));
 
+            /// Attempts to locate an alignment pattern in a limited region of the image, which is
+            /// guessed to contain it. This method uses {@link AlignmentPattern}.</p>
+            /// <param name="overallEstModuleSize">estimated module size so far</param>
+            /// <param name="estAlignmentX">x coordinate of center of area probably containing alignment pattern</param>
+            /// <param name="estAlignmentY">y coordinate of above</param>
+            /// <param name="allowanceFactor">number of pixels in all directions to search from the center</param>
+            bool TryFindAlignmentInRegion(
+                float overallEstModuleSize, 
+                int estAlignmentX, int estAlignmentY, 
+                float allowanceFactor,
+                [NotNullWhen(true)] out AlignmentPattern? alignmentPattern)
+            {
+                alignmentPattern = null;
+
+                // Look for an alignment pattern (3 modules in size) around where it should be
+                int allowance = (int)(allowanceFactor * overallEstModuleSize);
+                int alignmentAreaLeftX = Math.Max(0, estAlignmentX - allowance);
+                int alignmentAreaRightX = Math.Min(image.Width - 1, estAlignmentX + allowance);
+                if (alignmentAreaRightX - alignmentAreaLeftX < overallEstModuleSize * 3)
+                {
+                    return false;
+                }
+
+                int alignmentAreaTopY = Math.Max(0, estAlignmentY - allowance);
+                int alignmentAreaBottomY = Math.Min(image.Height - 1, estAlignmentY + allowance);
+
+                if (image.TryFindAlignmentPattern(
+                    alignmentAreaLeftX,
+                    alignmentAreaTopY,
+                    alignmentAreaRightX - alignmentAreaLeftX,
+                    alignmentAreaBottomY - alignmentAreaTopY,
+                    overallEstModuleSize,
+                    detectorCallback,
+                    out alignmentPattern))
+                {
+
+                    return true;
+                }
+
+                return false;
+            }
+
             // Kind of arbitrary -- expand search radius before giving up
             for (int i = 4; i <= 16; i <<= 1)
             {
-                // TODO: 
-
-                // NEEDED ! 
-
-                //alignmentPattern = findAlignmentInRegion(moduleSize, estAlignmentX, estAlignmentY, (float)i);
-                //if (alignmentPattern == null)
-                //{
-                //    continue;
-                //}
-
-                break;
+                if (TryFindAlignmentInRegion(
+                    moduleSize, estAlignmentX, estAlignmentY, (float)i, out alignmentPattern))
+                {
+                    Debug.WriteLine($"Found alignment pattern at ({alignmentPattern.X},{alignmentPattern.Y}) with estimated module size {moduleSize}");
+                    break;
+                }
             }
         }
 
-        // If we didn't find alignment pattern... well try anyway without it
+        // If we didn't find alignment pattern... we'll try anyway without it
         var transform = PerspectiveTransform.Create(
             this.TopLeft, this.TopRight, this.BottomLeft, alignmentPattern, dimension);
         if (!image.TryResample(dimension, transform, out BitMatrixImage? resampled ))
@@ -96,6 +139,7 @@ public sealed class Patterns(Pattern bottomLeft, Pattern topLeft, Pattern topRig
         detectorResult = new DetectorResult(resampled, this);
         return true;
     }
+
 
     /// <summary>
     /// Computes an average estimated module size based on estimated derived from the positions

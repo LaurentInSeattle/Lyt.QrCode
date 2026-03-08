@@ -3,22 +3,20 @@
 public sealed partial class BitMatrixImage
 {
     internal bool TryDetect(
-        DetectorCallback? detectorCallback, 
+        DetectorCallback? detectorCallback,
         [NotNullWhen(true)] out DetectorResult? detectorResult)
     {
         detectorResult = null;
-        if ( this.TryFindPatterns(detectorCallback, out var patterns))
+        if (this.TryFindPatterns(detectorCallback, out var patterns))
         {
-            if (patterns.TryProcess(this, out detectorResult))
+            if (patterns.TryProcess(this, detectorCallback, out detectorResult))
             {
                 return true;
             }
         }
 
-        return false; 
+        return false;
     }
-
-    // private static readonly EstimatedModuleComparator moduleComparator = new EstimatedModuleComparator();
 
     // Implements the actual pattern finding logic.
     internal bool TryFindPatterns(
@@ -570,7 +568,7 @@ public sealed partial class BitMatrixImage
             int currentState = 0;
             for (int j = 0; j < maxJ; j++)
             {
-                bool pixelIsBlack = this[j , i];
+                bool pixelIsBlack = this[j, i];
                 if (pixelIsBlack)
                 {
                     // Black pixel
@@ -800,7 +798,268 @@ public sealed partial class BitMatrixImage
         // Order: Pattern bottomLeft, Pattern topLeft, Pattern topRight
         ResultPoint.OrderBestPatterns(patternInfo);
         Debug.WriteLine("patternInfo: " + patternInfo[0] + ", " + patternInfo[1] + ", " + patternInfo[2]);
-        patterns = new Patterns(patternInfo[0], patternInfo[1], patternInfo[2]);
+        patterns = new Patterns(patternInfo[0], patternInfo[1], patternInfo[2], null);
         return true;
+    }
+
+    /// <summary> 
+    /// This method attempts to find the bottom-right alignment pattern in the image. 
+    /// It is a bit messy since it's pretty performance-critical and so is written to be 
+    /// fast foremost.
+    /// </summary>
+    internal bool TryFindAlignmentPattern(
+        int startX, int startY, int width, int height, // region origin and size of area to search
+        float moduleSize,
+        DetectorCallback? detectorCallback,
+        [NotNullWhen(true)] out AlignmentPattern? pattern)
+    {
+        pattern = null;
+        List<AlignmentPattern> possibleCenters = new(5);
+        int[] crossCheckStateCount = new int[3];
+
+        int maxJ = startX + width;
+        int middleI = startY + (height >> 1);
+
+        // We are looking for black/white/black modules in 1:1:1 ratio;
+        // this tracks the number of black/white/black modules seen so far
+        int[] stateCount = new int[3];
+
+        /// <summary> Given a count of black/white/black pixels just seen and an end position,
+        /// figures the location of the center of this black/white/black run.
+        /// </summary>
+        static float? CenterFromEnd(int[] stateCount, int end)
+        {
+            float result = (end - stateCount[2]) - stateCount[1] / 2.0f;
+            if (float.IsNaN(result))
+            {
+                return null;
+            }
+
+            return result;
+        }
+
+        /// Returns true iff the proportions of the counts is close enough to the 1/1/1 ratios
+        /// used by alignment patterns to be considered a match
+        bool FoundPatternCross(int[] stateCount)
+        {
+            float maxVariance = moduleSize / 2.0f;
+            for (int i = 0; i < 3; i++)
+            {
+                if (Math.Abs(moduleSize - stateCount[i]) >= maxVariance)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary> <p>This is called when a horizontal scan finds a possible alignment pattern. It will
+        /// cross check with a vertical scan, and if successful, will see if this pattern had been
+        /// found on a previous horizontal scan. If so, we consider it confirmed and conclude we have
+        /// found the alignment pattern.</p>
+        /// 
+        /// </summary>
+        /// <param name="stateCount">reading state module counts from horizontal scan
+        /// </param>
+        /// <param name="i">row where alignment pattern may be found
+        /// </param>
+        /// <param name="j">end of possible alignment pattern in row
+        /// </param>
+        /// <returns> {@link AlignmentPattern} if we have found the same pattern twice, or null if not
+        /// </returns>
+        AlignmentPattern? HandlePossibleCenter(int[] stateCount, int i, int j)
+        {
+            /// <summary>
+            ///   <p>After a horizontal scan finds a potential alignment pattern, this method
+            /// "cross-checks" by scanning down vertically through the center of the possible
+            /// alignment pattern to see if the same proportion is detected.</p>
+            /// </summary>
+            /// <param name="startI">row where an alignment pattern was detected</param>
+            /// <param name="centerJ">center of the section that appears to cross an alignment pattern</param>
+            /// <param name="maxCount">maximum reasonable number of modules that should be
+            /// observed in any reading state, based on the results of the horizontal scan</param>
+            /// <param name="originalStateCountTotal">The original state count total.</param>
+            /// <returns>
+            /// vertical center of alignment pattern, or null if not found
+            /// </returns>
+            float? CrossCheckVertical(int startI, int centerJ, int maxCount, int originalStateCountTotal)
+            {
+                int maxI = this.Height;
+                int[] stateCount = crossCheckStateCount;
+                stateCount[0] = 0;
+                stateCount[1] = 0;
+                stateCount[2] = 0;
+
+                // Start counting up from center
+                int i = startI;
+                while (i >= 0 && this[centerJ, i] && stateCount[1] <= maxCount)
+                {
+                    stateCount[1]++;
+                    i--;
+                }
+                // If already too many modules in this state or ran off the edge:
+                if (i < 0 || stateCount[1] > maxCount)
+                {
+                    return null;
+                }
+                while (i >= 0 && !this[centerJ, i] && stateCount[0] <= maxCount)
+                {
+                    stateCount[0]++;
+                    i--;
+                }
+                if (stateCount[0] > maxCount)
+                {
+                    return null;
+                }
+
+                // Now also count down from center
+                i = startI + 1;
+                while (i < maxI && this[centerJ, i] && stateCount[1] <= maxCount)
+                {
+                    stateCount[1]++;
+                    i++;
+                }
+                if (i == maxI || stateCount[1] > maxCount)
+                {
+                    return null;
+                }
+                while (i < maxI && !this[centerJ, i] && stateCount[2] <= maxCount)
+                {
+                    stateCount[2]++;
+                    i++;
+                }
+                if (stateCount[2] > maxCount)
+                {
+                    return null;
+                }
+
+                int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2];
+                if (5 * Math.Abs(stateCountTotal - originalStateCountTotal) >= 2 * originalStateCountTotal)
+                {
+                    return null;
+                }
+
+                return FoundPatternCross(stateCount) ? CenterFromEnd(stateCount, i) : null;
+            }
+
+            int stateCountTotal = stateCount[0] + stateCount[1] + stateCount[2];
+            float? centerJ = CenterFromEnd(stateCount, j);
+            if (centerJ == null)
+            {
+                return null;
+            } 
+
+            float? centerI = CrossCheckVertical(i, (int)centerJ, 2 * stateCount[1], stateCountTotal);
+            if (centerI != null)
+            {
+                float estimatedModuleSize = (stateCount[0] + stateCount[1] + stateCount[2]) / 3.0f;
+                foreach (var center in possibleCenters)
+                {
+                    // Look for about the same center and module size:
+                    if (center.AboutEquals(estimatedModuleSize, centerI.Value, centerJ.Value))
+                    {
+                        return center.CombineEstimate(centerI.Value, centerJ.Value, estimatedModuleSize);
+                    }
+                }
+
+                // Hadn't found this before; save it
+                var point = new AlignmentPattern(centerJ.Value, centerI.Value, estimatedModuleSize);
+                possibleCenters.Add(point);
+                detectorCallback?.Invoke(point);
+            }
+
+            return null;
+        }
+
+        for (int iGen = 0; iGen < height; iGen++)
+        {
+            // Search from middle outwards
+            int i = middleI + ((iGen & 0x01) == 0 ? ((iGen + 1) >> 1) : -((iGen + 1) >> 1));
+            stateCount[0] = 0;
+            stateCount[1] = 0;
+            stateCount[2] = 0;
+            int j = startX;
+
+            // Burn off leading white pixels before anything else; if we start in the middle of
+            // a white run, it doesn't make sense to count its length, since we don't know if the
+            // white run continued to the left of the start point
+            while (j < maxJ && !this[j, i])
+            {
+                j++;
+            }
+
+            int currentState = 0;
+            while (j < maxJ)
+            {
+                if (this[j, i])
+                {
+                    // Black pixel
+                    if (currentState == 1)
+                    {
+                        // Counting black pixels
+                        stateCount[1]++;
+                    }
+                    else
+                    {
+                        // Counting white pixels
+                        if (currentState == 2)
+                        {
+                            // A winner?
+                            if (FoundPatternCross(stateCount))
+                            {
+                                // Yes
+                                AlignmentPattern? confirmed = HandlePossibleCenter(stateCount, i, j);
+                                if (confirmed is not null)
+                                {
+                                    pattern = confirmed;
+                                    return true;
+                                }
+                            }
+
+                            stateCount[0] = stateCount[2];
+                            stateCount[1] = 1;
+                            stateCount[2] = 0;
+                            currentState = 1;
+                        }
+                        else
+                        {
+                            stateCount[++currentState]++;
+                        }
+                    }
+                }
+                else
+                {
+                    // White pixel
+                    if (currentState == 1)
+                    {
+                        // Counting black pixels
+                        currentState++;
+                    }
+                    stateCount[currentState]++;
+                }
+                j++;
+            }
+
+            if (FoundPatternCross(stateCount))
+            {
+                AlignmentPattern? confirmed = HandlePossibleCenter(stateCount, i, maxJ);
+                if (confirmed is not null)
+                {
+                    pattern = confirmed;
+                    return true;
+                }
+            }
+        }
+
+        // Nothing we saw was observed and confirmed twice.
+        // If we had any guess at all, return it.
+        if (possibleCenters.Count != 0)
+        {
+            pattern = possibleCenters[0];
+            return true;
+        }
+
+        return false;
     }
 }
