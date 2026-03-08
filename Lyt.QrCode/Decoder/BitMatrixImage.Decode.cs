@@ -112,8 +112,18 @@ public sealed partial class BitMatrixImage
         }
         int numECCodewords = codewordBytes.Length - numDataCodewords;
 
-        if (!RsDecoder.decodeWithECCount(codewordsInts, numECCodewords, out errorsCorrected))
+        try
         {
+            // Reed Solomon decoding can throw exceptions
+            if (!RsDecoder.decodeWithECCount(codewordsInts, numECCodewords, out errorsCorrected))
+            {
+                return false;
+            }
+        } 
+        catch (Exception ex )
+        {
+            errorsCorrected = 0; 
+            Debug.WriteLine(ex.ToString());
             return false;
         }
 

@@ -21,14 +21,9 @@ namespace Lyt.QrCode.ReedSolomon;
 /// <author>William Rucklidge</author>
 /// <author>sanfordsquires</author>
 
-public sealed class ReedSolomonDecoder
+public sealed class ReedSolomonDecoder(GenericGF field)
 {
-    private readonly GenericGF field;
-
-    public ReedSolomonDecoder(GenericGF field)
-    {
-        this.field = field;
-    }
+    private readonly GenericGF field = field;
 
     /// <summary>
     ///   <p>Decodes given set of received codewords, which include both data and error-correction
@@ -84,7 +79,7 @@ public sealed class ReedSolomonDecoder
             return false;
 
         var omega = sigmaOmega[1];
-        var errorMagnitudes = findErrorMagnitudes(omega, errorLocations);
+        int[] errorMagnitudes = findErrorMagnitudes(omega, errorLocations);
         for (var i = 0; i < errorLocations.Length; i++)
         {
             var position = received.Length - 1 - field.log(errorLocations[i]);
@@ -215,6 +210,7 @@ public sealed class ReedSolomonDecoder
                     // denominator = field.multiply(denominator, GenericGF.addOrSubtract(1, field.multiply(errorLocations[j], xiInverse)));
                 }
             }
+
             result[i] = field.multiply(errorEvaluator.evaluateAt(xiInverse), field.inverse(denominator));
             if (field.GeneratorBase != 0)
             {
