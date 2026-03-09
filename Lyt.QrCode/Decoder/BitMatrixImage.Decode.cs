@@ -34,7 +34,7 @@ public sealed partial class BitMatrixImage
 
         // TODO: CONTINUE HERE ! 
         // FAILS HERE: NOT implemented :( 
-        if (!this.TryReadCodewords(out byte[]? codewords))
+        if (!this.TryReadCodewords(qrVersion, out byte[]? codewords))
         {
             return false;
         }
@@ -73,7 +73,7 @@ public sealed partial class BitMatrixImage
 
         // Decode the contents of that stream of bytes
         if (DecodedBitStreamParser.TryDecode(
-            resultBytes, qrVersion, decodeParameters.CharacterSet, out decoderResult))
+                resultBytes, qrVersion, decodeParameters.CharacterSet, out decoderResult))
         {
             decoderResult.ErrorsCorrected = errorsCorrected;
             decoderResult.ECLevel = ecLevel.ToString();
@@ -234,10 +234,96 @@ public sealed partial class BitMatrixImage
         return false;
     }
 
-    internal bool TryReadCodewords([NotNullWhen(true)] out byte[]? codewords)
+    internal bool TryReadCodewords(
+        QrVersion qrVersion, [NotNullWhen(true)] out byte[]? codewords)
     {
         codewords = null;
-        return false;
+        byte[] result = new byte[qrVersion.TotalCodewords];
+        int resultOffset = 0;
+
+        int row = 4;
+        int column = 0;
+
+        // TODO 
+        // CONTINUE HERE 
+
+        //int numRows = mappingBitMatrix.Height;
+        //int numColumns = mappingBitMatrix.Width;
+
+        //bool corner1Read = false;
+        //bool corner2Read = false;
+        //bool corner3Read = false;
+        //bool corner4Read = false;
+
+        //// Read all of the codewords
+        //do
+        //{
+        //    // Check the four corner cases
+        //    if ((row == numRows) && (column == 0) && !corner1Read)
+        //    {
+        //        result[resultOffset++] = (byte)readCorner1(numRows, numColumns);
+        //        row -= 2;
+        //        column += 2;
+        //        corner1Read = true;
+        //    }
+        //    else if ((row == numRows - 2) && (column == 0) && ((numColumns & 0x03) != 0) && !corner2Read)
+        //    {
+        //        result[resultOffset++] = (byte)readCorner2(numRows, numColumns);
+        //        row -= 2;
+        //        column += 2;
+        //        corner2Read = true;
+        //    }
+        //    else if ((row == numRows + 4) && (column == 2) && ((numColumns & 0x07) == 0) && !corner3Read)
+        //    {
+        //        result[resultOffset++] = (byte)readCorner3(numRows, numColumns);
+        //        row -= 2;
+        //        column += 2;
+        //        corner3Read = true;
+        //    }
+        //    else if ((row == numRows - 2) && (column == 0) && ((numColumns & 0x07) == 4) && !corner4Read)
+        //    {
+        //        result[resultOffset++] = (byte)readCorner4(numRows, numColumns);
+        //        row -= 2;
+        //        column += 2;
+        //        corner4Read = true;
+        //    }
+        //    else
+        //    {
+        //        // Sweep upward diagonally to the right
+        //        do
+        //        {
+        //            if ((row < numRows) && (column >= 0) && !readMappingMatrix[column, row])
+        //            {
+        //                result[resultOffset++] = (byte)readUtah(row, column, numRows, numColumns);
+        //            }
+
+        //            row -= 2;
+        //            column += 2;
+        //        } while ((row >= 0) && (column < numColumns));
+        //        row += 1;
+        //        column += 3;
+
+        //        // Sweep downward diagonally to the left
+        //        do
+        //        {
+        //            if ((row >= 0) && (column < numColumns) && !readMappingMatrix[column, row])
+        //            {
+        //                result[resultOffset++] = (byte)readUtah(row, column, numRows, numColumns);
+        //            }
+        //            row += 2;
+        //            column -= 2;
+        //        } while ((row < numRows) && (column >= 0));
+        //        row += 3;
+        //        column += 1;
+        //    }
+        //} while ((row < numRows) || (column < numColumns));
+
+        if (resultOffset != qrVersion.TotalCodewords)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     internal bool TryResample(
