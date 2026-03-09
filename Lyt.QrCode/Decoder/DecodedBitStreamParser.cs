@@ -12,22 +12,23 @@ internal static class DecodedBitStreamParser
 
     private const int GB2312_SUBSET = 1;
 
-    internal static DecoderResult TryDecode(
+    internal static bool TryDecode(
         byte[] bytes, 
         QrVersion version, 
-        ErrorCorrectionLevel ecLevel, 
-        string characterSet)
+        string characterSet,
+        [NotNullWhen(true)] out DecoderResult? decoderResult)
     {
+        decoderResult = null;
         var bits = new BitSource(bytes);
         var result = new StringBuilder(50);
-        var byteSegments = new List<byte[]>(1);
+        var byteSegments = new List<byte[]>();
         int symbolSequence = -1;
         int parityData = -1;
-        int symbologyModifier;
+        int symbologyModifier =-1;
 
         try
         {
-            CharacterSetECI currentCharacterSetECI = null;
+            CharacterSetECI? currentCharacterSetECI = null;
             bool fc1InEffect = false;
             bool hasFNC1first = false;
             bool hasFNC1second = false;
@@ -48,7 +49,7 @@ internal static class DecodedBitStreamParser
                     }
                     catch (ArgumentException)
                     {
-                        return null;
+                        return false;
                     }
                 }
                 switch (mode.Name)
@@ -68,7 +69,7 @@ internal static class DecodedBitStreamParser
                     case Mode.Names.STRUCTURED_APPEND:
                         if (bits.Available < 16)
                         {
-                            return null;
+                            return false;
                         }
 
                         // not really supported; but sequence number and parity is added later to the result metadata
@@ -83,7 +84,7 @@ internal static class DecodedBitStreamParser
                         currentCharacterSetECI = CharacterSetECI.GetCharacterSetECIByValue(value);
                         if (currentCharacterSetECI == null)
                         {
-                            return null;
+                            return false;
                         }
                         break;
 
@@ -96,7 +97,7 @@ internal static class DecodedBitStreamParser
                         {
                             if (!DecodeHanziSegment(bits, result, countHanzi))
                             {
-                                return null;
+                                return false;
                             }
                         }
                         break;
@@ -109,7 +110,7 @@ internal static class DecodedBitStreamParser
                             case Mode.Names.NUMERIC:
                                 if (!decodeNumericSegment(bits, result, count))
                                 {
-                                    return null;
+                                    return false;
                                 }
 
                                 break;
@@ -117,27 +118,27 @@ internal static class DecodedBitStreamParser
                             case Mode.Names.ALPHANUMERIC:
                                 if (!decodeAlphanumericSegment(bits, result, count, fc1InEffect))
                                 {
-                                    return null;
+                                    return false;
                                 }
 
                                 break;
                             case Mode.Names.BYTE:
                                 if (!DecodeByteSegment(bits, result, count, currentCharacterSetECI, byteSegments, characterSet))
                                 {
-                                    return null;
+                                    return false;
                                 }
 
                                 break;
                             case Mode.Names.KANJI:
                                 if (!DecodeKanjiSegment(bits, result, count))
                                 {
-                                    return null;
+                                    return false;
                                 }
 
                                 break;
 
                             default:
-                                return null;
+                                return false;
                         }
                         break;
                 }
@@ -176,19 +177,19 @@ internal static class DecodedBitStreamParser
         }
         catch (ArgumentException)
         {
-            // from readBits() calls
-            return null;
+            // Most likely from ReadBits() calls
+            return false;
         }
 
-        return null;
-        // FOR NOW: Does not compile yet 
-        //return new DecoderResult(
-        //    bytes, result.ToString(),
-        //    byteSegments.Count == 0 ? null : byteSegments,
-        //    ecLevel == null ? null : ecLevel.ToString(),
-        //    symbolSequence, 
-        //    parityData, 
-        //    symbologyModifier);
+        decoderResult = new DecoderResult()
+        {
+            RawBytes = bytes , 
+            Text = result.ToString(),
+            ByteSegments = byteSegments,
+            SymbologyModifier = symbologyModifier,
+        };
+
+        return true;
     }
 
     /// <summary> DecodeHanziSegment:  See specification GBT 18284-2000 </summary>

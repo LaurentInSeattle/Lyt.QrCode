@@ -8,11 +8,12 @@ public sealed partial class BitMatrixImage
     private static ReedSolomonDecoder RsDecoder;
 #pragma warning restore CS8618 
 
+    /// <summary> Tries to decode the resampled image, provided by the detector </summary>
     internal bool TryDecode(
         DecodeParameters decodeParameters,
         [NotNullWhen(true)] out DecoderResult? decoderResult)
     {
-        BitMatrixImage.RsDecoder ??= new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256); 
+        BitMatrixImage.RsDecoder ??= new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256);
 
         decoderResult = null;
         int dimension = this.Height;
@@ -26,15 +27,13 @@ public sealed partial class BitMatrixImage
             return false;
         }
 
-        this.parsedVersion = qrVersion;
-
         if (!this.TryReadFormatInformation(out var formatInformation))
         {
             return false;
         }
 
-        this.parsedFormatInfo = formatInformation;
-
+        // TODO: CONTINUE HERE ! 
+        // FAILS HERE: NOT implemented :( 
         if (!this.TryReadCodewords(out byte[]? codewords))
         {
             return false;
@@ -72,35 +71,24 @@ public sealed partial class BitMatrixImage
             }
         }
 
-        // return result;
-        // TODO : CONTINUE HERE ! 
-        // TODO : CONTINUE HERE ! 
-        // TODO : CONTINUE HERE ! 
-        // TODO : CONTINUE HERE ! 
-        // TODO : CONTINUE HERE ! 
-        // TODO : CONTINUE HERE ! 
-        // TODO : CONTINUE HERE ! 
-        // TODO : CONTINUE HERE ! 
-        // TODO : CONTINUE HERE ! 
-        // TODO : CONTINUE HERE ! 
-        // TODO : CONTINUE HERE ! 
-        // TODO : CONTINUE HERE ! 
-
         // Decode the contents of that stream of bytes
-        var result = DecodedBitStreamParser.TryDecode(resultBytes, qrVersion, ecLevel, decodeParameters.CharacterSet);
-        //result.ErrorsCorrected = errorsCorrected;
+        if (DecodedBitStreamParser.TryDecode(
+            resultBytes, qrVersion, decodeParameters.CharacterSet, out decoderResult))
+        {
+            decoderResult.ErrorsCorrected = errorsCorrected;
+            decoderResult.ECLevel = ecLevel.ToString();
+        }
 
         return false;
     }
 
     /// <summary>
-    ///   <p>Given data and error-correction codewords received, possibly corrupted by errors, attempts to
-    /// correct the errors in-place using Reed-Solomon error correction.</p>
+    ///  Given data and error-correction codewords received, possibly corrupted by errors, attempts to
+    /// correct the errors in-place using Reed-Solomon error correction.
     /// </summary>
     /// <param name="codewordBytes">data and error correction codewords</param>
     /// <param name="numDataCodewords">number of codewords that are data bytes</param>
     /// <param name="errorsCorrected">the number of errors corrected</param>
-    /// <returns></returns>
     private bool TryCorrectErrors(byte[] codewordBytes, int numDataCodewords, out int errorsCorrected)
     {
         int numCodewords = codewordBytes.Length;
@@ -120,10 +108,10 @@ public sealed partial class BitMatrixImage
             {
                 return false;
             }
-        } 
-        catch (Exception ex )
+        }
+        catch (Exception ex)
         {
-            errorsCorrected = 0; 
+            errorsCorrected = 0;
             Debug.WriteLine(ex.ToString());
             return false;
         }
@@ -139,8 +127,7 @@ public sealed partial class BitMatrixImage
     }
 
     // TODO: Make local vars of Decode 
-    private QrVersion parsedVersion;
-    private FormatInformation parsedFormatInfo;
+    // NOT Used yet ??? 
     private bool mirrored;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

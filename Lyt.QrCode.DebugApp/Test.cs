@@ -11,14 +11,16 @@ internal sealed class Test
         Thresholding("screen");
         Thresholding("Sample");
 
-        //Detect("screen");
-        Detect("Sample");
+        // Detect("screen");
+        // Detect("Sample");
+
+        Decode("screen");
     }
 
     private static void OnDetect (ResultPoint resultPoint)
         => Console.WriteLine("Detected: " + resultPoint.ToString());
 
-    private static void Detect (string filename)
+    private static void Detect(string filename)
     {
         // Screen 
         // Should return: (331.5, 430.5), (333, 285.5), (486.5, 277)
@@ -50,6 +52,21 @@ internal sealed class Test
         else
         {
             Console.WriteLine("Failed to Detect ");
+        }
+    }
+
+    private static void Decode(string filename)
+    {
+        string imagePathLoad = filename + ".png";
+        var sourceImage = LoadSourceImage(imagePathLoad);
+        if (QrFactory.DecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
+        {
+            // TODO: Print out results 
+            Console.WriteLine("Decoded, Content:  " + result.Text);
+        }
+        else
+        {
+            Console.WriteLine("Failed to Decode");
         } 
     }
 

@@ -8,16 +8,15 @@ public sealed partial class SourceImage
         [NotNullWhen(true)] out DecoderResult? decoderResult)
     {
         decoderResult= null;
-        // TODO : Still need to cleanup the API !
-        // 
         var grayscaleImage = this.ToGrayscale();
         var bitMatrixImage = grayscaleImage.ToBitMatrixAdaptiveThresholding();
         bool detected = bitMatrixImage.TryDetect(detectorCallback, out var detectorResult); 
         if (detected && detectorResult is not null)
         {
-            if ( bitMatrixImage.TryDecode(decodeParameters, out decoderResult))
+            var resampled = detectorResult.Resampled;
+            if (resampled.TryDecode(decodeParameters, out decoderResult))
             {
-                decoderResult = new DecoderResult(detectorResult);
+                decoderResult.DetectorResult = detectorResult;
                 return true; 
             }
         }
