@@ -3,7 +3,7 @@
 public sealed partial class SourceImage
 {
     public bool TryDecode(
-        bool skipDetector, // Needed ??? 
+        DecodeParameters decodeParameters, 
         DetectorCallback? detectorCallback, 
         [NotNullWhen(true)] out DecoderResult? decoderResult)
     {
@@ -15,8 +15,11 @@ public sealed partial class SourceImage
         bool detected = bitMatrixImage.TryDetect(detectorCallback, out var detectorResult); 
         if (detected && detectorResult is not null)
         {
-            decoderResult = new DecoderResult(detectorResult);
-            return true; //  bitMatrixImage.Decode(skipDetector);
+            if ( bitMatrixImage.TryDecode(decodeParameters, out decoderResult))
+            {
+                decoderResult = new DecoderResult(detectorResult);
+                return true; 
+            }
         }
 
         return false;

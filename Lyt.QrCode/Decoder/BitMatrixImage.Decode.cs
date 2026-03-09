@@ -8,7 +8,9 @@ public sealed partial class BitMatrixImage
     private static ReedSolomonDecoder RsDecoder;
 #pragma warning restore CS8618 
 
-    internal bool Decode([NotNullWhen(true)] out DecoderResult? decoderResult)
+    internal bool TryDecode(
+        DecodeParameters decodeParameters,
+        [NotNullWhen(true)] out DecoderResult? decoderResult)
     {
         BitMatrixImage.RsDecoder ??= new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256); 
 
@@ -57,10 +59,9 @@ public sealed partial class BitMatrixImage
         {
             byte[] codewordBytes = dataBlock.Codewords;
             int numDataCodewords = dataBlock.NumDataCodewords;
-            int errorsCorrectedLastRun = 0;
-            if (!this.TryCorrectErrors(codewordBytes, numDataCodewords, out errorsCorrectedLastRun))
+            if (!this.TryCorrectErrors(codewordBytes, numDataCodewords, out int errorsCorrectedLastRun))
             {
-                Debug.WriteLine("Failed to correct errors"); 
+                Debug.WriteLine("Failed to correct errors");
                 return false;
             }
 
@@ -86,7 +87,7 @@ public sealed partial class BitMatrixImage
         // TODO : CONTINUE HERE ! 
 
         // Decode the contents of that stream of bytes
-        //var result = DecodedBitStreamParser.decode(resultBytes, version, ecLevel, hints);
+        var result = DecodedBitStreamParser.TryDecode(resultBytes, qrVersion, ecLevel, decodeParameters.CharacterSet);
         //result.ErrorsCorrected = errorsCorrected;
 
         return false;

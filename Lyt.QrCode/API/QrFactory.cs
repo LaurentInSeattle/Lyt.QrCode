@@ -102,7 +102,7 @@ public static partial class QrFactory
             decodeParameters = new DecodeParameters();
         }
 
-        if (sourceImage.TryDecode(decodeParameters.SkipDetector, detectorCallback, out decoderResult))
+        if (sourceImage.TryDecode(decodeParameters, detectorCallback, out decoderResult))
         {
             return true;
         }
