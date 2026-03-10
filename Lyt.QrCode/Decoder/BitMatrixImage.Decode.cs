@@ -130,15 +130,16 @@ public sealed partial class BitMatrixImage
     }
 
     // TODO: Make local vars of Decode 
-    // NOT Used yet ??? 
-    private bool mirrored;
+    // TODO: Figure out if any need for this 'mirrored' bool 
+    // NOT ever Written , only read in CopyBit below
+    // private bool mirrored;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int CopyBit(int i, int j, int versionBits)
-    {
-        bool bit = this.mirrored ? this[j, i] : this[i, j];
-        return bit ? (versionBits << 1) | 0x1 : versionBits << 1;
-    }
+    private int CopyBit(int i, int j, int versionBits) => this[i, j] ? (versionBits << 1) | 0x1 : versionBits << 1;
+    //{
+    //    bool bit = this.mirrored ? this[j, i] : this[i, j];
+    //    return bit ? (versionBits << 1) | 0x1 : versionBits << 1;
+    //}
 
     /// <summary>
     /// Reads version information from one of its two locations within the QR Code.

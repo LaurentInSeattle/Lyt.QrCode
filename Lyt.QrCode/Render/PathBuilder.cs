@@ -105,7 +105,7 @@ internal sealed class PathBuilder
         bool[,] modules, 
         int border, 
         // TODO
-        RenderParameters.QrVectorFormat pathFormat)
+        RenderParameters.QrVectorFormat _ /*pathFormat */)
     {
         // Simple algorithm to reduce the number of rectangles for drawing the QR code and reduce SVG/XAML size.
         int size = modules.GetLength(0);

@@ -90,7 +90,7 @@ public static partial class QrFactory
         return vectorPath;
     }
 
-    public static bool DecodeQrCodeFromImage(
+    public static bool TryDecodeQrCodeFromImage(
         SourceImage sourceImage,
         [NotNullWhen(true)] out DecoderResult? decoderResult,
         DetectorCallback? detectorCallback = null,

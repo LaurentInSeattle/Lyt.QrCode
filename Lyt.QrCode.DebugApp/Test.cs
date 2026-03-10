@@ -40,14 +40,17 @@ internal sealed class Test
 
         string imagePathLoad = filename + ".png";
         var sourceImage = LoadSourceImage(imagePathLoad);
-        if (QrFactory.DecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
+        if (QrFactory.TryDecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
         {
             // TODO: Print out results 
-            Console.WriteLine("Detected ");
-            var resampledImage = result.DetectorResult.Resampled;
-            byte[] resImage = PngBuilder.ToPngImage(resampledImage);
-            string resPath = Path.Combine(rootPath, filename + "Resampled.png");
-            File.WriteAllBytes(resPath, resImage);
+            if (result.DetectorResult is DetectorResult detectorResult)
+            {
+                Console.WriteLine("Detected ");
+                var resampledImage = detectorResult.Resampled;
+                byte[] resImage = PngBuilder.ToPngImage(resampledImage);
+                string resPath = Path.Combine(rootPath, filename + "Resampled.png");
+                File.WriteAllBytes(resPath, resImage);
+            } 
         }
         else
         {
@@ -59,7 +62,7 @@ internal sealed class Test
     {
         string imagePathLoad = filename + ".png";
         var sourceImage = LoadSourceImage(imagePathLoad);
-        if (QrFactory.DecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
+        if (QrFactory.TryDecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
         {
             // TODO: Print out results 
             Console.WriteLine("Decoded, Content:  " + result.Text);

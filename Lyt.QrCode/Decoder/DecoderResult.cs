@@ -10,7 +10,7 @@ public sealed class DecoderResult
     public byte[]? RawBytes { get; internal set; } = null;
 
     /// <summary> The list of byte segments in the result, or empty list if not applicable </summary>
-    public List<byte[]> ByteSegments { get; internal set; } = new();
+    public List<byte[]> ByteSegments { get; internal set; } = [];
 
     /// <summary> name of error correction level used, or string.Empty if not applicable </summary>
     public string ECLevel { get; internal set; } = string.Empty;
