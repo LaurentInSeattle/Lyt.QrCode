@@ -91,6 +91,7 @@ public sealed partial class BitMatrixImage
     /// <param name="codewordBytes">data and error correction codewords</param>
     /// <param name="numDataCodewords">number of codewords that are data bytes</param>
     /// <param name="errorsCorrected">the number of errors corrected</param>
+    // TODO: Make local and static 
     private bool TryCorrectErrors(byte[] codewordBytes, int numDataCodewords, out int errorsCorrected)
     {
         int numCodewords = codewordBytes.Length;
@@ -461,9 +462,7 @@ public sealed partial class BitMatrixImage
         return true;
     }
 
-    /// <summary>
-    /// flip all of the bits, if shouldBeFlipped is true for the coordinates
-    /// </summary>
+    /// <summary> flip all of the bits, if shouldBeFlipped is true for the coordinates </summary>
     /// <param name="shouldBeFlipped">should return true, if the bit at a given coordinate should be flipped</param>
     internal void FlipWhen(Func<int, int, bool> shouldBeFlipped)
     {

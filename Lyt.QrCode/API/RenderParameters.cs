@@ -2,9 +2,16 @@
 
 public sealed class RenderParameters
 {
-    public enum Format     
+    // Image formats 
+    public enum QrImageFormat
     {
+        // Only PNG for now 
         Png = 0,
+    }
+
+    // Vector formats 
+    public enum QrVectorFormat     
+    {
         Svg, 
         MicrosoftXaml,
         AvaloniaAxaml,
@@ -31,5 +38,7 @@ public sealed class RenderParameters
     /// <summary> The background color (light modules), in RGB value. </summary>
     public int Background { get; init; } = 0xFFFFFF; // Default to white
 
-    public Format PathFormat { get; init; } = Format.Svg;
+    public QrImageFormat ImageFormat { get; init; } = QrImageFormat.Png;
+
+    public QrVectorFormat VectorFormat { get; init; } = QrVectorFormat.Svg;
 }
