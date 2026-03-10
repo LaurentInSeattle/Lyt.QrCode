@@ -1,4 +1,4 @@
-namespace Lyt.QrCode.Utilities; 
+namespace Lyt.QrCode.Utilities;
 
 /// <summary> Encapsulates a Character Set ECI, according to "Extended Channel Interpretations" 5.3.1.1 of ISO 18004. </summary>
 public sealed class CharacterSetECI : ECI
@@ -10,12 +10,12 @@ public sealed class CharacterSetECI : ECI
     private Encoding? encoding;
 
     /// <summary> The encoding name </summary>
-    public string EncodingName { get; private set;  }
+    public string EncodingName { get; private set; }
 
     /// <summary> gets or sets the encoding class:  can be set externally if override is necessary. </summary>
     public Encoding? Encoding
     {
-        get => this.encoding ?? (this.encoding = GetEncoding(this)); 
+        get => this.encoding ??= GetEncoding(this);
         set => this.encoding = value;
     }
 
@@ -24,17 +24,31 @@ public sealed class CharacterSetECI : ECI
         ValueToECI = new Dictionary<int, CharacterSetECI>();
         NameToECI = new Dictionary<string, CharacterSetECI>();
 
+        static void AddCharacterSet(int value, string[] encodingNames)
+        {
+            var eci = new CharacterSetECI(value, encodingNames[0]);
+            ValueToECI[value] = eci; // can't use valueOf
+            foreach (string t in encodingNames)
+            {
+                if (!NameToECI.ContainsKey(t))
+                {
+                    NameToECI[t] = eci;
+                }
+            }
+        }
+
         // TODO:  figure out if these values are even right!
-        AddCharacterSet(0,  ["CP437", "IBM437"]);
-        AddCharacterSet(1,  ["ISO-8859-1", "ISO8859_1"]);
-        AddCharacterSet(2,  ["CP437", "IBM437"]);
-        AddCharacterSet(3,  ["ISO-8859-1", "ISO8859_1"]);
-        AddCharacterSet(4,  ["ISO-8859-2", "ISO8859_2"]);
-        AddCharacterSet(5,  ["ISO-8859-3", "ISO8859_3"]);
-        AddCharacterSet(6,  ["ISO-8859-4", "ISO8859_4"]);
-        AddCharacterSet(7,  ["ISO-8859-5", "ISO8859_5"]);
-        AddCharacterSet(8,  ["ISO-8859-6", "ISO8859_6"]);
-        AddCharacterSet(9,  ["ISO-8859-7", "ISO8859_7"]);
+        // Note: TODO above mentioned in original code 
+        AddCharacterSet(0, ["CP437", "IBM437"]);
+        AddCharacterSet(1, ["ISO-8859-1", "ISO8859_1"]);
+        AddCharacterSet(2, ["CP437", "IBM437"]);
+        AddCharacterSet(3, ["ISO-8859-1", "ISO8859_1"]);
+        AddCharacterSet(4, ["ISO-8859-2", "ISO8859_2"]);
+        AddCharacterSet(5, ["ISO-8859-3", "ISO8859_3"]);
+        AddCharacterSet(6, ["ISO-8859-4", "ISO8859_4"]);
+        AddCharacterSet(7, ["ISO-8859-5", "ISO8859_5"]);
+        AddCharacterSet(8, ["ISO-8859-6", "ISO8859_6"]);
+        AddCharacterSet(9, ["ISO-8859-7", "ISO8859_7"]);
         AddCharacterSet(10, ["ISO-8859-8", "ISO8859_8"]);
         AddCharacterSet(11, ["ISO-8859-9", "ISO8859_9"]);
         AddCharacterSet(12, ["ISO-8859-4", "ISO-8859-10", "ISO8859_10"]); // use ISO-8859-4 because ISO-8859-10 isn't supported
@@ -50,74 +64,50 @@ public sealed class CharacterSetECI : ECI
         AddCharacterSet(24, ["WINDOWS-1256", "CP1256"]);
         AddCharacterSet(25, ["UTF-16BE", "UNICODEBIG", "UNICODEFFFE"]);
         AddCharacterSet(26, ["UTF-8", "UTF8"]);
-        AddCharacterSet(27, "US-ASCII");
-        AddCharacterSet(170, "US-ASCII");
-        AddCharacterSet(28, "BIG5");
+        AddCharacterSet(27, ["US-ASCII"]);
+        AddCharacterSet(170, ["US-ASCII"]);
+        AddCharacterSet(28, ["BIG5"]);
         AddCharacterSet(29, ["GB18030", "GB2312", "EUC_CN", "GBK"]);
         AddCharacterSet(30, ["EUC-KR", "EUC_KR"]);
     }
 
     private CharacterSetECI(int value, string encodingName) : base(value) => this.EncodingName = encodingName;
 
-    private static void AddCharacterSet(int value, string encodingName)
-    {
-        var eci = new CharacterSetECI(value, encodingName);
-        ValueToECI[value] = eci; // can't use valueOf
-        if (!NameToECI.ContainsKey(encodingName))
-        {
-            NameToECI[encodingName] = eci;
-        }
-    }
-
-    private static void AddCharacterSet(int value, string[] encodingNames)
-    {
-        var eci = new CharacterSetECI(value, encodingNames[0]);
-        ValueToECI[value] = eci; // can't use valueOf
-        foreach (string t in encodingNames)
-        {
-            if (!NameToECI.ContainsKey(t))
-            {
-                NameToECI[t] = eci;
-            }
-        }
-    }
 
     /// <param name="value">character set ECI value</param>
     /// <returns><see cref="CharacterSetECI"/> representing ECI of given value, or null if it is legal but unsupported</returns>
     public static CharacterSetECI? GetCharacterSetECIByValue(int value)
     {
-        if (!ValueToECI.ContainsKey(value))
+        if (!ValueToECI.TryGetValue(value, out CharacterSetECI? charSet))
         {
             return null;
         }
 
-        return ValueToECI[value];
+        return charSet;
     }
 
     /// <param name="name">character set ECI encoding name</param>
     /// <returns><see cref="CharacterSetECI"/> representing ECI for character encoding, or null if it is legal but unsupported</returns>
-    public static CharacterSetECI? GetCharacterSetECIByName(String name)
+    public static CharacterSetECI? GetCharacterSetECIByName(string name)
     {
-        var upperName = name.ToUpper();
-        if (!NameToECI.ContainsKey(upperName))
+        if (!NameToECI.TryGetValue(name.ToUpper(), out CharacterSetECI? value))
         {
             return null;
         }
 
-        return NameToECI[upperName];
+        return value;
     }
 
     /// <param name="encoding">encoding</param>
     /// <returns>CharacterSetECI representing ECI for character encoding, or null if it is legal but unsupported</returns>
-    public static CharacterSetECI? GetCharacterSetECI(System.Text.Encoding encoding)
+    public static CharacterSetECI? GetCharacterSetECI(Encoding encoding)
     {
-        string name = encoding.WebName.ToUpper();
-        if (!NameToECI.ContainsKey(name))
+        if (!NameToECI.TryGetValue(encoding.WebName.ToUpper(), out CharacterSetECI? value))
         {
             return null;
         }
 
-        return NameToECI[name];
+        return value;
     }
 
     /// <summary> returns the encoding object for the specified charset </summary>
@@ -130,7 +120,7 @@ public sealed class CharacterSetECI : ECI
         }
 
         // don't use property here because of StackOverflow
-        return charsetECI.encoding ?? (charsetECI.encoding = GetEncoding(charsetECI.EncodingName));
+        return charsetECI.encoding ??= GetEncoding(charsetECI.EncodingName);
     }
 
     /// <summary> returns the encoding object fo the specified name </summary>

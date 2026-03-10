@@ -6,15 +6,17 @@ internal sealed class Test
 
     internal void Run()
     {
-        Encode("test");
+        //Encode("test");
 
-        Thresholding("screen");
-        Thresholding("Sample");
+        //Thresholding("screen");
+        //Thresholding("Sample");
 
         // Detect("screen");
         // Detect("Sample");
 
-        Decode("screen");
+        //Decode("screen");
+        //Decode("screenRotated");
+        Decode("screenPortrait");
     }
 
     private static void OnDetect (ResultPoint resultPoint)

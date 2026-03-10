@@ -56,9 +56,8 @@ public class ResultPoint(float x, float y)
         patterns[2] = pointC;
     }
 
-
     /// <summary> distance between two points </summary>
-    public static double Distance(ResultPoint a, ResultPoint b)
+    internal static double Distance(ResultPoint a, ResultPoint b)
     {
         double xDiff = a.X - b.X;
         double yDiff = a.Y - b.Y;
@@ -66,7 +65,7 @@ public class ResultPoint(float x, float y)
     }
 
     /// <summary> Returns the z component of the cross product between vectors BC and BA. </summary>
-    public static double CrossProductZ(ResultPoint pointA, ResultPoint pointB, ResultPoint pointC)
+    internal static double CrossProductZ(ResultPoint pointA, ResultPoint pointB, ResultPoint pointC)
     {
         float bX = pointB.X;
         float bY = pointB.Y;

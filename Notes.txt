@@ -1,7 +1,5 @@
 ﻿
 
-- Decoder and detector 
-
 - More encoders / parsers for common types of data, such as URLs, contact information, calendar events, etc.
 
 - Code generators for API entries 
