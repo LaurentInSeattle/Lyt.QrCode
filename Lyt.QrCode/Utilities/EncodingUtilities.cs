@@ -44,6 +44,19 @@ public static class EncodingUtilities
     /// <summary> ISO-8859-1 </summary>
     public const string ISO88591 = "ISO-8859-1";
 
+    // This is throwing annoying exceptions for not supported encodings 
+    // TODO: Retrieve all supported encodings 
+    // Create a dictionary 
+    // Check support 
+    /*
+        EncodingInfo[] codePages = Encoding.GetEncodings();
+        Console.WriteLine("Available Encodings:");
+        foreach (EncodingInfo codePage in codePages)
+        {
+            Console.WriteLine($"- Code page ID: {codePage.CodePage}, IANA name: {codePage.Name}, Display name: {codePage.DisplayName}");
+        }
+    */
+
     static EncodingUtilities()
     {
         PLATFORM_DEFAULT_ENCODING = UTF8;
@@ -55,16 +68,10 @@ public static class EncodingUtilities
 
         SHIFT_JIS_ENCODING = CharacterSetECI.GetEncoding(SHIFT_JIS);
         JIS_IS_SUPPORTED = SHIFT_JIS_ENCODING is not null;
-        if (SHIFT_JIS_ENCODING == null)
-        {
-            SHIFT_JIS_ENCODING = PLATFORM_DEFAULT_ENCODING_T;
-        }
+        SHIFT_JIS_ENCODING ??= PLATFORM_DEFAULT_ENCODING_T;
 
         EUC_JP_IS_SUPPORTED = EUC_JP_ENCODING is not null;
-        if (EUC_JP_ENCODING == null)
-        {
-            EUC_JP_ENCODING = PLATFORM_DEFAULT_ENCODING_T;
-        }
+        EUC_JP_ENCODING ??= PLATFORM_DEFAULT_ENCODING_T;
 
         ASSUME_SHIFT_JIS = 
             (JIS_IS_SUPPORTED && PLATFORM_DEFAULT_ENCODING_T.WebName.Equals(SHIFT_JIS_ENCODING.WebName)) || 

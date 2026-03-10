@@ -34,7 +34,7 @@ public sealed partial class BitMatrixImage
 
         // TODO: CONTINUE HERE ! 
         // FAILS HERE: NOT implemented :( 
-        if (!this.TryReadCodewords(qrVersion, out byte[]? codewords))
+        if (!this.TryReadCodewords(qrVersion, formatInformation, out byte[]? codewords))
         {
             return false;
         }
@@ -75,8 +75,10 @@ public sealed partial class BitMatrixImage
         if (DecodedBitStreamParser.TryDecode(
                 resultBytes, qrVersion, decodeParameters.CharacterSet, out decoderResult))
         {
+            // success !
             decoderResult.ErrorsCorrected = errorsCorrected;
             decoderResult.ECLevel = ecLevel.ToString();
+            return true;
         }
 
         return false;
@@ -235,88 +237,62 @@ public sealed partial class BitMatrixImage
     }
 
     internal bool TryReadCodewords(
-        QrVersion qrVersion, [NotNullWhen(true)] out byte[]? codewords)
+        QrVersion qrVersion, FormatInformation formatInformation, [NotNullWhen(true)] out byte[]? codewords)
     {
-        codewords = null;
-        byte[] result = new byte[qrVersion.TotalCodewords];
+        codewords = new byte[qrVersion.TotalCodewords];
+
+        // Get the data mask for the format used in this QR Code. This will exclude
+        // some bits from reading as we wind through the bit matrix.
+        int dimension = this.Height;
+        var functionFlipWhen = DataMask.FromMask(formatInformation.DataMask);
+        this.FlipWhen(functionFlipWhen);
+
+        var functionPattern = BitMatrixImage.CreateFunctionPattern(qrVersion, dimension);
+        bool readingUp = true;
         int resultOffset = 0;
+        int currentByte = 0;
+        int bitsRead = 0;
 
-        int row = 4;
-        int column = 0;
+        // Read columns in pairs, from right to left
+        for (int j = dimension - 1; j > 0; j -= 2)
+        {
+            if (j == 6)
+            {
+                // Skip whole column with vertical alignment pattern;
+                // saves time and makes the other code proceed more cleanly
+                j--;
+            }
 
-        // TODO 
-        // CONTINUE HERE 
+            // Read alternatingly from bottom to top then top to bottom
+            for (int count = 0; count < dimension; count++)
+            {
+                int i = readingUp ? dimension - 1 - count : count;
+                for (int col = 0; col < 2; col++)
+                {
+                    // Ignore bits covered by the function pattern
+                    if (!functionPattern[j - col, i])
+                    {
+                        // Read a bit
+                        bitsRead++;
+                        currentByte <<= 1;
+                        if (this[j - col, i])
+                        {
+                            currentByte |= 1;
+                        }
 
-        //int numRows = mappingBitMatrix.Height;
-        //int numColumns = mappingBitMatrix.Width;
+                        // If we've made a whole byte, save it off
+                        if (bitsRead == 8)
+                        {
+                            codewords[resultOffset++] = (byte)currentByte;
+                            bitsRead = 0;
+                            currentByte = 0;
+                        }
+                    }
+                }
+            }
 
-        //bool corner1Read = false;
-        //bool corner2Read = false;
-        //bool corner3Read = false;
-        //bool corner4Read = false;
-
-        //// Read all of the codewords
-        //do
-        //{
-        //    // Check the four corner cases
-        //    if ((row == numRows) && (column == 0) && !corner1Read)
-        //    {
-        //        result[resultOffset++] = (byte)readCorner1(numRows, numColumns);
-        //        row -= 2;
-        //        column += 2;
-        //        corner1Read = true;
-        //    }
-        //    else if ((row == numRows - 2) && (column == 0) && ((numColumns & 0x03) != 0) && !corner2Read)
-        //    {
-        //        result[resultOffset++] = (byte)readCorner2(numRows, numColumns);
-        //        row -= 2;
-        //        column += 2;
-        //        corner2Read = true;
-        //    }
-        //    else if ((row == numRows + 4) && (column == 2) && ((numColumns & 0x07) == 0) && !corner3Read)
-        //    {
-        //        result[resultOffset++] = (byte)readCorner3(numRows, numColumns);
-        //        row -= 2;
-        //        column += 2;
-        //        corner3Read = true;
-        //    }
-        //    else if ((row == numRows - 2) && (column == 0) && ((numColumns & 0x07) == 4) && !corner4Read)
-        //    {
-        //        result[resultOffset++] = (byte)readCorner4(numRows, numColumns);
-        //        row -= 2;
-        //        column += 2;
-        //        corner4Read = true;
-        //    }
-        //    else
-        //    {
-        //        // Sweep upward diagonally to the right
-        //        do
-        //        {
-        //            if ((row < numRows) && (column >= 0) && !readMappingMatrix[column, row])
-        //            {
-        //                result[resultOffset++] = (byte)readUtah(row, column, numRows, numColumns);
-        //            }
-
-        //            row -= 2;
-        //            column += 2;
-        //        } while ((row >= 0) && (column < numColumns));
-        //        row += 1;
-        //        column += 3;
-
-        //        // Sweep downward diagonally to the left
-        //        do
-        //        {
-        //            if ((row >= 0) && (column < numColumns) && !readMappingMatrix[column, row])
-        //            {
-        //                result[resultOffset++] = (byte)readUtah(row, column, numRows, numColumns);
-        //            }
-        //            row += 2;
-        //            column -= 2;
-        //        } while ((row < numRows) && (column >= 0));
-        //        row += 3;
-        //        column += 1;
-        //    }
-        //} while ((row < numRows) || (column < numColumns));
+            readingUp ^= true; // readingUp = !readingUp; // switch directions
+        }
 
         if (resultOffset != qrVersion.TotalCodewords)
         {
@@ -483,5 +459,100 @@ public sealed partial class BitMatrixImage
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// flip all of the bits, if shouldBeFlipped is true for the coordinates
+    /// </summary>
+    /// <param name="shouldBeFlipped">should return true, if the bit at a given coordinate should be flipped</param>
+    internal void FlipWhen(Func<int, int, bool> shouldBeFlipped)
+    {
+        for (int y = 0; y < this.Height; y++)
+        {
+            for (int x = 0; x < this.Width; x++)
+            {
+                if (shouldBeFlipped(y, x))
+                {
+                    this[x, y] = !this[x, y];
+                }
+            }
+        }
+    }
+
+    internal static BitMatrixImage CreateFunctionPattern(QrVersion qrVersion, int dimension)
+    {
+        var bitMatrix = new BitMatrixImage(dimension, dimension);
+
+        /// <summary> Sets a square region of the bit matrix to true. </summary>
+        /// <param name="left">The horizontal position to begin at (inclusive) </param>
+        /// <param name="top">The vertical position to begin at (inclusive) </param>
+        /// <param name="width">The width of the region </param>
+        /// <param name="height">The height of the region </param>
+        void SetRegion(int left, int top, int width, int height)
+        {
+            if (top < 0 || left < 0)
+            {
+                throw new ArgumentException("Left and top must be nonnegative");
+            }
+
+            if (height < 1 || width < 1)
+            {
+                throw new ArgumentException("Height and width must be at least 1");
+            }
+            int right = left + width;
+            int bottom = top + height;
+            if (bottom > dimension || right > dimension)
+            {
+                throw new ArgumentException("The region must fit inside the matrix");
+            }
+
+            for (int y = top; y < bottom; y++)
+            {
+                for (int x = left; x < right; x++)
+                {
+                    bitMatrix[x, y] = true;
+                }
+            }
+        }
+
+        // Top left finder pattern + separator + format
+        SetRegion(0, 0, 9, 9);
+        
+        // Top right finder pattern + separator + format
+        SetRegion(dimension - 8, 0, 8, 9);
+        
+        // Bottom left finder pattern + separator + format
+        SetRegion(0, dimension - 8, 9, 8);
+
+        // Alignment patterns
+        int[] alignmentPatternCenters = qrVersion.AlignmentPatternCenters; 
+        int max = alignmentPatternCenters.Length;
+        for (int x = 0; x < max; x++)
+        {
+            int i = alignmentPatternCenters[x] - 2;
+            for (int y = 0; y < max; y++)
+            {
+                if ((x != 0 || (y != 0 && y != max - 1)) && (x != max - 1 || y != 0))
+                {
+                    SetRegion(alignmentPatternCenters[y] - 2, i, 5, 5);
+                }
+                // else no alignment patterns near the three finder patterns
+            }
+        }
+
+        // Vertical timing pattern
+        SetRegion(6, 9, 1, dimension - 17);
+        // Horizontal timing pattern
+        SetRegion(9, 6, dimension - 17, 1);
+
+        if (qrVersion.VersionNumber > 6)
+        {
+            // Version info, top right
+            SetRegion(dimension - 11, 0, 3, 6);
+            // Version info, bottom left
+            SetRegion(0, dimension - 11, 6, 3);
+        }
+
+        return bitMatrix;
     }
 }

@@ -1,9 +1,10 @@
 ﻿namespace Lyt.QrCode.API;
 
-public readonly struct RenderParameters
+public sealed class RenderParameters
 {
     public enum Format     
     {
+        Png = 0,
         Svg, 
         MicrosoftXaml,
         AvaloniaAxaml,

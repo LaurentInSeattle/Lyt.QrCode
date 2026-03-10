@@ -1,15 +1,12 @@
 ﻿namespace Lyt.QrCode.API;
 
-public struct DecodeParameters
+public sealed class DecodeParameters
 {
     public DecodeParameters() { }
 
     public bool Validate()
     {
-        if (this.CharacterSet is null)
-        {
-            this.CharacterSet = string.Empty;
-        }
+        this.CharacterSet ??= string.Empty;
 
         return true; 
     }
