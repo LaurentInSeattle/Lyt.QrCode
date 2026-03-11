@@ -1,12 +1,17 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public abstract class QrContent<T>(T content, bool isBinaryData = false) where T : class  
+public class QrContent<T>(T content, bool isBinaryData = false) 
+    : QrContent (isBinaryData) 
+    where T : class  
 {
     public T Content { get; set; } = content;
+}
 
-    public bool IsBinaryData { get; set; } = isBinaryData;
+public class QrContent(bool isBinaryData = false) 
+{
+    public virtual bool IsBinaryData { get; set; } = isBinaryData;
 
-    public abstract string RawString { get; set; }
+    public virtual string RawString { get; set; } = string.Empty;
 
-    public abstract byte[] RawBytes { get; set; }
+    public virtual byte[] RawBytes { get; set; } = [];
 }

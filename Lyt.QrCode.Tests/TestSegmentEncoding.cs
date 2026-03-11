@@ -44,24 +44,26 @@ public sealed class TestSegmentEncoding
         //Assert.AreEqual(BitsUtf8, BitArrayToByteArray(data));
         //Assert.AreEqual(TextUtf8, segment.GetText());
 
-        string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw"; 
+        string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw";
 
         var qrCode = QrCode.EncodeText(text, ErrorCorrectionLevel.Quartile);
         // DrawQrCode(qrCode);
-        byte[] image = PngBuilder.ToPngImage(qrCode, 16, 2); 
+        byte[] image1 = PngBuilder.ToPngImage(qrCode, 16, 2);
 
 
-        File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image);
+        File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image1);
 
         string svg = PathBuilder.ToSvgImageString(qrCode, 16, 2);
         File.WriteAllText("C:\\Users\\Laurent\\Desktop\\test.svg", svg);
 
-        image = QrFactory.CreateQrCodeImage(new WebLink(text, "Jigsaw"));
-        File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image);
+        if (Qr.TryEncode(new WebLink(text, "Jigsaw"), out byte[]? image2))
+        {
+            File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image2);
+        }
     }
 
 
-    public static void DrawQrCode (QrCode qrCode)
+    public static void DrawQrCode(QrCode qrCode)
     {
         for (int y = 0; y < qrCode.Size; y++)
         {

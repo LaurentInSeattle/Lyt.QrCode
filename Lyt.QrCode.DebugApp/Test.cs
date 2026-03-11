@@ -4,6 +4,8 @@ internal sealed class Test
 {
     private const string rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests";
 
+#pragma warning disable CA1822 // Mark members as static
+#pragma warning disable IDE0022 // Use expression body for method
     internal void Run()
     {
         Encode("test");
@@ -42,7 +44,7 @@ internal sealed class Test
 
         string imagePathLoad = filename + ".png";
         var sourceImage = LoadSourceImage(imagePathLoad);
-        if (QrFactory.TryDecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
+        if (Qr.TryDecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
         {
             // TODO: Print out results 
             if (result.DetectorResult is DetectorResult detectorResult)
@@ -64,7 +66,7 @@ internal sealed class Test
     {
         string imagePathLoad = filename + ".png";
         var sourceImage = LoadSourceImage(imagePathLoad);
-        if (QrFactory.TryDecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
+        if (Qr.TryDecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
         {
             // TODO: Print out results 
             Console.WriteLine("Decoded, Content:  " + result.Text);
@@ -148,4 +150,8 @@ internal sealed class Test
         image.Save(fullPath);
         Console.WriteLine($"Saved image: {fullPath}, Size: {image.Width}x{image.Height}");
     }
+
+#pragma warning restore CA1822 // Mark members as static
+#pragma warning restore IDE0022 // Use expression body for method
+
 }
