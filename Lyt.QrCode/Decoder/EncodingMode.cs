@@ -111,7 +111,7 @@ public sealed class EncodingMode
         return characterCountBitsForVersions[offset];
     }
 
-    /// <summary> Gets the bits. </summary>
+    /// <summary> Gets the mode bits. </summary>
     public int Bits { get; private set; }
 
     /// <summary> Returns a <see cref="string"/> that represents this instance. </summary>

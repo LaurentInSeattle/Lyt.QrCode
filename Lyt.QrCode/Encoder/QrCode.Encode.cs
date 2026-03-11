@@ -247,7 +247,7 @@ public sealed partial class QrCode
 
         // Create the data bit string
         var bitArray = new BitArray(0);
-        bitArray.AppendBits(segment.EncodingMode.ModeBits, 4);
+        bitArray.AppendBits(segment.EncodingMode.Bits, 4);
         bitArray.AppendBits((uint)segment.NumChars, segment.EncodingMode.NumCharCountBits(foundVersion));
         bitArray.AppendData(segment.GetData());
 

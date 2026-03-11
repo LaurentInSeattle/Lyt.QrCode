@@ -1,5 +1,7 @@
 ﻿namespace Lyt.QrCode.Encoder;
 
+// TODO: Duplicate of EncodingMode 
+
 /// <summary> Segment encoding mode. Describes how text or binary data is encoded into bits. </summary>
 internal sealed class Mode
 {
@@ -22,7 +24,7 @@ internal sealed class Mode
     internal static readonly Mode StructuredAppend = new (0x3, 0, 0, 0);
 
     /// <summary> Mode indicator value. 4 bit value in the QR segment header indicating the encoding mode. </summary>
-    internal uint ModeBits { get; }
+    internal uint Bits { get; }
 
     /// <summary> 
     /// Array of character count bit length. Number of bits for character count in QR segment header.
@@ -45,7 +47,7 @@ internal sealed class Mode
     // private constructor to initializes the constants
     private Mode(uint modeBits, params int[] numBitsCharCount)
     {
-        this.ModeBits = modeBits;
+        this.Bits = modeBits;
         this.NumBitsCharCount = numBitsCharCount;
     }
 }
