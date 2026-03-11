@@ -3,34 +3,36 @@
 // TODO : Eliminate ECC duplicate class used in encoding 
 
 /// <summary>
-/// <p>See ISO 18004:2006, 6.5.1. This enum encapsulates the four error correction levels
-/// defined by the QR code standard.</p>
+/// This class defines the four error correction levels defined by the QR code standard.
+/// See ISO 18004:2006, 6.5.1. 
 /// </summary>
-internal sealed class ErrorCorrectionLevel
+public sealed class ErrorCorrectionLevel
 {
-    /// <summary> L = ~7% correction</summary>
-    public static readonly ErrorCorrectionLevel L = new (0, 0x01, "L");
+    /// <summary> Low error correction capacity. The QR code can tolerate about 7% erroneous codewords. </summary>
+    public static readonly ErrorCorrectionLevel Low = new(0, 0x01, "Low");
 
-    /// <summary> M = ~15% correction</summary>
-    public static readonly ErrorCorrectionLevel M = new (1, 0x00, "M");
+    /// <summary> Medium error correction capacity . The QR code can tolerate about 15% erroneous codewords. </summary>
+    public static readonly ErrorCorrectionLevel Medium = new(1, 0x00, "Medium");
 
-    /// <summary> Q = ~25% correction</summary>
-    public static readonly ErrorCorrectionLevel Q = new (2, 0x03, "Q");
+    /// <summary> Quartile error correction capacity. Default. The QR code can tolerate about 25% erroneous codewords. </summary>
+    public static readonly ErrorCorrectionLevel Quartile = new(2, 0x03, "Quartile");
 
-    /// <summary> H = ~30% correction</summary>
-    public static readonly ErrorCorrectionLevel H = new (3, 0x02, "H");
+    /// <summary> High error correction capacity. The QR code can tolerate about 30% erroneous codewords. </summary>
+    public static readonly ErrorCorrectionLevel High = new(3, 0x02, "High");
 
-    private static readonly ErrorCorrectionLevel[] AllEclInBitsOrder = [M, L, H, Q];
+    private static readonly ErrorCorrectionLevel[] AllEclInBitsOrder = [Medium, Low, High, Quartile];
+
+    internal static readonly ErrorCorrectionLevel[] AllEclFromLowToHigh = [Low, Medium, Quartile, High];
 
     private ErrorCorrectionLevel(int ordinal, int bits, string name)
     {
         this.Ordinal = ordinal;
-        this.Bits = bits;
+        this.FormatBits = bits;
         this.Name = name;
     }
 
-    /// <summary> Gets the bits value. </summary>
-    public int Bits {  get; private set; }
+    /// <summary> Gets the format bits value. </summary>
+    public int FormatBits { get; private set; }
 
     /// <summary> Gets the name. </summary>
     public string Name { get; private set; }
@@ -40,13 +42,13 @@ internal sealed class ErrorCorrectionLevel
 
     public override string ToString() => this.Name;
 
-    public static ErrorCorrectionLevel FromBits(int bits)
+    public static ErrorCorrectionLevel FromFormatBits(int formatBits)
     {
-        if (bits < 0 || bits >= AllEclInBitsOrder.Length)
+        if (formatBits < 0 || formatBits >= AllEclInBitsOrder.Length)
         {
-            throw new IndexOutOfRangeException(nameof(bits));
+            throw new IndexOutOfRangeException(nameof(formatBits));
         }
 
-        return AllEclInBitsOrder[bits];
+        return ErrorCorrectionLevel.AllEclInBitsOrder[formatBits];
     }
 }

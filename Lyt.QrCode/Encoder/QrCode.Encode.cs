@@ -1,7 +1,5 @@
 ﻿namespace Lyt.QrCode;
 
-using Lyt.QrCode.Data;
-
 public sealed partial class QrCode
 {
     private static readonly byte[,] EccCodewordsPerBlock = 
@@ -41,7 +39,7 @@ public sealed partial class QrCode
     /// <param name="mask">The mask pattern to use (either -1 for automatic selection, or a value from 0 to 7 for fixed choice).</param>
     /// <exception cref="ArgumentOutOfRangeException">The version or mask value is out of range,
     /// or the data has an invalid length for the specified version and error correction level.</exception>
-    internal QrCode(int version, Ecc ecl, byte[] dataCodewords, int mask = -1)
+    internal QrCode(int version, ErrorCorrectionLevel ecl, byte[] dataCodewords, int mask = -1)
     {
         // Check arguments and initialize fields
         if (version < MinVersion || version > MaxVersion)
@@ -154,13 +152,13 @@ public sealed partial class QrCode
     /// <exception cref="ArgumentNullException"><paramref name="text"/> .</exception>
     /// <exception cref="DataTooLongException">The text is too long to fit in the largest QR code size (version)
     /// at the specified error correction level.</exception>
-    public static QrCode EncodeText(string text, Ecc ecc)
+    public static QrCode EncodeText(string text, ErrorCorrectionLevel ecc)
     {
         text.ThrowIfNullOrWhiteSpace();
         return EncodeSegment(QrSegment.MakeSegment(text), ecc);
     }
 
-    public static QrCode EncodeBytes(byte[] bytes, Ecc ecc)
+    public static QrCode EncodeBytes(byte[] bytes, ErrorCorrectionLevel ecc)
         => EncodeSegment(QrSegment.MakeBytes(bytes), ecc);
 
     /// <summary>
@@ -188,7 +186,7 @@ public sealed partial class QrCode
     /// at the specified error correction level.</exception>
     internal static QrCode EncodeSegment(
         QrSegment segment, 
-        Ecc ecc, 
+        ErrorCorrectionLevel ecc, 
         int minVersion = QrCode.MinVersion, 
         int maxVersion = QrCode.MaxVersion, 
         int mask = -1, 
@@ -238,7 +236,7 @@ public sealed partial class QrCode
         Debug.Assert(dataUsedBits != -1);
 
         // Increase the error correction level while the data still fits in the current version number
-        foreach (Ecc newEcc in Ecc.AllValues)
+        foreach (ErrorCorrectionLevel newEcc in ErrorCorrectionLevel.AllEclFromLowToHigh)
         {  
             // From low to high
             if (boostEcl && dataUsedBits <= GetNumDataCodewords(foundVersion, newEcc) * 8)
@@ -415,7 +413,7 @@ public sealed partial class QrCode
     private void DrawFormatBits(uint mask)
     {
         // Calculate error correction code and pack bits
-        uint data = (this.ErrorCorrectionLevel.FormatBits << 3) | mask;  // errCorrLvl is uint2, mask is uint3
+        uint data = ((uint)this.ErrorCorrectionLevel.FormatBits << 3) | mask;  // errCorrLvl is uint2, mask is uint3
         uint rem = data;
         for (int i = 0; i < 10; i++)
         {
@@ -468,7 +466,7 @@ public sealed partial class QrCode
     /// </summary>
     /// <param name="version">The version number.</param>
     /// <param name="ecc">The error correction level.</param>
-    private static int GetNumDataCodewords(int version, Ecc ecc)
+    private static int GetNumDataCodewords(int version, ErrorCorrectionLevel ecc)
         => GetNumRawDataModules(version) / 8 - EccCodewordsPerBlock[ecc.Ordinal, version] * NumErrorCorrectionBlocks[ecc.Ordinal, version];
 
     // Returns a new byte string representing the given data with the appropriate error correction

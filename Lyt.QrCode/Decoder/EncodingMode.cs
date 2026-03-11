@@ -4,7 +4,7 @@ namespace Lyt.QrCode.Decoder;
 /// <p>See ISO 18004:2006, 6.4.1, Tables 2 and 3. This enum encapsulates the various modes in which
 /// data can be encoded to bits in the QR code standard.</p>
 /// </summary>
-public sealed class Mode
+public sealed class EncodingMode
 {
     /// <summary> Gets the mode's name. </summary>
     public Names Name { get; private set; }
@@ -35,25 +35,25 @@ public sealed class Mode
     }
 
     /// <summary> Not really a mode... </summary>
-    public static readonly Mode TERMINATOR = new([0, 0, 0], 0x00, Names.TERMINATOR);
+    public static readonly EncodingMode TERMINATOR = new([0, 0, 0], 0x00, Names.TERMINATOR);
 
-    public static readonly Mode NUMERIC = new([10, 12, 14], 0x01, Names.NUMERIC);
-    public static readonly Mode ALPHANUMERIC = new([9, 11, 13], 0x02, Names.ALPHANUMERIC);
+    public static readonly EncodingMode NUMERIC = new([10, 12, 14], 0x01, Names.NUMERIC);
+    public static readonly EncodingMode ALPHANUMERIC = new([9, 11, 13], 0x02, Names.ALPHANUMERIC);
     /// <summary> Not supported </summary>
-    public static readonly Mode STRUCTURED_APPEND = new([0, 0, 0], 0x03, Names.STRUCTURED_APPEND);
-    public static readonly Mode BYTE = new([8, 16, 16], 0x04, Names.BYTE);
+    public static readonly EncodingMode STRUCTURED_APPEND = new([0, 0, 0], 0x03, Names.STRUCTURED_APPEND);
+    public static readonly EncodingMode BYTE = new([8, 16, 16], 0x04, Names.BYTE);
     /// <summary> character counts don't apply </summary>
-    public static readonly Mode ECI = new([0, 0, 0], 0x07, Names.ECI);
-    public static readonly Mode KANJI = new([8, 10, 12], 0x08, Names.KANJI);
-    public static readonly Mode FNC1_FIRST_POSITION = new([0, 0, 0], 0x05, Names.FNC1_FIRST_POSITION);
-    public static readonly Mode FNC1_SECOND_POSITION = new([0, 0, 0], 0x09, Names.FNC1_SECOND_POSITION);
+    public static readonly EncodingMode ECI = new([0, 0, 0], 0x07, Names.ECI);
+    public static readonly EncodingMode KANJI = new([8, 10, 12], 0x08, Names.KANJI);
+    public static readonly EncodingMode FNC1_FIRST_POSITION = new([0, 0, 0], 0x05, Names.FNC1_FIRST_POSITION);
+    public static readonly EncodingMode FNC1_SECOND_POSITION = new([0, 0, 0], 0x09, Names.FNC1_SECOND_POSITION);
 
     /// <summary> See GBT 18284-2000; "Hanzi" is a transliteration of this mode name. </summary>
-    public static readonly Mode HANZI = new([8, 10, 12], 0x0D, Names.HANZI);
+    public static readonly EncodingMode HANZI = new([8, 10, 12], 0x0D, Names.HANZI);
 
     private readonly int[] characterCountBitsForVersions;
 
-    private Mode(int[] characterCountBitsForVersions, int bits, Names name)
+    private EncodingMode(int[] characterCountBitsForVersions, int bits, Names name)
     {
         this.characterCountBitsForVersions = characterCountBitsForVersions;
         this.Bits = bits;
@@ -62,7 +62,7 @@ public sealed class Mode
 
     /// Returns the Mode encoded by these bits
     /// <exception cref="ArgumentException">if bits do not correspond to a known mode</exception>
-    public static Mode FromBits(int bits)
+    public static EncodingMode FromBits(int bits)
     {
         return bits switch
         {
@@ -114,6 +114,6 @@ public sealed class Mode
     /// <summary> Gets the bits. </summary>
     public int Bits { get; private set; }
 
-    /// <summary> Returns a <see cref="System.String"/> that represents this instance. </summary>
-    public override String ToString() => this.Name.ToString();
+    /// <summary> Returns a <see cref="string"/> that represents this instance. </summary>
+    public override string ToString() => this.Name.ToString();
 }

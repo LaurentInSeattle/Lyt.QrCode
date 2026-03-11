@@ -1,7 +1,5 @@
 ﻿namespace Lyt.QrCode;
 
-using Lyt.QrCode.Data;
-
 public sealed partial class QrCode: IPixelProvider
 {
     /// <summary> The minimum version (size) supported in the QR Code Model 2 standard – namely 1. </summary>
@@ -21,7 +19,7 @@ public sealed partial class QrCode: IPixelProvider
     public int Size { get; }
 
     /// <summary> The error correction capacity used for this QR code. </summary>
-    public Ecc ErrorCorrectionLevel { get; } = Ecc.Quartile;
+    public ErrorCorrectionLevel ErrorCorrectionLevel { get; } = ErrorCorrectionLevel.Quartile;
 
     /// <summary>
     /// The index of the mask pattern used fort this QR code (between 0 and 7).

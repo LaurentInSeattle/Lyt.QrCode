@@ -43,8 +43,8 @@ public static partial class QrFactory
     {
         var qrCode =
             content.IsBinaryData ?
-                QrCode.EncodeBytes(content.RawBytes, Ecc.Quartile) :
-                QrCode.EncodeText(content.RawString, Ecc.Quartile);
+                QrCode.EncodeBytes(content.RawBytes, ErrorCorrectionLevel.Quartile) :
+                QrCode.EncodeText(content.RawString, ErrorCorrectionLevel.Quartile);
         renderParameters ??= new RenderParameters();
         if (!renderParameters.Validate())
         {
@@ -70,8 +70,8 @@ public static partial class QrFactory
     {
         var qrCode =
             content.IsBinaryData ?
-                QrCode.EncodeBytes(content.RawBytes, Ecc.Quartile) :
-                QrCode.EncodeText(content.RawString, Ecc.Quartile);
+                QrCode.EncodeBytes(content.RawBytes, ErrorCorrectionLevel.Quartile) :
+                QrCode.EncodeText(content.RawString, ErrorCorrectionLevel.Quartile);
         renderParameters ??= new RenderParameters();
         if (!renderParameters.Validate())
         {

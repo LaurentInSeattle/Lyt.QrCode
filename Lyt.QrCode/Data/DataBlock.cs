@@ -30,7 +30,7 @@ internal sealed class DataBlock
     {
         if (rawCodewords.Length != version.TotalCodewords)
         {
-            throw new ArgumentException("rawCodewords.Length != version.TotalCodewords");
+            throw new ArgumentException("rawCodewords.Length != version.TotalCodewords", nameof(rawCodewords));
         }
 
         // Figure out the number and size of data blocks used by this version and error correction level

@@ -32,20 +32,20 @@ internal static class DecodedBitStreamParser
             bool fc1InEffect = false;
             bool hasFNC1first = false;
             bool hasFNC1second = false;
-            Mode mode;
+            EncodingMode mode;
             do
             {
                 // While still another segment to read...
                 if (bits.Available < 4)
                 {
                     // OK, assume we're done. Really, a TERMINATOR mode should have been recorded here
-                    mode = Mode.TERMINATOR;
+                    mode = EncodingMode.TERMINATOR;
                 }
                 else
                 {
                     try
                     {
-                        mode = Mode.FromBits(bits.ReadBits(4)); // mode is encoded by 4 bits
+                        mode = EncodingMode.FromBits(bits.ReadBits(4)); // mode is encoded by 4 bits
                     }
                     catch (ArgumentException)
                     {
@@ -54,19 +54,19 @@ internal static class DecodedBitStreamParser
                 }
                 switch (mode.Name)
                 {
-                    case Mode.Names.TERMINATOR:
+                    case EncodingMode.Names.TERMINATOR:
                         break;
-                    case Mode.Names.FNC1_FIRST_POSITION:
+                    case EncodingMode.Names.FNC1_FIRST_POSITION:
                         hasFNC1first = true; // symbology detection
                                              // We do little with FNC1 except alter the parsed result a bit according to the spec
                         fc1InEffect = true;
                         break;
-                    case Mode.Names.FNC1_SECOND_POSITION:
+                    case EncodingMode.Names.FNC1_SECOND_POSITION:
                         hasFNC1second = true; // symbology detection
                         // We do little with FNC1 except alter the parsed result a bit according to the spec
                         fc1InEffect = true;
                         break;
-                    case Mode.Names.STRUCTURED_APPEND:
+                    case EncodingMode.Names.STRUCTURED_APPEND:
                         if (bits.Available < 16)
                         {
                             return false;
@@ -78,7 +78,7 @@ internal static class DecodedBitStreamParser
                         parityData = bits.ReadBits(8);
                         break;
                     
-                    case Mode.Names.ECI:
+                    case EncodingMode.Names.ECI:
                         // Count doesn't apply to ECI
                         int value = parseECIValue(bits);
                         currentCharacterSetECI = CharacterSetECI.GetCharacterSetECIByValue(value);
@@ -88,7 +88,7 @@ internal static class DecodedBitStreamParser
                         }
                         break;
 
-                    case Mode.Names.HANZI:
+                    case EncodingMode.Names.HANZI:
                         // First handle Hanzi mode which does not start with character count
                         //chinese mode contains a sub set indicator right after mode indicator
                         int subset = bits.ReadBits(4);
@@ -107,7 +107,7 @@ internal static class DecodedBitStreamParser
                         int count = bits.ReadBits(mode.GetCharacterCountBits(version));
                         switch (mode.Name)
                         {
-                            case Mode.Names.NUMERIC:
+                            case EncodingMode.Names.NUMERIC:
                                 if (!decodeNumericSegment(bits, result, count))
                                 {
                                     return false;
@@ -115,21 +115,21 @@ internal static class DecodedBitStreamParser
 
                                 break;
 
-                            case Mode.Names.ALPHANUMERIC:
+                            case EncodingMode.Names.ALPHANUMERIC:
                                 if (!decodeAlphanumericSegment(bits, result, count, fc1InEffect))
                                 {
                                     return false;
                                 }
 
                                 break;
-                            case Mode.Names.BYTE:
+                            case EncodingMode.Names.BYTE:
                                 if (!DecodeByteSegment(bits, result, count, currentCharacterSetECI, byteSegments, characterSet))
                                 {
                                     return false;
                                 }
 
                                 break;
-                            case Mode.Names.KANJI:
+                            case EncodingMode.Names.KANJI:
                                 if (!DecodeKanjiSegment(bits, result, count))
                                 {
                                     return false;
@@ -142,7 +142,7 @@ internal static class DecodedBitStreamParser
                         }
                         break;
                 }
-            } while (mode != Mode.TERMINATOR);
+            } while (mode != EncodingMode.TERMINATOR);
 
             if (currentCharacterSetECI != null)
             {
@@ -230,8 +230,10 @@ internal static class DecodedBitStreamParser
         }
 
         var encoding = EncodingUtilities.GB2312_ENCODING;
-        if (encoding == null)
+        if (encoding is null)
+        {
             encoding = EncodingUtilities.PLATFORM_DEFAULT_ENCODING_T;
+        }
 
         result.Append(encoding.GetString(buffer, 0, buffer.Length));
 
@@ -286,7 +288,7 @@ internal static class DecodedBitStreamParser
 
     private static bool DecodeByteSegment(
         BitSource bits, StringBuilder result, int count, 
-        CharacterSetECI currentCharacterSetECI, IList<byte[]> byteSegments, 
+        CharacterSetECI? currentCharacterSetECI, IList<byte[]> byteSegments, 
         string characterSet)
     {
         // Don't crash trying to read more bits than we have available.
@@ -302,7 +304,7 @@ internal static class DecodedBitStreamParser
         }
 
         Encoding? encoding;
-        if (currentCharacterSetECI == null)
+        if (currentCharacterSetECI is null)
         {
             // The spec isn't clear on this mode; see
             // section 6.4.5: t does not say which encoding to assuming

@@ -129,17 +129,19 @@ public sealed partial class BitMatrixImage
         return true;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int CopyBit(int i, int j, int versionBits) => this[i, j] ? (versionBits << 1) | 0x1 : versionBits << 1;
+
+    #region CopyBit ~ TODO ? ~ Maybe 
     // TODO: Make local vars of Decode 
     // TODO: Figure out if any need for this 'mirrored' bool 
     // NOT ever Written , only read in CopyBit below
     // private bool mirrored;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int CopyBit(int i, int j, int versionBits) => this[i, j] ? (versionBits << 1) | 0x1 : versionBits << 1;
     //{
     //    bool bit = this.mirrored ? this[j, i] : this[i, j];
     //    return bit ? (versionBits << 1) | 0x1 : versionBits << 1;
     //}
+    #endregion TODO ~ Maybe 
 
     /// <summary>
     /// Reads version information from one of its two locations within the QR Code.
@@ -167,8 +169,8 @@ public sealed partial class BitMatrixImage
             }
         }
 
-        qrVersion = QrVersion.DecodeVersionInformation(versionBits);
-        if (qrVersion is not null && qrVersion.DimensionForVersion == dimension)
+        if (QrVersion.TryDecodeVersionInformation(versionBits, out qrVersion) && 
+            qrVersion.DimensionForVersion == dimension)
         {
             return true;
         }
@@ -183,8 +185,8 @@ public sealed partial class BitMatrixImage
             }
         }
 
-        qrVersion = QrVersion.DecodeVersionInformation(versionBits);
-        if (qrVersion is not null && qrVersion.DimensionForVersion == dimension)
+        if (QrVersion.TryDecodeVersionInformation(versionBits, out qrVersion) &&
+            qrVersion.DimensionForVersion == dimension)
         {
             return true;
         }

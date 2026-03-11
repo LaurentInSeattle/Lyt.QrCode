@@ -46,7 +46,7 @@ public sealed class TestSegmentEncoding
 
         string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw"; 
 
-        var qrCode = QrCode.EncodeText(text, Ecc.Quartile);
+        var qrCode = QrCode.EncodeText(text, ErrorCorrectionLevel.Quartile);
         // DrawQrCode(qrCode);
         byte[] image = PngBuilder.ToPngImage(qrCode, 16, 2); 
 
@@ -56,7 +56,7 @@ public sealed class TestSegmentEncoding
         string svg = PathBuilder.ToSvgImageString(qrCode, 16, 2);
         File.WriteAllText("C:\\Users\\Laurent\\Desktop\\test.svg", svg);
 
-        image = QrFactory.CreateQrCodePngImage(new WebLink(text, "Jigsaw"));
+        image = QrFactory.CreateQrCodeImage(new WebLink(text, "Jigsaw"));
         File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image);
     }
 

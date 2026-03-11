@@ -1,18 +1,14 @@
 ﻿namespace Lyt.QrCode.Data;
 
-// TODO: FIX nullability 
-// TODO: FIX Naming 
-
 /// <summary>
-/// Encapsulates a QR Code's format information, 
-/// including the data mask used and error correction level.
+/// Encapsulates a QR Code's format information, including the data mask used and error correction level.
 /// </summary>
-internal sealed class FormatInformation : IEquatable<FormatInformation>
+internal sealed class FormatInformation 
 {
-    private const int FORMAT_INFO_MASK_QR = 0x5412;
+    private const int FormatInformationMaskQr = 0x5412;
 
     /// <summary> See ISO 18004:2006, Annex C, Table C.1</summary>
-    private static readonly int[][] FORMAT_INFO_DECODE_LOOKUP =
+    private static readonly int[][] FormatInformationDecodeLookup =
         [
             [0x5412, 0x00 ],
             [0x5125, 0x01 ],
@@ -49,13 +45,13 @@ internal sealed class FormatInformation : IEquatable<FormatInformation>
         ];
 
     /// <summary> Offset i holds the number of 1 bits in the binary representation of i</summary>
-    private static readonly int[] BITS_SET_IN_HALF_BYTE = 
+    private static readonly int[] BitsSetsInHalfByte = 
         [0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4];
 
     private FormatInformation(int formatInfo)
     {
         // Bits 3,4
-        this.ErrorCorrectionLevel = ErrorCorrectionLevel.FromBits((formatInfo >> 3) & 0x03);
+        this.ErrorCorrectionLevel = ErrorCorrectionLevel.FromFormatBits((formatInfo >> 3) & 0x03);
 
         // Bottom 3 bits
         this.DataMask = (byte)(formatInfo & 0x07);
@@ -66,22 +62,20 @@ internal sealed class FormatInformation : IEquatable<FormatInformation>
         a ^= b; // a now has a 1 bit exactly where its bit differs with b's
                 // Count bits set quickly with a series of lookups:
         return 
-           BITS_SET_IN_HALF_BYTE[a & 0x0F] +
-           BITS_SET_IN_HALF_BYTE[((int)((uint)a >> 4)) & 0x0F] +
-           BITS_SET_IN_HALF_BYTE[((int)((uint)a >> 8)) & 0x0F] +
-           BITS_SET_IN_HALF_BYTE[((int)((uint)a >> 12)) & 0x0F] +
-           BITS_SET_IN_HALF_BYTE[((int)((uint)a >> 16)) & 0x0F] +
-           BITS_SET_IN_HALF_BYTE[((int)((uint)a >> 20)) & 0x0F] +
-           BITS_SET_IN_HALF_BYTE[((int)((uint)a >> 24)) & 0x0F] +
-           BITS_SET_IN_HALF_BYTE[((int)((uint)a >> 28)) & 0x0F];
+           BitsSetsInHalfByte[a & 0x0F] +
+           BitsSetsInHalfByte[((int)((uint)a >> 4)) & 0x0F] +
+           BitsSetsInHalfByte[((int)((uint)a >> 8)) & 0x0F] +
+           BitsSetsInHalfByte[((int)((uint)a >> 12)) & 0x0F] +
+           BitsSetsInHalfByte[((int)((uint)a >> 16)) & 0x0F] +
+           BitsSetsInHalfByte[((int)((uint)a >> 20)) & 0x0F] +
+           BitsSetsInHalfByte[((int)((uint)a >> 24)) & 0x0F] +
+           BitsSetsInHalfByte[((int)((uint)a >> 28)) & 0x0F];
     }
 
     /// <summary> Decodes the format information. </summary>
     /// <param name="maskedFormatInfo1">format info indicator, with mask still applied</param>
     /// <param name="maskedFormatInfo2">The masked format info2.</param>
-    /// <returns>
-    /// information about the format it specifies, or <code>null</code> if doesn't seem to match any known pattern
-    /// </returns>
+    /// <returns> information about the format it specifies, or null if doesn't seem to match any known pattern </returns>
     internal static FormatInformation? DecodeFormatInformation(int maskedFormatInfo1, int maskedFormatInfo2)
     {
         FormatInformation? formatInfo = DoDecodeFormatInformation(maskedFormatInfo1, maskedFormatInfo2);
@@ -93,7 +87,7 @@ internal sealed class FormatInformation : IEquatable<FormatInformation>
         // Should return null, but, some QR codes apparently do not mask this info.
         // Try again by actually masking the pattern first
         return DoDecodeFormatInformation(
-            maskedFormatInfo1 ^ FORMAT_INFO_MASK_QR, maskedFormatInfo2 ^ FORMAT_INFO_MASK_QR);
+            maskedFormatInfo1 ^ FormatInformationMaskQr, maskedFormatInfo2 ^ FormatInformationMaskQr);
     }
 
     private static FormatInformation? DoDecodeFormatInformation(int maskedFormatInfo1, int maskedFormatInfo2)
@@ -101,7 +95,7 @@ internal sealed class FormatInformation : IEquatable<FormatInformation>
         // Find the int in FORMAT_INFO_DECODE_LOOKUP with fewest bits differing
         int bestDifference = int.MaxValue;
         int bestFormatInfo = 0;
-        foreach (int[] decodeInfo in FORMAT_INFO_DECODE_LOOKUP)
+        foreach (int[] decodeInfo in FormatInformationDecodeLookup)
         {
             int targetInfo = decodeInfo[0];
             if (targetInfo == maskedFormatInfo1 || targetInfo == maskedFormatInfo2)
@@ -142,20 +136,4 @@ internal sealed class FormatInformation : IEquatable<FormatInformation>
     internal ErrorCorrectionLevel ErrorCorrectionLevel { get; private set;  }
 
     internal byte DataMask { get; private set; }
-
-    public override int GetHashCode() => (this.ErrorCorrectionLevel.Ordinal << 3) | this.DataMask;
-
-    public bool Equals(FormatInformation? other)
-    {
-        if (other is null)
-        {
-            return false;
-        }
-
-        return 
-            this.ErrorCorrectionLevel == other.ErrorCorrectionLevel &&
-            this.DataMask == other.DataMask;
-    }
-
-    public override bool Equals(object? obj) => this.Equals(obj as FormatInformation);
 }

@@ -105,7 +105,7 @@ internal sealed class Test
     private static void Encode (string filename)
     {
         string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw";
-        var qrCode = QrCode.EncodeText(text, Ecc.Quartile);
+        var qrCode = QrCode.EncodeText(text, ErrorCorrectionLevel.Quartile);
         byte[] image = PngBuilder.ToPngImage(qrCode, 16, 2);
 
         string fullPath = Path.Combine(rootPath, filename + ".png");

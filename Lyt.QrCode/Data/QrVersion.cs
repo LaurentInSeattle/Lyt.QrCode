@@ -1,13 +1,12 @@
 ﻿namespace Lyt.QrCode.Data;
 
-// TODO: Figure out how to handle publics and internals 
-
 public sealed class QrVersion
 {
-    /// <summary> See ISO 18004:2006 Annex D.
+    /// <summary> 
     /// Element i represents the raw version bits that specify version i + 7
+    /// See ISO 18004:2006 Annex D.
     /// </summary>
-    private static readonly int[] VERSION_DECODE_INFO =
+    private static readonly int[] VersionDecodeInfo =
         [
             0x07C94, 0x085BC, 0x09A99, 0x0A4D3, 0x0BBF6,
             0x0C762, 0x0D847, 0x0E60D, 0x0F928, 0x10B78,
@@ -40,7 +39,7 @@ public sealed class QrVersion
 
     internal static QrVersion FromDimension(int dimension)
     {
-        if ( ! IsValidDimension(dimension))
+        if (!IsValidDimension(dimension))
         {
             throw new ArgumentException(null, nameof(dimension));
         }
@@ -59,19 +58,19 @@ public sealed class QrVersion
         return Versions[versionNumber - 1];
     }
 
-    public bool HasAlignmentPatternCenters => this.AlignmentPatternCenters.Length > 0;
+    internal bool HasAlignmentPatternCenters => this.AlignmentPatternCenters.Length > 0;
 
-    public int[] AlignmentPatternCenters { get; }
+    internal int[] AlignmentPatternCenters { get; }
 
     internal ECBlocks[] Blocks { get; }
 
-    public int TotalCodewords { get; }
+    internal int TotalCodewords { get; }
 
-    public int VersionNumber { get; }
+    internal int VersionNumber { get; }
 
-    public int DimensionForVersion { get; }
+    internal int DimensionForVersion { get; }
 
-    public static bool IsValidDimension(int dimension)
+    internal static bool IsValidDimension(int dimension)
     {
         if (dimension % 4 != 1)
         {
@@ -83,20 +82,23 @@ public sealed class QrVersion
     }
 
     public static bool IsValidVersionNumber(int versionNumber)
-        => versionNumber >= 1 && versionNumber <= 40 ;
+        => versionNumber >= 1 && versionNumber <= 40;
 
     // TODO: Use Try Pattern 
-    internal static QrVersion? DecodeVersionInformation(int versionBits)
+    internal static bool TryDecodeVersionInformation(
+        int versionBits, [NotNullWhen(true)] out QrVersion? qrVersion)
     {
+        qrVersion = null;
         int bestDifference = int.MaxValue;
         int bestVersion = 0;
-        for (int i = 0; i < VERSION_DECODE_INFO.Length; i++)
+        for (int i = 0; i < VersionDecodeInfo.Length; i++)
         {
-            int targetVersion = VERSION_DECODE_INFO[i];
+            int targetVersion = VersionDecodeInfo[i];
             // Do the version info bits match exactly? done.
             if (targetVersion == versionBits)
             {
-                return QrVersion.FromVersionNumber(i + 7);
+                qrVersion = QrVersion.FromVersionNumber(i + 7);
+                return true;
             }
 
             // Otherwise see if this is the closest to a real version info bit string
@@ -113,16 +115,16 @@ public sealed class QrVersion
         // differ in less than 8 bits.
         if (bestDifference <= 3)
         {
-            return QrVersion.FromVersionNumber(bestVersion);
+            qrVersion = QrVersion.FromVersionNumber(bestVersion);
+            return true;
         }
 
         // If we didn't find a close enough match, fail
-        return null;
+        return false;
     }
 
     /// <summary> Gets the EC blocks for the specified level. </summary>
-    internal  ECBlocks ECBlocksForLevel(ErrorCorrectionLevel ecLevel) => this.Blocks[ecLevel.Ordinal];
-
+    internal ECBlocks ECBlocksForLevel(ErrorCorrectionLevel ecLevel) => this.Blocks[ecLevel.Ordinal];
 
     #region All QR versions, from 1 to 40
 
@@ -196,7 +198,7 @@ public sealed class QrVersion
                            new ECBlocks(22, new ECB(8, 37), new ECB(1, 38)),
                            new ECBlocks(24, new ECB(8, 20), new ECB(4, 21)),
                            new ECBlocks(22, new ECB(12, 11), new ECB(4, 12))),
-               new QrVersion(14, [6, 26, 46, 66], 
+               new QrVersion(14, [6, 26, 46, 66],
                            new ECBlocks(30, new ECB(3, 115), new ECB(1, 116)),
                            new ECBlocks(24, new ECB(4, 40), new ECB(5, 41)),
                            new ECBlocks(20, new ECB(11, 16), new ECB(5, 17)),
