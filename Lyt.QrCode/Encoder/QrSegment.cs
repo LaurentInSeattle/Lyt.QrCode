@@ -11,7 +11,7 @@ internal class QrSegment
     /// <param name="numChars">The data length in characters or bytes (depending on the segment mode).</param>
     /// <param name="data">The data bits.</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="numChars"/> is negative.</exception>
-    internal QrSegment(Mode mode, int numChars, BitArray data)
+    internal QrSegment(EncodingMode mode, int numChars, BitArray data)
     {
         if (numChars < 0)
         {
@@ -26,8 +26,7 @@ internal class QrSegment
     }
 
     /// <summary>The encoding mode of this segment.</summary>
-    /// <value>Encoding mode.</value>
-    internal Mode EncodingMode { get; }
+    internal EncodingMode EncodingMode { get; }
 
     /// <summary> 
     /// The length of this segment's unencoded data, measured in characters for numeric/alphanumeric/kanji mode,
@@ -40,8 +39,7 @@ internal class QrSegment
     private readonly BitArray data;
 
     /// <summary> Returns a copy of this segment's data bits. </summary>
-    public BitArray GetData()
-        => (BitArray) this.data.Clone();  // Make defensive copy => WHY ??? NeCESSARY ? 
+    public BitArray GetData() => (BitArray) this.data.Clone();  // Make defensive copy => WHY ??? NeCESSARY ? 
     
     /// <summary>
     /// Creates a segment representing the specified text string.
@@ -83,7 +81,7 @@ internal class QrSegment
             bitArray.AppendBits(b, 8);
         }
 
-        return new QrSegment(Mode.Byte, data.Length, bitArray);
+        return new QrSegment(EncodingMode.Byte, data.Length, bitArray);
     }
 
     /// <summary>
@@ -105,7 +103,7 @@ internal class QrSegment
             i += n;
         }
 
-        return new QrSegment(Mode.Numeric, digits.Length, bitArray);
+        return new QrSegment(EncodingMode.Numeric, digits.Length, bitArray);
     }
 
     /// <summary>
@@ -131,7 +129,7 @@ internal class QrSegment
             bitArray.AppendBits(text[i].IndexOfAlphanumeric(), 6);
         }
 
-        return new QrSegment(Mode.Alphanumeric, text.Length, bitArray);
+        return new QrSegment(EncodingMode.Alphanumeric, text.Length, bitArray);
     }
 
     /// <summary> Calculates the number of bits needed to encode the given segment. 
@@ -169,7 +167,7 @@ internal class QrSegment
     /// indicator, and data bits. Returns -1 if the number of characters exceeds the maximum allowed for the
     /// specified mode and version.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if the specified mode is not supported for this calculation.</exception>
-    internal static int GetTotalBits(int numChars, Mode mode, int version)
+    internal static int GetTotalBits(int numChars, EncodingMode mode, int version)
     {
         int ccBits = mode.NumCharCountBits(version);
         if (numChars >= 1 << ccBits)
@@ -178,19 +176,19 @@ internal class QrSegment
         }
 
         int dataBits;
-        if (mode == Mode.Numeric)
+        if (mode == EncodingMode.Numeric)
         {
             dataBits = numChars / 3 * 10 + (numChars % 3 == 0 ? 0 : (numChars % 3 * 3 + 1));
         }
-        else if (mode == Mode.Alphanumeric)
+        else if (mode == EncodingMode.Alphanumeric)
         {
             dataBits = numChars / 2 * 11 + (numChars % 2 == 0 ? 0 : 6);
         }
-        else if (mode == Mode.Byte)
+        else if (mode == EncodingMode.Byte)
         {
             dataBits = numChars * 8;
         }
-        else if (mode == Mode.Kanji)
+        else if (mode == EncodingMode.Kanji)
         {
             dataBits = numChars * 13;
         }

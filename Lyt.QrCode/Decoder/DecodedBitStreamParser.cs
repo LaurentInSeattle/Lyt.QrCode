@@ -39,7 +39,7 @@ internal static class DecodedBitStreamParser
                 if (bits.Available < 4)
                 {
                     // OK, assume we're done. Really, a TERMINATOR mode should have been recorded here
-                    mode = EncodingMode.TERMINATOR;
+                    mode = EncodingMode.Terminator;
                 }
                 else
                 {
@@ -54,19 +54,20 @@ internal static class DecodedBitStreamParser
                 }
                 switch (mode.Name)
                 {
-                    case EncodingMode.Names.TERMINATOR:
+                    case EncodingMode.Names.Terminator:
                         break;
-                    case EncodingMode.Names.FNC1_FIRST_POSITION:
+
+                    case EncodingMode.Names.Fnc1FirstPosition:
                         hasFNC1first = true; // symbology detection
                                              // We do little with FNC1 except alter the parsed result a bit according to the spec
                         fc1InEffect = true;
                         break;
-                    case EncodingMode.Names.FNC1_SECOND_POSITION:
+                    case EncodingMode.Names.Fnc1SecondPosition:
                         hasFNC1second = true; // symbology detection
                         // We do little with FNC1 except alter the parsed result a bit according to the spec
                         fc1InEffect = true;
                         break;
-                    case EncodingMode.Names.STRUCTURED_APPEND:
+                    case EncodingMode.Names.StructuredAppend:
                         if (bits.Available < 16)
                         {
                             return false;
@@ -78,7 +79,7 @@ internal static class DecodedBitStreamParser
                         parityData = bits.ReadBits(8);
                         break;
                     
-                    case EncodingMode.Names.ECI:
+                    case EncodingMode.Names.Eci:
                         // Count doesn't apply to ECI
                         int value = parseECIValue(bits);
                         currentCharacterSetECI = CharacterSetECI.GetCharacterSetECIByValue(value);
@@ -88,7 +89,7 @@ internal static class DecodedBitStreamParser
                         }
                         break;
 
-                    case EncodingMode.Names.HANZI:
+                    case EncodingMode.Names.Hanzi:
                         // First handle Hanzi mode which does not start with character count
                         //chinese mode contains a sub set indicator right after mode indicator
                         int subset = bits.ReadBits(4);
@@ -107,7 +108,7 @@ internal static class DecodedBitStreamParser
                         int count = bits.ReadBits(mode.GetCharacterCountBits(version));
                         switch (mode.Name)
                         {
-                            case EncodingMode.Names.NUMERIC:
+                            case EncodingMode.Names.Numeric:
                                 if (!decodeNumericSegment(bits, result, count))
                                 {
                                     return false;
@@ -115,21 +116,21 @@ internal static class DecodedBitStreamParser
 
                                 break;
 
-                            case EncodingMode.Names.ALPHANUMERIC:
+                            case EncodingMode.Names.Alphanumeric:
                                 if (!decodeAlphanumericSegment(bits, result, count, fc1InEffect))
                                 {
                                     return false;
                                 }
 
                                 break;
-                            case EncodingMode.Names.BYTE:
+                            case EncodingMode.Names.Byte:
                                 if (!DecodeByteSegment(bits, result, count, currentCharacterSetECI, byteSegments, characterSet))
                                 {
                                     return false;
                                 }
 
                                 break;
-                            case EncodingMode.Names.KANJI:
+                            case EncodingMode.Names.Kanji:
                                 if (!DecodeKanjiSegment(bits, result, count))
                                 {
                                     return false;
@@ -142,7 +143,7 @@ internal static class DecodedBitStreamParser
                         }
                         break;
                 }
-            } while (mode != EncodingMode.TERMINATOR);
+            } while (mode != EncodingMode.Terminator);
 
             if (currentCharacterSetECI != null)
             {

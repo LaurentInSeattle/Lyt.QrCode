@@ -6,7 +6,7 @@ internal sealed class Test
 
     internal void Run()
     {
-        //Encode("test");
+        Encode("test");
 
         //Thresholding("screen");
         //Thresholding("Sample");
@@ -16,7 +16,7 @@ internal sealed class Test
 
         //Decode("screen");
         //Decode("screenRotated");
-        Decode("screenPortrait");
+        // Decode("screenPortrait");
     }
 
     private static void OnDetect (ResultPoint resultPoint)
