@@ -6,7 +6,7 @@
 using Lyt.QrCode.Content;
 
 /// <summary> 
-/// Callback which is invoked when a possible significant point in the QR code image such as a corner, is found.
+/// Callback which is invoked when a possible significant point in the QR code image, such as a corner, is found.
 /// </summary>
 public delegate void DetectorCallback(ResultPoint point);
 
