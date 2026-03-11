@@ -127,6 +127,7 @@ public static partial class Qr
             {
                 // Safe to cast
                 result = (TResult) rawResult;
+                return true;
             } 
         }
         catch (Exception ex)
