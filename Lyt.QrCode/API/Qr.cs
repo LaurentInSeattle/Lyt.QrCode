@@ -135,7 +135,7 @@ public static partial class Qr
             return false;
         }
 
-        if (content is string stringContent)
+        bool ValidateString(string stringContent)
         {
             if (string.IsNullOrWhiteSpace(stringContent))
             {
@@ -157,19 +157,38 @@ public static partial class Qr
                 {
                     return false;
                 }
+            }
 
+            return true;
+        }
+
+        if (content is string stringContent)
+        {
+            if (!ValidateString(stringContent))
+            {
+                return false;
             }
 
             qrContent = new StringContent(stringContent);
             return true;
         }
 
-        if (content is byte[] bytesContent)
+        bool ValidateBytes(byte[] bytesContent)
         {
             if ((bytesContent.Length == 0) || (bytesContent.Length > Qr.MaxDataBytes))
             {
                 return false;
             }
+
+            return true;
+        }
+
+        if (content is byte[] bytesContent)
+        {
+            if (!ValidateBytes(bytesContent))
+            {
+                return false ;
+            } 
 
             qrContent = new BytesContent(bytesContent);
             return true;
@@ -178,7 +197,26 @@ public static partial class Qr
         if (content is WebLink linkContent)
         {
             qrContent = new WebLinkContent(linkContent);
-            return true;
+        }
+
+        if (content is QrContent qrC)
+        {
+            if (qrC.IsBinaryData)
+            {
+                if (ValidateBytes(qrC.RawBytes))
+                {
+                    return false; 
+                } 
+            } 
+            else
+            {
+                if (!ValidateString(qrC.RawString))
+                {
+                    return false;
+                }
+            }
+
+            qrContent = qrC; 
         }
 
         // Unsupported content type

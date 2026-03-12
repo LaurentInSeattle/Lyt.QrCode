@@ -129,7 +129,7 @@ public sealed class Patterns(
         }
 
         // If we didn't find alignment pattern... we'll try anyway without it
-        var transform = PerspectiveTransform.Create(
+        var transform = PerspectiveTransform.CreateFromPatterns(
             this.TopLeft, this.TopRight, this.BottomLeft, alignmentPattern, dimension);
         if (!image.TryResample(dimension, transform, out BitMatrixImage? resampled ))
         {
@@ -139,7 +139,6 @@ public sealed class Patterns(
         detectorResult = new DetectorResult(resampled, this);
         return true;
     }
-
 
     /// <summary>
     /// Computes an average estimated module size based on estimated derived from the positions

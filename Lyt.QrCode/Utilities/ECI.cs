@@ -1,19 +1,19 @@
 namespace Lyt.QrCode.Utilities;
 
 /// <summary> 
-/// Superclass of classes encapsulating types ECIs, according to "Extended Channel Interpretations" 5.3 of ISO 18004.
+/// Base class of classes representing ECIs, according to "Extended Channel Interpretations" 5.3 of ISO 18004.
 /// </summary>
-public abstract class ECI
+internal abstract class ECI
 {
     /// <summary> the ECI value </summary>
-    public virtual int Value { get; private set; }
+    internal virtual int Value { get; private set; }
 
     internal ECI(int val) => this.Value = val;
 
     /// Returns an <see cref="ECI"/> representing ECI of given value, or null if it is legal but unsupported.
     /// <param name="value">ECI value</param>
     /// <throws>ArgumentException if ECI value is invalid </throws>
-    public static ECI? GetECIByValue(int value)
+    internal static ECI? GetECIByValue(int value)
     {
         if (value < 0 || value > 999999)
         {

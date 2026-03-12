@@ -62,7 +62,7 @@ public sealed class EncodingMode
 
     /// Returns the Mode encoded by these bits
     /// <exception cref="ArgumentException">if bits do not correspond to a known mode</exception>
-    public static EncodingMode FromBits(int bits)
+    internal static EncodingMode FromBits(int bits)
     {
         return bits switch
         {
@@ -86,7 +86,7 @@ public sealed class EncodingMode
     /// count of characters that will follow encoded in this {@link Mode}
     /// </returns>
     /// <param name="version"> QR version </param>
-    public int GetCharacterCountBits(QrVersion version)
+    internal int GetCharacterCountBits(QrVersion version)
     {
         if (this.characterCountBitsForVersions == null)
         {
@@ -112,13 +112,14 @@ public sealed class EncodingMode
     }
 
     /// <summary> Gets the mode bits. </summary>
-    public int Bits { get; private set; }
+    internal int Bits { get; private set; }
 
     /// <summary>
     /// Returns the bit length of the character count in the QR segment header
     /// for the specified QR code version. The result is in the range [0, 16].
     /// </summary>
     /// <param name="versionNumber">the QR code version (between 1 and 40)</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int NumCharCountBits(int versionNumber)
     {
         Debug.Assert(Lyt.QrCode.QrCode.MinVersion <= versionNumber && versionNumber <= Lyt.QrCode.QrCode.MaxVersion);

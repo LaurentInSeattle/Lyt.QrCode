@@ -18,7 +18,7 @@ internal sealed class Test
 
         //Decode("screen");
         //Decode("screenRotated");
-        // Decode("screenPortrait");
+        Decode("screenPortrait");
     }
 
     private static void OnDetect (QrPoint resultPoint)

@@ -32,17 +32,17 @@ public sealed class ErrorCorrectionLevel
     }
 
     /// <summary> Gets the format bits value. </summary>
-    public int FormatBits { get; private set; }
+    internal int FormatBits { get; private set; }
 
     /// <summary> Gets the name. </summary>
-    public string Name { get; private set; }
+    internal string Name { get; private set; }
 
     /// <summary> Gets the Ordinal. </summary>
-    public int Ordinal { get; private set; }
+    internal int Ordinal { get; private set; }
 
     public override string ToString() => this.Name;
 
-    public static ErrorCorrectionLevel FromFormatBits(int formatBits)
+    internal static ErrorCorrectionLevel FromFormatBits(int formatBits)
     {
         if (formatBits < 0 || formatBits >= AllEclInBitsOrder.Length)
         {

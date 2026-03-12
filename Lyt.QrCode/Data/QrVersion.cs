@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Data;
 
-public sealed class QrVersion
+internal sealed class QrVersion
 {
     /// <summary> 
     /// Element i represents the raw version bits that specify version i + 7
@@ -81,7 +81,7 @@ public sealed class QrVersion
         return IsValidVersionNumber(versionNumber);
     }
 
-    public static bool IsValidVersionNumber(int versionNumber)
+    internal static bool IsValidVersionNumber(int versionNumber)
         => versionNumber >= 1 && versionNumber <= 40;
 
     internal static bool TryDecodeVersionInformation(

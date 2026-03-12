@@ -18,6 +18,7 @@ internal static partial class StringExtensions
     // each character value maps to the index in the string.
     internal const string AlphanumericCharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void ThrowIfNullOrWhiteSpace(this string text)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -26,8 +27,9 @@ internal static partial class StringExtensions
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static uint IndexOfAlphanumeric(this char x)
-        => (uint)AlphanumericCharset.IndexOf(x); 
+        => (uint)AlphanumericCharset.IndexOf(x);
 
     /// <summary> 
     /// Tests whether the specified string can be encoded as a segment in numeric mode. 
@@ -35,6 +37,7 @@ internal static partial class StringExtensions
     /// </summary>
     /// <param name="text">the string to test for encodability (not <c>null</c>)</param>
     /// <returns><c>true</c> iff each character is in the range "0" to "9".</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsNumeric(this string text)
         =>  NumericRegex.IsMatch(text);
 
@@ -45,7 +48,7 @@ internal static partial class StringExtensions
     /// </summary>
     /// <param name="text">the string to test for encodability (not <c>null</c>)</param>
     /// <returns><c>true</c> iff each character is in the alphanumeric mode character set.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsAlphanumeric(this string text)
         => AlphanumericRegex.IsMatch(text);
-
 }

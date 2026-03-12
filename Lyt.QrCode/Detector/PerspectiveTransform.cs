@@ -28,7 +28,7 @@ internal sealed class PerspectiveTransform
         this.a33 = a33;
     }
 
-    internal static PerspectiveTransform Create(
+    internal static PerspectiveTransform CreateFromPatterns(
         QrPoint topLeft, QrPoint topRight, QrPoint bottomLeft, QrPoint? alignmentPattern, int dimension)
     {
         float dimMinusThree = (float)dimension - 3.5f;
@@ -152,7 +152,7 @@ internal sealed class PerspectiveTransform
     internal PerspectiveTransform Adjoint()
         // Adjoint is the transpose of the cofactor matrix:
         => new (
-                a22 * a33 - a23 * a32,   a23 * a31 - a21 * a33,   a21 * a32 - a22 * a31,
-                a13 * a32 - a12 * a33,   a11 * a33 - a13 * a31,   a12 * a31 - a11 * a32,
-                a12 * a23 - a13 * a22,   a13 * a21 - a11 * a23,   a11 * a22 - a12 * a21);    
+            a22 * a33 - a23 * a32,   a23 * a31 - a21 * a33,   a21 * a32 - a22 * a31,
+            a13 * a32 - a12 * a33,   a11 * a33 - a13 * a31,   a12 * a31 - a11 * a32,
+            a12 * a23 - a13 * a22,   a13 * a21 - a11 * a23,   a11 * a22 - a12 * a21);    
 }

@@ -1,7 +1,9 @@
 namespace Lyt.QrCode.Utilities;
 
+// TODO: Prevent throwing exceptions for unsupported encodings !!!
+
 /// <summary> Encapsulates a Character Set ECI, according to "Extended Channel Interpretations" 5.3.1.1 of ISO 18004. </summary>
-public sealed class CharacterSetECI : ECI
+internal sealed class CharacterSetECI : ECI
 {
     internal static readonly IDictionary<int, CharacterSetECI> ValueToECI;
 
@@ -10,10 +12,10 @@ public sealed class CharacterSetECI : ECI
     private Encoding? encoding;
 
     /// <summary> The encoding name </summary>
-    public string EncodingName { get; private set; }
+    internal string EncodingName { get; private set; }
 
     /// <summary> gets or sets the encoding class:  can be set externally if override is necessary. </summary>
-    public Encoding? Encoding
+    internal Encoding? Encoding
     {
         get => this.encoding ??= GetEncoding(this);
         set => this.encoding = value;

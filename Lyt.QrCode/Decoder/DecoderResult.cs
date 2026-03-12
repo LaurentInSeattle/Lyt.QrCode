@@ -9,6 +9,7 @@ public sealed class DecoderResult
     /// <summary>  raw bytes encoded by the barcode, if applicable, otherwise <code>null</code><summary> 
     public byte[]? RawBytes { get; internal set; } = null;
 
+    // TODO: Possibly NOT needed 
     /// <summary> The list of byte segments in the result, or empty list if not applicable </summary>
     public List<byte[]> ByteSegments { get; internal set; } = [];
 
@@ -19,6 +20,7 @@ public sealed class DecoderResult
     public int ErrorsCorrected { get; internal set ; }
 
     /// <summary> the symbology identifier </summary>
+    // TODO: Possibly NOT needed 
     public int SymbologyModifier { get; internal set; }
 
     /// <summary>  The points identifying finder patterns of the corners of the QrCode.  <summary> 

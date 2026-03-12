@@ -3,6 +3,7 @@
 internal static class MathExtensions
 {
     /// Euclidean distance between integer points A and B
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float Distance(int aX, int aY, int bX, int bY)
     {
         double xDiff = aX - bX;
@@ -16,6 +17,7 @@ internal static class MathExtensions
     /// values. -2.5 rounds to -3, not -2. For purposes here it makes no difference.
     /// </summary>
     /// <param name="d"> float value to round</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Round(float d)
     {
         if (float.IsNaN(d))
@@ -32,6 +34,7 @@ internal static class MathExtensions
     }
 
     /// <summary> Same as above for doubles  </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Round(double d)
     {
         if (double.IsNaN(d))
