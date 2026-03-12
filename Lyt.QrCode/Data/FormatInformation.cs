@@ -1,8 +1,6 @@
 ﻿namespace Lyt.QrCode.Data;
 
-/// <summary>
-/// Encapsulates a QR Code's format information, including the data mask used and error correction level.
-/// </summary>
+/// <summary> Encapsulates a QR Code's format information, including the data mask used and error correction level. </summary>
 internal sealed class FormatInformation 
 {
     private const int FormatInformationMaskQr = 0x5412;

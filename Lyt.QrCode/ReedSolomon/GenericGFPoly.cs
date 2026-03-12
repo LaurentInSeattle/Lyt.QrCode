@@ -1,10 +1,10 @@
 namespace Lyt.QrCode.ReedSolomon;
 
 /// <summary>
-/// <p>Represents a polynomial whose coefficients are elements of a GF.
-/// Instances of this class are immutable.</p>
-/// <p>Much credit is due to William Rucklidge since portions of this code are an indirect
-/// port of his C++ Reed-Solomon implementation.</p>
+/// Represents a polynomial whose coefficients are elements of a GF.
+/// Instances of this class are immutable.
+/// Much credit is due to William Rucklidge since portions of this code are an indirect
+/// port of his C++ Reed-Solomon implementation.
 /// </summary>
 internal sealed class GenericGFPoly
 {
@@ -35,7 +35,7 @@ internal sealed class GenericGFPoly
             }
             if (firstNonZero == coefficientsLength)
             {
-                this.Coefficients = new int[] { 0 };
+                this.Coefficients = [0];
             }
             else
             {
@@ -67,37 +67,39 @@ internal sealed class GenericGFPoly
     /// <summary> coefficient of x^degree term in this polynomial </summary>
     /// <param name="degree">The degree.</param>
     /// <returns>coefficient of x^degree term in this polynomial</returns>
-    internal int getCoefficient(int degree) => this.Coefficients[this.Coefficients.Length - 1 - degree];
+    internal int GetCoefficient(int degree) => this.Coefficients[this.Coefficients.Length - 1 - degree];
 
     /// <summary> Evaluation of this polynomial at the given point A </summary>
-    internal int evaluateAt(int a)
+    internal int EvaluateAt(int a)
     {
         int result = 0;
         if (a == 0)
         {
             // Just return the x^0 coefficient
-            return getCoefficient(0);
+            return this.GetCoefficient(0);
         }
+
         if (a == 1)
         {
             // Just the sum of the coefficients
-            foreach (var coefficient in this.Coefficients)
+            foreach (int coefficient in this.Coefficients)
             {
-                result = GenericGF.addOrSubtract(result, coefficient);
+                result = GenericGF.AddOrSubtract(result, coefficient);
             }
             return result;
         }
+
         result = this.Coefficients[0];
         int size = this.Coefficients.Length;
         for (int i = 1; i < size; i++)
         {
-            result = GenericGF.addOrSubtract(this.Field.multiply(a, result), this.Coefficients[i]);
+            result = GenericGF.AddOrSubtract(this.Field.Multiply(a, result), this.Coefficients[i]);
         }
 
         return result;
     }
 
-    internal GenericGFPoly addOrSubtract(GenericGFPoly other)
+    internal GenericGFPoly AddOrSubtract(GenericGFPoly other)
     {
         if (!this.Field.Equals(other.Field))
         {
@@ -118,9 +120,7 @@ internal sealed class GenericGFPoly
         int[] largerCoefficients = other.Coefficients;
         if (smallerCoefficients.Length > largerCoefficients.Length)
         {
-            int[] temp = smallerCoefficients;
-            smallerCoefficients = largerCoefficients;
-            largerCoefficients = temp;
+            (largerCoefficients, smallerCoefficients) = (smallerCoefficients, largerCoefficients);
         }
 
         int[] sumDiff = new int[largerCoefficients.Length];
@@ -130,13 +130,13 @@ internal sealed class GenericGFPoly
 
         for (int i = lengthDiff; i < largerCoefficients.Length; i++)
         {
-            sumDiff[i] = GenericGF.addOrSubtract(smallerCoefficients[i - lengthDiff], largerCoefficients[i]);
+            sumDiff[i] = GenericGF.AddOrSubtract(smallerCoefficients[i - lengthDiff], largerCoefficients[i]);
         }
 
         return new GenericGFPoly(this.Field, sumDiff);
     }
 
-    internal GenericGFPoly multiply(GenericGFPoly other)
+    internal GenericGFPoly Multiply(GenericGFPoly other)
     {
         if (!this.Field.Equals(other.Field))
         {
@@ -159,7 +159,7 @@ internal sealed class GenericGFPoly
             for (int j = 0; j < bLength; j++)
             {
                 product[i + j] = 
-                    GenericGF.addOrSubtract(product[i + j], this.Field.multiply(aCoeff, bCoefficients[j]));
+                    GenericGF.AddOrSubtract(product[i + j], this.Field.Multiply(aCoeff, bCoefficients[j]));
             }
         }
 
@@ -182,18 +182,19 @@ internal sealed class GenericGFPoly
         int[] product = new int[size];
         for (int i = 0; i < size; i++)
         {
-            product[i] = this.Field.multiply(this.Coefficients[i], scalar);
+            product[i] = this.Field.Multiply(this.Coefficients[i], scalar);
         }
 
         return new GenericGFPoly(this.Field, product);
     }
 
-    internal GenericGFPoly multiplyByMonomial(int degree, int coefficient)
+    internal GenericGFPoly MultiplyByMonomial(int degree, int coefficient)
     {
         if (degree < 0)
         {
-            throw new ArgumentException();
+            throw new ArgumentException("Galois Polynomial Degree is negative ", nameof(degree));
         }
+
         if (coefficient == 0)
         {
             return this.Field.Zero;
@@ -202,12 +203,12 @@ internal sealed class GenericGFPoly
         int[] product = new int[size + degree];
         for (int i = 0; i < size; i++)
         {
-            product[i] = this.Field.multiply(this.Coefficients[i], coefficient);
+            product[i] = this.Field.Multiply(this.Coefficients[i], coefficient);
         }
         return new GenericGFPoly(this.Field, product);
     }
 
-    internal GenericGFPoly[] divide(GenericGFPoly other)
+    internal GenericGFPoly[] Divide(GenericGFPoly other)
     {
         if (!this.Field.Equals(other.Field))
         {
@@ -222,17 +223,17 @@ internal sealed class GenericGFPoly
         GenericGFPoly quotient = this.Field.Zero;
         GenericGFPoly remainder = this;
 
-        int denominatorLeadingTerm = other.getCoefficient(other.Degree);
-        int inverseDenominatorLeadingTerm = this.Field.inverse(denominatorLeadingTerm);
+        int denominatorLeadingTerm = other.GetCoefficient(other.Degree);
+        int inverseDenominatorLeadingTerm = this.Field.Inverse(denominatorLeadingTerm);
 
         while (remainder.Degree >= other.Degree && !remainder.IsZero)
         {
             int degreeDifference = remainder.Degree - other.Degree;
-            int scale = this.Field.multiply(remainder.getCoefficient(remainder.Degree), inverseDenominatorLeadingTerm);
-            GenericGFPoly term = other.multiplyByMonomial(degreeDifference, scale);
-            GenericGFPoly iterationQuotient = this.Field.buildMonomial(degreeDifference, scale);
-            quotient = quotient.addOrSubtract(iterationQuotient);
-            remainder = remainder.addOrSubtract(term);
+            int scale = this.Field.Multiply(remainder.GetCoefficient(remainder.Degree), inverseDenominatorLeadingTerm);
+            GenericGFPoly term = other.MultiplyByMonomial(degreeDifference, scale);
+            GenericGFPoly iterationQuotient = this.Field.BuildMonomial(degreeDifference, scale);
+            quotient = quotient.AddOrSubtract(iterationQuotient);
+            remainder = remainder.AddOrSubtract(term);
         }
 
         return [quotient, remainder];
@@ -248,19 +249,20 @@ internal sealed class GenericGFPoly
         var sb = new StringBuilder(8 * this.Degree);
         for (int degree = this.Degree; degree >= 0; degree--)
         {
-            int coefficient = getCoefficient(degree);
+            int coefficient = this.GetCoefficient(degree);
             if (coefficient != 0)
             {
                 if (coefficient < 0)
                 {
                     if (degree == this.Degree)
                     {
-                        sb.Append("-");
+                        sb.Append('-');
                     }
                     else
                     {
                         sb.Append(" - ");
                     }
+
                     coefficient = -coefficient;
                 }
                 else
@@ -273,7 +275,7 @@ internal sealed class GenericGFPoly
                 
                 if (degree == 0 || coefficient != 1)
                 {
-                    int alphaPower = this.Field.log(coefficient);
+                    int alphaPower = this.Field.Log(coefficient);
                     if (alphaPower == 0)
                     {
                         sb.Append('1');

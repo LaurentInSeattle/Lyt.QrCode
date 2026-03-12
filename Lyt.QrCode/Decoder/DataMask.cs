@@ -40,11 +40,12 @@ internal static class DataMask
         new Func<int, int, bool>((i, j) => ((i + j + ((i * j) % 3)) & 0x01) == 0),
     ];
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static Func<int, int, bool> FromMask(int reference)
     {
         if (reference < 0 || reference > 7)
         {
-            throw new ArgumentException("Refreence must be: (< 0 || > 7)", nameof(reference));
+            throw new ArgumentException("Reference must be: (< 0 || > 7)", nameof(reference));
         }
 
         return DataMasks[reference];

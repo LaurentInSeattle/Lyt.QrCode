@@ -34,7 +34,12 @@ public sealed partial class BitMatrixImage
 
         const int INTEGER_MATH_SHIFT = 8;
 
-        List<Pattern> possibleCenters = new(3);
+#pragma warning disable IDE0028 
+        // Simplify collection initialization
+        // Creates an error !
+        List<Pattern> possibleCenters = new(4);
+#pragma warning restore IDE0028
+        
         int[] crossCheckStateCount = new int[5];
         int[] stateCount = new int[5];
 
@@ -495,7 +500,7 @@ public sealed partial class BitMatrixImage
             {
                 return 0;
             }
-            ResultPoint? firstConfirmedCenter = null;
+            QrPoint? firstConfirmedCenter = null;
             foreach (var center in possibleCenters)
             {
                 if (center.Count >= CENTER_QUORUM)
@@ -706,7 +711,7 @@ public sealed partial class BitMatrixImage
                 for (int j = i + 1; j < possibleCenters.Count - 1; j++)
                 {
                     Pattern fpj = possibleCenters[j];
-                    double squares0 = Pattern.SquaredDistance(fpi, fpj);
+                    double squares0 = QrPoint.SquaredDistance(fpi, fpj);
 
                     for (int k = j + 1; k < possibleCenters.Count; k++)
                     {
@@ -719,8 +724,8 @@ public sealed partial class BitMatrixImage
                         }
 
                         double a = squares0;
-                        double b = Pattern.SquaredDistance(fpj, fpk);
-                        double c = Pattern.SquaredDistance(fpi, fpk);
+                        double b = QrPoint.SquaredDistance(fpj, fpk);
+                        double c = QrPoint.SquaredDistance(fpi, fpk);
 
                         // sorts ascending - inlined
                         if (a < b)
@@ -796,7 +801,7 @@ public sealed partial class BitMatrixImage
         }
 
         // Order: Pattern bottomLeft, Pattern topLeft, Pattern topRight
-        ResultPoint.OrderBestPatterns(patternInfo);
+        QrPoint.OrderBestPatterns(patternInfo);
         Debug.WriteLine("patternInfo: " + patternInfo[0] + ", " + patternInfo[1] + ", " + patternInfo[2]);
         patterns = new Patterns(patternInfo[0], patternInfo[1], patternInfo[2], null);
         return true;
@@ -814,7 +819,11 @@ public sealed partial class BitMatrixImage
         [NotNullWhen(true)] out AlignmentPattern? pattern)
     {
         pattern = null;
-        List<AlignmentPattern> possibleCenters = new(5);
+#pragma warning disable IDE0028 
+        // Simplify collection initialization
+        // Creates a  compile error :( 
+        List<AlignmentPattern> possibleCenters = new(8);
+#pragma warning restore IDE0028 
         int[] crossCheckStateCount = new int[3];
 
         int maxJ = startX + width;
@@ -824,7 +833,8 @@ public sealed partial class BitMatrixImage
         // this tracks the number of black/white/black modules seen so far
         int[] stateCount = new int[3];
 
-        /// <summary> Given a count of black/white/black pixels just seen and an end position,
+        /// <summary> 
+        /// Given a count of black/white/black pixels just seen and an end position,
         /// figures the location of the center of this black/white/black run.
         /// </summary>
         static float? CenterFromEnd(int[] stateCount, int end)
@@ -854,20 +864,16 @@ public sealed partial class BitMatrixImage
             return true;
         }
 
-        /// <summary> <p>This is called when a horizontal scan finds a possible alignment pattern. It will
+        /// <summary> 
+        /// This is called when a horizontal scan finds a possible alignment pattern. It will
         /// cross check with a vertical scan, and if successful, will see if this pattern had been
         /// found on a previous horizontal scan. If so, we consider it confirmed and conclude we have
         /// found the alignment pattern.</p>
-        /// 
         /// </summary>
-        /// <param name="stateCount">reading state module counts from horizontal scan
-        /// </param>
-        /// <param name="i">row where alignment pattern may be found
-        /// </param>
-        /// <param name="j">end of possible alignment pattern in row
-        /// </param>
-        /// <returns> {@link AlignmentPattern} if we have found the same pattern twice, or null if not
-        /// </returns>
+        /// <param name="stateCount">reading state module counts from horizontal scan </param>
+        /// <param name="i">row where alignment pattern may be found </param>
+        /// <param name="j">end of possible alignment pattern in row </param>
+        /// <returns> {@link AlignmentPattern} if we have found the same pattern twice, or null if not </returns>
         AlignmentPattern? HandlePossibleCenter(int[] stateCount, int i, int j)
         {
             /// <summary>

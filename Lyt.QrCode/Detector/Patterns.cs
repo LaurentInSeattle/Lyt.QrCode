@@ -26,9 +26,9 @@ public sealed class Patterns(
         bool CalculateDimension(out int dimension)
         {
             int tltrCentersDimension =
-                MathExtensions.Round(ResultPoint.Distance(this.TopLeft, this.TopRight) / moduleSize);
+                MathExtensions.Round(QrPoint.Distance(this.TopLeft, this.TopRight) / moduleSize);
             int tlblCentersDimension =
-                MathExtensions.Round(ResultPoint.Distance(this.TopLeft, this.BottomLeft) / moduleSize);
+                MathExtensions.Round(QrPoint.Distance(this.TopLeft, this.BottomLeft) / moduleSize);
             dimension = ((tltrCentersDimension + tlblCentersDimension) >> 1) + 7;
             switch (dimension & 0x03)
             {
@@ -266,7 +266,7 @@ public sealed class Patterns(
         /// {@link #sizeOfBlackWhiteBlackRunBothWays(int, int, int, int)} to figure the
         /// width of each, measuring along the axis between their centers.</p>
         /// </summary>
-        float CalculateModuleSizeOneWay(ResultPoint pattern, ResultPoint otherPattern)
+        float CalculateModuleSizeOneWay(QrPoint pattern, QrPoint otherPattern)
         {
             float moduleSizeEst1 = SizeOfBlackWhiteBlackRunBothWays((int)pattern.X, (int)pattern.Y, (int)otherPattern.X, (int)otherPattern.Y);
             float moduleSizeEst2 = SizeOfBlackWhiteBlackRunBothWays((int)otherPattern.X, (int)otherPattern.Y, (int)pattern.X, (int)pattern.Y);

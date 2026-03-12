@@ -4,15 +4,18 @@ internal sealed partial class GrayscaleImage
 {
     // The Adaptive Thresholding method uses 5x5 blocks to compute local luminance, where each block is 8x8 pixels.
     // So this is the smallest dimension in each axis we can accept.
-    private const int BLOCK_SIZE_POWER = 3;
-    private const int BLOCK_SIZE = 1 << BLOCK_SIZE_POWER; // ...0100...00
-    private const int BLOCK_SIZE_MASK = BLOCK_SIZE - 1;   // ...0011...11
-    private const int MINIMUM_DIMENSION = 40;
-    private const int MIN_DYNAMIC_RANGE = 24;
+    private const int BlockSizePower = 3;
+    private const int BlockSize = 1 << BlockSizePower; // ...0100...00
+    private const int BlockSizeMask = BlockSize - 1;   // ...0011...11
+    private const int MinimumDimension = 40;
+    private const int MinimumDynamicRange = 24;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Cap(int value, int max) => value < 2 ? 2 : value > max ? max : value;
 
     internal BitMatrixImage ToBitMatrix()
     {
-        if (this.Width >= MINIMUM_DIMENSION && this.Height >= MINIMUM_DIMENSION)
+        if (this.Width >= MinimumDimension && this.Height >= MinimumDimension)
         {
             return this.ToBitMatrixAdaptiveThresholding();
         }
@@ -40,21 +43,18 @@ internal sealed partial class GrayscaleImage
         return bitMatrix;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int Cap(int value, int max) => value < 2 ? 2 : value > max ? max : value;
-
     internal BitMatrixImage ToBitMatrixAdaptiveThresholding()
     {
         int width = this.Width;
         int height = this.Height;
-        int subWidth = width >> BLOCK_SIZE_POWER;
-        if ((width & BLOCK_SIZE_MASK) != 0)
+        int subWidth = width >> BlockSizePower;
+        if ((width & BlockSizeMask) != 0)
         {
             subWidth++;
         }
 
-        int subHeight = height >> BLOCK_SIZE_POWER;
-        if ((height & BLOCK_SIZE_MASK) != 0)
+        int subHeight = height >> BlockSizePower;
+        if ((height & BlockSizeMask) != 0)
         {
             subHeight++;
         }
@@ -64,8 +64,8 @@ internal sealed partial class GrayscaleImage
         /// Calculates a single black point for each 8x8 block of pixels and saves it away.
         int[][] CalculateBlackPoints()
         {
-            int maxYOffset = height - BLOCK_SIZE;
-            int maxXOffset = width - BLOCK_SIZE;
+            int maxYOffset = height - BlockSize;
+            int maxXOffset = width - BlockSize;
             int[][] blackPoints = new int[subHeight][];
             for (int i = 0; i < subHeight; i++)
             {
@@ -74,7 +74,7 @@ internal sealed partial class GrayscaleImage
 
             for (int y = 0; y < subHeight; y++)
             {
-                int yoffset = y << BLOCK_SIZE_POWER;
+                int yoffset = y << BlockSizePower;
                 if (yoffset > maxYOffset)
                 {
                     yoffset = maxYOffset;
@@ -84,7 +84,7 @@ internal sealed partial class GrayscaleImage
                 int[]? blackPointsY1 = y > 0 ? blackPoints[y - 1] : null;
                 for (int x = 0; x < subWidth; x++)
                 {
-                    int xoffset = x << BLOCK_SIZE_POWER;
+                    int xoffset = x << BlockSizePower;
                     if (xoffset > maxXOffset)
                     {
                         xoffset = maxXOffset;
@@ -93,9 +93,9 @@ internal sealed partial class GrayscaleImage
                     int sum = 0;
                     int min = 0xFF;
                     int max = 0;
-                    for (int yy = 0, offset = yoffset * width + xoffset; yy < BLOCK_SIZE; yy++, offset += width)
+                    for (int yy = 0, offset = yoffset * width + xoffset; yy < BlockSize; yy++, offset += width)
                     {
-                        for (int xx = 0; xx < BLOCK_SIZE; xx++)
+                        for (int xx = 0; xx < BlockSize; xx++)
                         {
                             int pixel = luminances[offset + xx] & 0xFF;
                             // still looking for good contrast
@@ -111,12 +111,12 @@ internal sealed partial class GrayscaleImage
                         }
 
                         // short-circuit min/max tests once dynamic range is met
-                        if (max - min > MIN_DYNAMIC_RANGE)
+                        if (max - min > MinimumDynamicRange)
                         {
                             // finish the rest of the rows quickly
-                            for (yy++, offset += width; yy < BLOCK_SIZE; yy++, offset += width)
+                            for (yy++, offset += width; yy < BlockSize; yy++, offset += width)
                             {
-                                for (int xx = 0; xx < BLOCK_SIZE; xx++)
+                                for (int xx = 0; xx < BlockSize; xx++)
                                 {
                                     sum += luminances[offset + xx] & 0xFF;
                                 }
@@ -125,8 +125,8 @@ internal sealed partial class GrayscaleImage
                     }
 
                     // The default estimate is the average of the values in the block.
-                    int average = sum >> (BLOCK_SIZE_POWER * 2);
-                    if (max - min <= MIN_DYNAMIC_RANGE)
+                    int average = sum >> (BlockSizePower * 2);
+                    if (max - min <= MinimumDynamicRange)
                     {
                         // If variation within the block is low, assume this is a block with only light or only
                         // dark pixels. In that case we do not want to use the average, as it would divide this
@@ -180,9 +180,9 @@ internal sealed partial class GrayscaleImage
                 int xoffset, int yoffset, int threshold, int stride)
             {
                 int offset = (yoffset * stride) + xoffset;
-                for (int y = 0; y < BLOCK_SIZE; y++, offset += stride)
+                for (int y = 0; y < BlockSize; y++, offset += stride)
                 {
-                    for (int x = 0; x < BLOCK_SIZE; x++)
+                    for (int x = 0; x < BlockSize; x++)
                     {
                         int pixel = luminances[offset + x] & 0xff;
                         // Comparison needs to be <= so that black == 0 pixels are black even if the threshold is 0.
@@ -191,12 +191,12 @@ internal sealed partial class GrayscaleImage
                 }
             }
 
-            int maxYOffset = height - BLOCK_SIZE;
-            int maxXOffset = width - BLOCK_SIZE;
+            int maxYOffset = height - BlockSize;
+            int maxXOffset = width - BlockSize;
 
             for (int y = 0; y < subHeight; y++)
             {
-                int yoffset = y << BLOCK_SIZE_POWER;
+                int yoffset = y << BlockSizePower;
                 if (yoffset > maxYOffset)
                 {
                     yoffset = maxYOffset;
@@ -205,7 +205,7 @@ internal sealed partial class GrayscaleImage
                 int top = Cap(y, subHeight - 3);
                 for (int x = 0; x < subWidth; x++)
                 {
-                    int xoffset = x << BLOCK_SIZE_POWER;
+                    int xoffset = x << BlockSizePower;
                     if (xoffset > maxXOffset)
                     {
                         xoffset = maxXOffset;

@@ -1,8 +1,8 @@
 ﻿namespace Lyt.QrCode.Encoder;
 
-// Helper class for GetPenaltyScore().
-// Internal the run history is organized in reverse order (compared to Nayuki's code) to avoid
-// the copying when adding to the history.
+// Helper for Penalty Scores.
+// The run history is organized in reverse order (compared to Nayuki's code) to avoid
+// copying when adding to the history.
 internal readonly struct FinderPenalty(int size)
 {
     private readonly short[] runHistory = new short[7];

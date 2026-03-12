@@ -21,7 +21,7 @@ internal sealed class Test
         // Decode("screenPortrait");
     }
 
-    private static void OnDetect (ResultPoint resultPoint)
+    private static void OnDetect (QrPoint resultPoint)
         => Console.WriteLine("Detected: " + resultPoint.ToString());
 
     private static void Detect(string filename)

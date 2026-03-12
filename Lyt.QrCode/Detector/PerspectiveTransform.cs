@@ -29,7 +29,7 @@ internal sealed class PerspectiveTransform
     }
 
     internal static PerspectiveTransform Create(
-        ResultPoint topLeft, ResultPoint topRight, ResultPoint bottomLeft, ResultPoint? alignmentPattern, int dimension)
+        QrPoint topLeft, QrPoint topRight, QrPoint bottomLeft, QrPoint? alignmentPattern, int dimension)
     {
         float dimMinusThree = (float)dimension - 3.5f;
         float bottomRightX;

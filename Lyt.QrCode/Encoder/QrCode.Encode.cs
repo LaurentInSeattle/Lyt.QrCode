@@ -56,8 +56,8 @@ public sealed partial class QrCode
         this.Size = version * 4 + 17;
         this.ErrorCorrectionLevel = ecl;
 
-        this.modules = new bool[this.Size, this.Size];  // Initially all light
-        this.isFunction = new bool[this.Size, this.Size];
+        this.modules = new bool[this.Size, this.Size];  // Initially all false, == light
+        this.isFunction = new bool[this.Size, this.Size]; // Initially all false, == not function
 
         // Compute ECC, draw modules, do masking
         this.DrawFunctionPatterns();
@@ -248,7 +248,7 @@ public sealed partial class QrCode
         // Create the data bit string
         var bitArray = new BitArray(0);
         bitArray.AppendBits((uint)segment.EncodingMode.Bits, 4);
-        bitArray.AppendBits((uint)segment.NumChars, segment.EncodingMode.NumCharCountBits(foundVersion));
+        bitArray.AppendBits((uint)segment.CharacterCount, segment.EncodingMode.NumCharCountBits(foundVersion));
         bitArray.AppendData(segment.GetData());
 
         Debug.Assert(bitArray.Length == dataUsedBits);

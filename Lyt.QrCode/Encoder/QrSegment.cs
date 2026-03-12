@@ -2,24 +2,27 @@
 
 internal class QrSegment
 {
+    // The data bits of this segment. Accessed through GetData().
+    private readonly BitArray data;
+
     /// <summary>
     /// Initializes a QR code segment with the specified attributes and data.
-    /// The character count <paramref name="numChars"/> must agree with the mode and the bit array length,
+    /// The character count <paramref name="characterCount"/> must agree with the mode and the bit array length,
     /// but the constraint isn't checked. The specified bit array is cloned.
     /// </summary>
     /// <param name="mode">The segment mode used to encode this segment.</param>
-    /// <param name="numChars">The data length in characters or bytes (depending on the segment mode).</param>
+    /// <param name="characterCount">The data length in characters or bytes (depending on the segment mode).</param>
     /// <param name="data">The data bits.</param>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="numChars"/> is negative.</exception>
-    internal QrSegment(EncodingMode mode, int numChars, BitArray data)
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="characterCount"/> is negative.</exception>
+    internal QrSegment(EncodingMode mode, int characterCount, BitArray data)
     {
-        if (numChars < 0)
+        if (characterCount < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(numChars), "Invalid value, cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(characterCount), "Invalid value, cannot be negative.");
         }
 
         this.EncodingMode = mode;
-        this.NumChars = numChars;
+        this.CharacterCount = characterCount;
 
         // WHY ?? Make defensive copy
         this.data = (BitArray)data.Clone();  
@@ -32,11 +35,7 @@ internal class QrSegment
     /// The length of this segment's unencoded data, measured in characters for numeric/alphanumeric/kanji mode,
     /// bytes for byte mode, and 0 for ECI mode. : Different from the data's bit length.
     /// </summary>
-    /// <value>Length of the segment's unencoded data.</value>
-    internal int NumChars { get; }
-
-    // The data bits of this segment. Accessed through GetData().
-    private readonly BitArray data;
+    internal int CharacterCount { get; }
 
     /// <summary> Returns a copy of this segment's data bits. </summary>
     public BitArray GetData() => (BitArray) this.data.Clone();  // Make defensive copy => WHY ??? NeCESSARY ? 
@@ -66,10 +65,9 @@ internal class QrSegment
     }
 
     /// <summary>
-    /// Creates a segment representing the specified binary data
-    /// encoded in byte mode. All input byte arrays are acceptable.
-    /// Any text string can be converted to UTF-8 bytes (using <c>Encoding.UTF8.GetBytes(str)</c>)
-    /// and encoded as a byte mode segment.
+    /// Creates a segment representing the specified binary data encoded in byte mode. 
+    /// All input byte arrays are acceptable.  Any text string can be converted to UTF-8 bytes 
+    /// (using <c>Encoding.UTF8.GetBytes(str)</c>) and encoded as a byte mode segment.
     /// </summary>
     /// <param name="data">The binary data to encode.</param>
     /// <returns>The created segment containing the specified data.</returns>
@@ -132,11 +130,10 @@ internal class QrSegment
         return new QrSegment(EncodingMode.Alphanumeric, text.Length, bitArray);
     }
 
-    /// <summary> Calculates the number of bits needed to encode the given segment. 
-    /// <para>
+    /// <summary> 
+    /// Calculates the number of bits needed to encode the given segment. 
     /// Returns a non-negative number if successful. Otherwise returns -1 if a segment has too
     /// many characters to fit its length field, or the total bits exceeds int.MaxValue.
-    /// </para>
     /// </summary>
     /// <param name="segment">The segment.</param>
     /// <param name="version">The version number.</param>
@@ -145,7 +142,7 @@ internal class QrSegment
     {
         long result = 0;
         int ccBits = segment.EncodingMode.NumCharCountBits(version);
-        if (segment.NumChars >= 1 << ccBits)
+        if (segment.CharacterCount >= 1 << ccBits)
         {
             return -1;  // The segment's length doesn't fit the field's bit width
         }
@@ -199,5 +196,4 @@ internal class QrSegment
 
         return 4 + ccBits + dataBits;
     }
-
 }

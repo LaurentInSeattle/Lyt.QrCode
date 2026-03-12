@@ -84,7 +84,6 @@ public sealed class QrVersion
     public static bool IsValidVersionNumber(int versionNumber)
         => versionNumber >= 1 && versionNumber <= 40;
 
-    // TODO: Use Try Pattern 
     internal static bool TryDecodeVersionInformation(
         int versionBits, [NotNullWhen(true)] out QrVersion? qrVersion)
     {
@@ -101,8 +100,7 @@ public sealed class QrVersion
                 return true;
             }
 
-            // Otherwise see if this is the closest to a real version info bit string
-            // we have seen so far
+            // Otherwise see if this is the closest to a real version info bit string we have seen so far
             int bitsDifference = FormatInformation.NumBitsDiffering(versionBits, targetVersion);
             if (bitsDifference < bestDifference)
             {
@@ -111,8 +109,7 @@ public sealed class QrVersion
             }
         }
 
-        // We can tolerate up to 3 bits of error since no two version info codewords will
-        // differ in less than 8 bits.
+        // We can tolerate up to 3 bits of error since no two version info codewords will differ in less than 8 bits.
         if (bestDifference <= 3)
         {
             qrVersion = QrVersion.FromVersionNumber(bestVersion);

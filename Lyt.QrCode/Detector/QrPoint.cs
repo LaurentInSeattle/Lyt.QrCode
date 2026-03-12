@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Detector;
 
-public class ResultPoint(float x, float y)
+public class QrPoint(float x, float y)
 {
     public float X { get; } = x;
 
@@ -8,12 +8,30 @@ public class ResultPoint(float x, float y)
 
     public override string ToString() => $"({this.X}, {this.Y})";
 
+    /// <summary> Returns the distance between two points </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static double Distance(QrPoint a, QrPoint b)
+    {
+        double dx = a.X - b.X;
+        double dy = a.Y - b.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    /// <summary> Returns the squared distance between two QrPoint a and b. </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static double SquaredDistance(QrPoint a, QrPoint b)
+    {
+        double dx = a.X - b.X;
+        double dy = a.Y - b.Y;
+        return dx * dx + dy * dy;
+    }
+
     /// <summary>
-    /// Orders an array of three ResultPoints in an order [A,B,C] such that AB is less than AC and
+    /// Orders an array of three QrPoints in an order [A,B,C] such that AB is less than AC and
     /// BC is less than AC and the angle between BC and BA is less than 180 degrees.
     /// </summary>
-    /// <param name="patterns">array of three <see cref="ResultPoint" /> to order</param>
-    internal static void OrderBestPatterns(ResultPoint[] patterns)
+    /// <param name="patterns">array of three <see cref="QrPoint" /> to order</param>
+    internal static void OrderBestPatterns(QrPoint[] patterns)
     {
         // Find distances between pattern centers
         double zeroOneDistance = Distance(patterns[0], patterns[1]);
@@ -21,7 +39,7 @@ public class ResultPoint(float x, float y)
         double zeroTwoDistance = Distance(patterns[0], patterns[2]);
 
         // Assume one closest to other two is B; A and C will just be guesses at first
-        ResultPoint pointA, pointB, pointC;
+        QrPoint pointA, pointB, pointC;
         if (oneTwoDistance >= zeroOneDistance && oneTwoDistance >= zeroTwoDistance)
         {
             pointB = patterns[0];
@@ -56,16 +74,8 @@ public class ResultPoint(float x, float y)
         patterns[2] = pointC;
     }
 
-    /// <summary> distance between two points </summary>
-    internal static double Distance(ResultPoint a, ResultPoint b)
-    {
-        double xDiff = a.X - b.X;
-        double yDiff = a.Y - b.Y;
-        return Math.Sqrt(xDiff * xDiff + yDiff * yDiff);
-    }
-
     /// <summary> Returns the z component of the cross product between vectors BC and BA. </summary>
-    internal static double CrossProductZ(ResultPoint pointA, ResultPoint pointB, ResultPoint pointC)
+    internal static double CrossProductZ(QrPoint pointA, QrPoint pointB, QrPoint pointC)
     {
         float bX = pointB.X;
         float bY = pointB.Y;
