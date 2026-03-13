@@ -50,7 +50,7 @@ internal sealed class Test
             {
                 Console.WriteLine("Detected ");
                 var resampledImage = detectorResult.Resampled;
-                byte[] resImage = PngBuilder.ToPngImage(resampledImage);
+                byte[] resImage = PngBuilder.ToImage(resampledImage);
                 string resPath = Path.Combine(rootPath, filename + "Resampled.png");
                 File.WriteAllBytes(resPath, resImage);
             }
@@ -100,12 +100,12 @@ internal sealed class Test
         SaveGrayscaleImage(imagePathSaveGrayEQ, grayscaleImageEQ);
 
         var bitMatrixImage1 = grayscaleImage.ToBitMatrixBasicThresholding();
-        byte[] bwImage1 = PngBuilder.ToPngImage(bitMatrixImage1);
+        byte[] bwImage1 = PngBuilder.ToImage(bitMatrixImage1);
         string bwPath1 = Path.Combine(rootPath, filename + "Bw1.png");
         File.WriteAllBytes(bwPath1, bwImage1);
 
         var bitMatrixImage2 = grayscaleImage.ToBitMatrixAdaptiveThresholding();
-        byte[] bwImage2 = PngBuilder.ToPngImage(bitMatrixImage2);
+        byte[] bwImage2 = PngBuilder.ToImage(bitMatrixImage2);
         string bwPath2 = Path.Combine(rootPath, filename + "Bw2.png");
         File.WriteAllBytes(bwPath2, bwImage2);
     }

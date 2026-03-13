@@ -48,7 +48,7 @@ public sealed class TestSegmentEncoding
 
         var qrCode = QrCode.EncodeText(text, ErrorCorrectionLevel.Quartile);
         // DrawQrCode(qrCode);
-        byte[] image1 = PngBuilder.ToPngImage(qrCode, 16, 2);
+        byte[] image1 = PngBuilder.ToImage(qrCode, 16, 2);
 
 
         File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image1);

@@ -75,7 +75,7 @@ public static partial class Qr
 
                         case RenderParameters.QrImageFormat.Png:
                             byte[] pngImage =
-                                PngBuilder.ToPngImage(
+                                PngBuilder.ToImage(
                                     qrCode,
                                     renderParameters.Scale,
                                     renderParameters.Border,

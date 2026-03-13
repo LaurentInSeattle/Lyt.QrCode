@@ -19,7 +19,7 @@ internal sealed class PngBuilder
     /// <param name="foreground">The foreground color (dark modules), in RGB value (little endian).</param>
     /// <param name="background">The background color (light modules), in RGB value (little endian).</param>
     /// <returns>A PNG image, as a byte array.</returns>
-    internal static byte[] ToPngImage(QrCode qrCode, int scale, int border, int foreground = 0, int background = 0xFFFFFF)
+    internal static byte[] ToImage(QrCode qrCode, int scale, int border, int foreground = 0, int background = 0xFFFFFF)
     {
         int imageSize = (qrCode.Size + border * 2) * scale;
         var builder = new PngBuilder();
@@ -31,7 +31,7 @@ internal sealed class PngBuilder
     }
 
     /// <summary>  Creates a PNG image for the provided Pixel Provider. Mostly for testing BitMatrix images. </summary>
-    internal static byte[] ToPngImage(IPixelProvider pixelProvider, int foreground = 0, int background = 0xFFFFFF)
+    internal static byte[] ToImage(IPixelProvider pixelProvider, int foreground = 0, int background = 0xFFFFFF)
     {
         var builder = new PngBuilder();
         builder.WriteHeader(pixelProvider.Width, pixelProvider.Height, 1, 3);
