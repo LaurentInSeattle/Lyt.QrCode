@@ -1,13 +1,16 @@
 namespace Lyt.QrCode.Utilities;
 
 /// <summary> Encapsulates a Character Set ECI, according to "Extended Channel Interpretations" 5.3.1.1 of ISO 18004. </summary>
-internal sealed class CharacterSetECI : ECI
+internal sealed class CharacterSetECI
 {
     internal static readonly IDictionary<int, CharacterSetECI> ValueToECI;
 
     internal static readonly IDictionary<string, CharacterSetECI> NameToECI;
 
     private Encoding? encoding;
+
+    /// <summary> the ECI value </summary>
+    internal int Value { get; private set; }
 
     /// <summary> The encoding name </summary>
     internal string EncodingName { get; private set; }
@@ -71,12 +74,15 @@ internal sealed class CharacterSetECI : ECI
         AddCharacterSet(30, ["EUC-KR", "EUC_KR"]);
     }
 
-    private CharacterSetECI(int value, string encodingName) : base(value) => this.EncodingName = encodingName;
+    private CharacterSetECI(int value, string encodingName) 
+    {
+        this.Value = value;
+        this.EncodingName = encodingName;
+    }
 
-
+    /// Returns a <see cref="CharacterSetECI"/> representing ECI of given value, or null if it is legal but unsupported
     /// <param name="value">character set ECI value</param>
-    /// <returns><see cref="CharacterSetECI"/> representing ECI of given value, or null if it is legal but unsupported</returns>
-    public static CharacterSetECI? GetCharacterSetECIByValue(int value)
+    internal static CharacterSetECI? GetCharacterSetECIByValue(int value)
     {
         if (!ValueToECI.TryGetValue(value, out CharacterSetECI? charSet))
         {
@@ -88,7 +94,7 @@ internal sealed class CharacterSetECI : ECI
 
     /// <param name="name">character set ECI encoding name</param>
     /// <returns><see cref="CharacterSetECI"/> representing ECI for character encoding, or null if it is legal but unsupported</returns>
-    public static CharacterSetECI? GetCharacterSetECIByName(string name)
+    internal static CharacterSetECI? GetCharacterSetECIByName(string name)
     {
         if (!NameToECI.TryGetValue(name.ToUpper(), out CharacterSetECI? value))
         {
@@ -100,7 +106,7 @@ internal sealed class CharacterSetECI : ECI
 
     /// <param name="encoding">encoding</param>
     /// <returns>CharacterSetECI representing ECI for character encoding, or null if it is legal but unsupported</returns>
-    public static CharacterSetECI? GetCharacterSetECI(Encoding encoding)
+    internal static CharacterSetECI? GetCharacterSetECI(Encoding encoding)
     {
         if (!NameToECI.TryGetValue(encoding.WebName.ToUpper(), out CharacterSetECI? value))
         {
@@ -112,13 +118,14 @@ internal sealed class CharacterSetECI : ECI
 
     /// <summary> returns the encoding object for the specified charset </summary>
     /// <param name="charsetECI"></param>
-    public static Encoding? GetEncoding(CharacterSetECI charsetECI)
+    internal static Encoding? GetEncoding(CharacterSetECI charsetECI)
     {
         if (charsetECI == null)
         {
             return null;
         }
 
+        // WTH ? 
         // don't use property here because of StackOverflow
         return charsetECI.encoding ??= EncodingUtilities.GetEncoding(charsetECI.EncodingName);
     }

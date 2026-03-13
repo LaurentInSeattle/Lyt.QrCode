@@ -1,61 +1,52 @@
 namespace Lyt.QrCode.Utilities;
 
-public static class EncodingUtilities
+internal static class EncodingUtilities
 {
     /// <summary> name of the default encoding of the current platform (name) </summary>
-    public static readonly string PlatformDefaultEncodingName;
+    internal static readonly string PlatformDefaultEncodingName;
 
     /// <summary> type of default encoding of the current platform </summary>
-    public static readonly Encoding PlatformDefaultEncoding;
+    internal static readonly Encoding PlatformDefaultEncoding;
 
     #region Retained for binary compatibility with earlier versions
 
     // All four Encodings below default to PlatformDefaultEncoding if not supported on current platform 
 
     /// <summary> Shift JIS encoding if available </summary>
-    public static readonly Encoding ShiftJisEncoding;
+    internal static readonly Encoding ShiftJisEncoding;
 
     /// <summary> GB 2312 encoding if available </summary>
-    public static readonly Encoding Gb2312Encoding;
+    internal static readonly Encoding Gb2312Encoding;
 
     /// <summary> ECU JP encoding if available </summary>
-    public static readonly Encoding EucJpEncoding;
+    internal static readonly Encoding EucJpEncoding;
 
     /// <summary> ISO8859-1 encoding if available </summary>
-    public static readonly Encoding ISO88591Encoding;
+    internal static readonly Encoding ISO88591Encoding;
 
     private static readonly bool AssumeShiftJIS;
 
     /// <summary> Whether JIS_IS is supported or not </summary>
-    public static readonly bool JISIsSupported;
+    internal static readonly bool JISIsSupported;
 
     /// <summary> EUC_JP is supported or not </summary>
-    public static readonly bool EucJpIsSupported;
+    internal static readonly bool EucJpIsSupported;
 
-    /// <summary> SJIS </summary>
-    public const string ShiftJis = "SJIS";
+    internal const string ShiftJis = "SJIS";
 
-    /// <summary> GB2312 </summary>
-    public const string GB2312 = "GB2312";
+    internal const string GB2312 = "GB2312";
 
-    /// <summary> EUC-JP </summary>
-    public const string EucJp = "EUC-JP";
+    internal const string EucJp = "EUC-JP";
 
-    /// <summary> UTF-8 </summary>
-    public const string UTF8 = "UTF-8";
+    internal const string UTF8 = "UTF-8";
 
-    /// <summary> ISO-8859-1 </summary>
-    public const string ISO88591 = "ISO-8859-1";
+    internal const string ISO88591 = "ISO-8859-1";
 
     #endregion Retained for binary compatibility with earlier versions
 
     internal static Dictionary<string, EncodingInfo> supportedEncodings;
 
-#pragma warning disable CS8618
-    // Non-nullable field must contain a non-null value when exiting constructor. 
-    // Compiler error: ShiftJisEncoding and EucJpEncoding are both initialized not null 
     static EncodingUtilities()
-#pragma warning restore CS8618 
     {
 #pragma warning disable IDE0028  // Simplify collection initialization
         // with is still in preview
@@ -77,22 +68,30 @@ public static class EncodingUtilities
         EucJpEncoding = GetEncoding(EucJp) ?? PlatformDefaultEncoding;
         ISO88591Encoding = GetEncoding(ISO88591) ?? PlatformDefaultEncoding;
         ShiftJisEncoding = GetEncoding(ShiftJis) ?? PlatformDefaultEncoding;
-        
-        JISIsSupported = ShiftJisEncoding is not null;
-        EucJpIsSupported = EucJpEncoding is not null;
 
-#pragma warning disable CS8602  // Dereference of a possibly null reference.
-        // Compiler error: ShiftJisEncoding and EucJpEncoding are not null here 
+        string platformDefaultEncodingWebName = PlatformDefaultEncoding.WebName;
+        JISIsSupported = IsEncodingSupported(ShiftJis);
+        EucJpIsSupported = IsEncodingSupported(EucJp);
         AssumeShiftJIS = 
-            (JISIsSupported && PlatformDefaultEncoding.WebName.Equals(ShiftJisEncoding.WebName)) || 
-            (EucJpIsSupported && PlatformDefaultEncoding.WebName.Equals(EucJpEncoding.WebName));
-#pragma warning restore CS8602 
-
+            (JISIsSupported && platformDefaultEncodingWebName.Equals(ShiftJisEncoding.WebName)) || 
+            (EucJpIsSupported && platformDefaultEncodingWebName.Equals(EucJpEncoding.WebName));
     }
 
     /// <summary> returns the encoding object fo the specified name, or null if not supported  </summary>
     /// <param name="encodingName"></param>
-    public static Encoding? GetEncoding(string encodingName)
+    private static bool IsEncodingSupported(string encodingName)
+    {
+        if (string.IsNullOrEmpty(encodingName))
+        {
+            return false;
+        }
+
+        return supportedEncodings.ContainsKey(encodingName); 
+    }
+
+    /// <summary> returns the encoding object fo the specified name, or null if not supported  </summary>
+    /// <param name="encodingName"></param>
+    internal static Encoding? GetEncoding(string encodingName)
     {
         if (string.IsNullOrEmpty(encodingName))
         {
@@ -114,7 +113,7 @@ public static class EncodingUtilities
     /// <return> name of guessed encoding; at the moment will only guess one of:
     /// "SJIS", "UTF8", "ISO8859_1", or the platform default encoding if none
     /// of these can possibly be correct</return>
-    public static string GuessEncoding(byte[] bytes, string characterSet)
+    internal static string GuessEncoding(byte[] bytes, string characterSet)
     {
         var c = GuessCharset(bytes, characterSet);
         if (c == ShiftJisEncoding && ShiftJisEncoding != null)
@@ -125,7 +124,7 @@ public static class EncodingUtilities
         return c.WebName.ToUpper();
     }
 
-    /// <summary></summary>
+    /// <summary> Guesses the character set encoding. </summary>
     /// <param name="bytes">bytes encoding a string, whose encoding should be guessed</param>
     /// <param name="hints">decode hints if applicable</param>
     /// <returns>Charset of guessed encoding; at the moment will only guess one of:
@@ -133,7 +132,7 @@ public static class EncodingUtilities
     ///  {@link StandardCharsets#ISO_8859_1}, {@link StandardCharsets#UTF_16},
     ///  or the platform default encoding if
     ///  none of these can possibly be correct</returns>
-    public static Encoding GuessCharset(byte[] bytes, string characterSet)
+    internal static Encoding GuessCharset(byte[] bytes, string characterSet)
     {
         if (!string.IsNullOrWhiteSpace(characterSet) )
         {

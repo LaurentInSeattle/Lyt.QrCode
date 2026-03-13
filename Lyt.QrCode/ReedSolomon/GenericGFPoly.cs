@@ -86,6 +86,7 @@ internal sealed class GenericGFPoly
             {
                 result = GenericGF.AddOrSubtract(result, coefficient);
             }
+
             return result;
         }
 

@@ -202,12 +202,11 @@ internal sealed class PngBuilder
     private static byte[] Deflate(byte[] data)
     {
         var output = new MemoryStream();
-        using (var deflater = new DeflateStream(output, CompressionLevel.Optimal))
+        using (var deflater = new DeflateStream(output, CompressionLevel.SmallestSize))
         {
             deflater.Write(data, 0, data.Length);
         }
 
         return output.ToArray();
     }
-
 }

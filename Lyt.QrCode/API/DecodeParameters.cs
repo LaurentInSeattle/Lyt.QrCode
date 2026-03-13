@@ -10,6 +10,7 @@ public sealed class DecodeParameters
 
         return true; 
     }
+
     /// <summary> True when the source image is known to be a QrCode, this will skip the detection step.</summary>
     public bool SkipDetector { get; set; } = false;
 

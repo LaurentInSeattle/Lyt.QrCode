@@ -1,4 +1,5 @@
 namespace Lyt.QrCode.Data;
+
 /// <summary>
 /// <p>See ISO 18004:2006, 6.4.1, Tables 2 and 3. This enum encapsulates the various modes in which
 /// data can be encoded to bits in the QR code standard.</p>
@@ -82,17 +83,11 @@ public sealed class EncodingMode
         };
     }
 
-    /// <returns> number of bits used, in this QR Code symbol {@link Version}, to encode the
+    /// Returns the number of bits used, in this QR Code symbol {@link Version}, to encode the
     /// count of characters that will follow encoded in this {@link Mode}
-    /// </returns>
     /// <param name="version"> QR version </param>
     internal int GetCharacterCountBits(QrVersion version)
     {
-        if (this.characterCountBitsForVersions == null)
-        {
-            throw new ArgumentException("Character count doesn't apply to this mode");
-        }
-
         int number = version.VersionNumber;
         int offset;
         if (number <= 9)
@@ -122,7 +117,7 @@ public sealed class EncodingMode
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int NumCharCountBits(int versionNumber)
     {
-        Debug.Assert(Lyt.QrCode.QrCode.MinVersion <= versionNumber && versionNumber <= Lyt.QrCode.QrCode.MaxVersion);
+        Debug.Assert(QrCode.MinVersion <= versionNumber && versionNumber <= QrCode.MaxVersion);
         return this.characterCountBitsForVersions[(versionNumber + 7) / 17];
     }
 

@@ -1,7 +1,5 @@
 ﻿namespace Lyt.QrCode.Data;
 
-// TODO : Eliminate ECC duplicate class used in encoding 
-
 /// <summary>
 /// This class defines the four error correction levels defined by the QR code standard.
 /// See ISO 18004:2006, 6.5.1. 

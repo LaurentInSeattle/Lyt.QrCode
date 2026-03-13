@@ -13,7 +13,7 @@ internal sealed class GenericGF
     /// <summary> QR Code </summary>
     internal static GenericGF QR_CODE_FIELD_256 = new(0b100011101, 256, 0); // x^8 + x^4 + x^3 + x^2 + 1
 
-    #region Not used - Kept for future reference 
+    #region Not used for QR Codes - Kept for future reference 
     ///// <summary> Aztec data 12 </summary>
     //public static GenericGF AZTEC_DATA_12 = new (0b1000001101001, 4096, 1); // x^12 + x^6 + x^5 + x^3 + 1
     ///// <summary> Aztec data 10 </summary>
@@ -119,7 +119,7 @@ internal sealed class GenericGF
     {
         if (a == 0)
         {
-            throw new ArithmeticException();
+            throw new ArithmeticException("Log of zero");
         }
 
         return this.logTable[a];
@@ -130,7 +130,7 @@ internal sealed class GenericGF
     {
         if (a == 0)
         {
-            throw new ArithmeticException();
+            throw new ArithmeticException("Inverse of zero");
         }
 
         return this.expTable[size - this.logTable[a] - 1];
