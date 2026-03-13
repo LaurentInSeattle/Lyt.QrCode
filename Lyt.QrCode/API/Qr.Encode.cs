@@ -5,11 +5,6 @@
 // Present in GlobalUsings.cs: BUT KEEP for avoiding ambiguous reference to System.Net
 using Lyt.QrCode.Content;
 
-/// <summary> 
-/// Callback which is invoked when a possible significant point in the QR code image, such as a corner, is found.
-/// </summary>
-public delegate void DetectorCallback(QrPoint point);
-
 /// Factory class for creating QR code images and vector paths from various content types.
 public static partial class Qr
 {
@@ -52,7 +47,7 @@ public static partial class Qr
             return false;
         }
 
-        if (!TryDetermineDecoderOutput<TResult>(out EncoderOutput encoderOutput)
+        if (!TryDetermineEncoderOutput<TResult>(out EncoderOutput encoderOutput)
             || encoderOutput == EncoderOutput.Unsupported)
         {
             return false;
@@ -202,6 +197,7 @@ public static partial class Qr
         if (content is WebLink linkContent)
         {
             qrContent = new WebLinkContent(linkContent);
+            return true;
         }
 
         if (content is QrContent qrC)
@@ -221,52 +217,42 @@ public static partial class Qr
                 }
             }
 
-            qrContent = qrC; 
+            qrContent = qrC;
+            return true;
         }
 
         // Unsupported content type
         return false;
     }
 
-    private static bool TryDetermineDecoderOutput<T>(out EncoderOutput encoderOutput) where T : class
+    private static bool TryDetermineEncoderOutput<T>(out EncoderOutput encoderOutput) where T : class
     {
         encoderOutput = EncoderOutput.Unsupported;
-        if (typeof(T) == typeof(byte[]))
+        Type type = typeof(T);
+        if (type == typeof(byte[]))
         {
             encoderOutput = EncoderOutput.Image;
-        }
-        else if (typeof(T) == typeof(string))
-        {
-            encoderOutput = EncoderOutput.Vectors;
-        } 
-        else if (typeof(T) == typeof(bool[,]))
-        {
-            encoderOutput = EncoderOutput.Modules;
-        }
-
-        return false ; 
-    }
-
-    public static bool TryDecodeQrCodeFromImage(
-        SourceImage sourceImage,
-        [NotNullWhen(true)] out DecoderResult? decoderResult,
-        DetectorCallback? detectorCallback = null,
-        DecodeParameters? decodeParameters = null)
-    {
-        decoderResult = null;
-        decodeParameters ??= new DecodeParameters();
-        if (!decodeParameters.Validate())
-        {
-            // Invalid parameters - use default values
-            if (Debugger.IsAttached) { Debugger.Break(); }
-            decodeParameters = new DecodeParameters();
-        }
-
-        if (sourceImage.TryDecode(decodeParameters, detectorCallback, out decoderResult))
-        {
             return true;
         }
 
-        return false;
+        if (type == typeof(string))
+        {
+            encoderOutput = EncoderOutput.Vectors;
+            return true;
+        }
+
+        if (type == typeof(QrCode))
+        {
+            encoderOutput = EncoderOutput.QrCode;
+            return true;
+        }
+
+        if (type == typeof(bool[,]))
+        {
+            encoderOutput = EncoderOutput.Modules;
+            return true;
+        }
+
+        return false ; 
     }
 }

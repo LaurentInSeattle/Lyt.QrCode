@@ -20,7 +20,7 @@ internal sealed class Test
         Decode("screenPortrait");
     }
 
-    private static void OnDetect (QrPoint resultPoint)
+    private static void OnDetect(QrPoint resultPoint)
         => Console.WriteLine("Detected: " + resultPoint.ToString());
 
     private static void Detect(string filename)
@@ -53,7 +53,7 @@ internal sealed class Test
                 byte[] resImage = PngBuilder.ToPngImage(resampledImage);
                 string resPath = Path.Combine(rootPath, filename + "Resampled.png");
                 File.WriteAllBytes(resPath, resImage);
-            } 
+            }
         }
         else
         {
@@ -110,18 +110,36 @@ internal sealed class Test
         File.WriteAllBytes(bwPath2, bwImage2);
     }
 
-    private static void Encode (string filename)
+    private static void Encode(string filename)
     {
         string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw";
-        var qrCode = QrCode.EncodeText(text, ErrorCorrectionLevel.Quartile);
-        byte[] image = PngBuilder.ToPngImage(qrCode, 16, 2);
+        if (Qr.TryEncode(text, out byte[]? image))
+        {
+            string fullPath = Path.Combine(rootPath, filename + ".png");
+            File.WriteAllBytes(fullPath, image);
+        }
 
-        string fullPath = Path.Combine(rootPath, filename + ".png");
-        File.WriteAllBytes(fullPath, image);
+        var renderParameters = new RenderParameters()
+        {
+            Border = 2,
+            Scale = 16,
+        };
 
-        fullPath = Path.Combine(rootPath, filename + ".svg");
-        string svg = PathBuilder.ToSvgImageString(qrCode, 16, 2);
-        File.WriteAllText(fullPath, svg);
+        if (Qr.TryEncode(text, out string? vectors, renderParameters))
+        {
+            string fullPath = Path.Combine(rootPath, filename + ".svg");
+            File.WriteAllText(fullPath, vectors);
+        }
+
+        if (Qr.TryEncode(text, out bool[,]? modules))
+        {
+            Console.WriteLine("Encoded: " + modules.ToString());
+        }
+
+        if (Qr.TryEncode(text, out QrCode? qrCode))
+        {
+            Console.WriteLine("Encoded: " + qrCode.ErrorCorrectionLevel.ToString());
+        }
     }
 
     private static SourceImage LoadSourceImage(string imagePath)
