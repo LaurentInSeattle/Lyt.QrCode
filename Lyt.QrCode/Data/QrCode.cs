@@ -13,8 +13,7 @@ public sealed partial class QrCode: IPixelProvider
 
     /// <summary> 
     /// The width and height of this QR code, in modules (pixels).
-    /// The size is a value between 21 and 177.
-    /// This is equal to version &#xD7; 4 + 17.
+    /// The size is a value between 21 and 177. This is equal to version &#xD7; 4 + 17.
     /// </summary>
     public int Size { get; }
 

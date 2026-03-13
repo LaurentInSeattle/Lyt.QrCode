@@ -147,19 +147,16 @@ public sealed partial class QrCode
     /// specified if it can be achieved without increasing the size (version).
     /// </summary>
     /// <param name="text">The text to be encoded. The full range of Unicode characters may be used.</param>
-    /// <param name="ecc">The minimum error correction level to use.</param>
+    /// <param name="ecl">The minimum error correction level to use.</param>
     /// <returns>The created QR code instance representing the specified text.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="text"/> .</exception>
     /// <exception cref="DataTooLongException">The text is too long to fit in the largest QR code size (version)
     /// at the specified error correction level.</exception>
-    public static QrCode EncodeText(string text, ErrorCorrectionLevel ecc)
-    {
-        text.ThrowIfNullOrWhiteSpace();
-        return EncodeSegment(QrSegment.MakeSegment(text), ecc);
-    }
+    public static QrCode EncodeText(string text, ErrorCorrectionLevel ecl)
+        => EncodeSegment(QrSegment.MakeSegment(text), ecl);
 
-    public static QrCode EncodeBytes(byte[] bytes, ErrorCorrectionLevel ecc)
-        => EncodeSegment(QrSegment.MakeBytes(bytes), ecc);
+    public static QrCode EncodeBytes(byte[] bytes, ErrorCorrectionLevel ecl)
+        => EncodeSegment(QrSegment.MakeBytes(bytes), ecl);
 
     /// <summary>
     /// Creates a QR code representing the specified segments with the specified encoding parameters.
@@ -174,7 +171,7 @@ public sealed partial class QrCode
     /// encoding parameters.
     /// </summary>
     /// <param name="segments">The segments to encode.</param>
-    /// <param name="ecc">The minimal or fixed error correction level to use .</param>
+    /// <param name="ecl">The minimal or fixed error correction level to use .</param>
     /// <param name="minVersion">The minimum version (size) of the QR code (between 1 and 40).</param>
     /// <param name="maxVersion">The maximum version (size) of the QR code (between 1 and 40).</param>
     /// <param name="mask">The mask number to use (between 0 and 7), or -1 for automatic mask selection.</param>
@@ -186,7 +183,7 @@ public sealed partial class QrCode
     /// at the specified error correction level.</exception>
     internal static QrCode EncodeSegment(
         QrSegment segment, 
-        ErrorCorrectionLevel ecc, 
+        ErrorCorrectionLevel ecl, 
         int minVersion = QrCode.MinVersion, 
         int maxVersion = QrCode.MaxVersion, 
         int mask = -1, 
@@ -196,10 +193,12 @@ public sealed partial class QrCode
         {
             throw new ArgumentOutOfRangeException(nameof(minVersion), "Invalid value");
         }
+
         if (maxVersion > QrCode.MaxVersion)
         {
             throw new ArgumentOutOfRangeException(nameof(maxVersion), "Invalid value");
         }
+        
         if (mask < -1 || mask > 7)
         {
             throw new ArgumentOutOfRangeException(nameof(mask), "Invalid value");
@@ -210,7 +209,7 @@ public sealed partial class QrCode
         int dataUsedBits = 0;
         for (int version = minVersion; version <= maxVersion; version++)
         {
-            int numDataBits = GetNumDataCodewords(version, ecc) * 8;  // Number of data bits available
+            int numDataBits = GetNumDataCodewords(version, ecl) * 8;  // Number of data bits available
             dataUsedBits = QrSegment.GetTotalBits(segment, version);
             if (dataUsedBits != -1 && dataUsedBits <= numDataBits)
             {
@@ -241,7 +240,7 @@ public sealed partial class QrCode
             // From low to high
             if (boostEcl && dataUsedBits <= GetNumDataCodewords(foundVersion, newEcc) * 8)
             {
-                ecc = newEcc;
+                ecl = newEcc;
             }
         }
 
@@ -254,7 +253,7 @@ public sealed partial class QrCode
         Debug.Assert(bitArray.Length == dataUsedBits);
 
         // Add terminator and pad up to a byte if applicable
-        int dataCapacityBits = GetNumDataCodewords(foundVersion, ecc) * 8;
+        int dataCapacityBits = GetNumDataCodewords(foundVersion, ecl) * 8;
         Debug.Assert(bitArray.Length <= dataCapacityBits);
         bitArray.AppendBits(0, Math.Min(4, dataCapacityBits - bitArray.Length));
         bitArray.AppendBits(0, (8 - bitArray.Length % 8) % 8);
@@ -277,7 +276,7 @@ public sealed partial class QrCode
         }
 
         // Create the QR code object
-        return new QrCode(foundVersion, ecc, dataCodewords, mask);
+        return new QrCode(foundVersion, ecl, dataCodewords, mask);
     }
 
     // Reads this object's version field, and draws and marks all function modules.

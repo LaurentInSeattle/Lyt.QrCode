@@ -63,16 +63,16 @@ public sealed class TestSegmentEncoding
     }
 
 
-    public static void DrawQrCode(QrCode qrCode)
-    {
-        for (int y = 0; y < qrCode.Size; y++)
-        {
-            for (int x = 0; x < qrCode.Size; x++)
-            {
-                Debug.Write(qrCode.GetModule(y, x) ? "██" : "  ");
-            }
+    //public static void DrawQrCode(QrCode qrCode)
+    //{
+    //    for (int y = 0; y < qrCode.Size; y++)
+    //    {
+    //        for (int x = 0; x < qrCode.Size; x++)
+    //        {
+    //            Debug.Write(qrCode.GetModule(y, x) ? "██" : "  ");
+    //        }
 
-            Debug.WriteLine("");
-        }
-    }
+    //        Debug.WriteLine("");
+    //    }
+    //}
 }

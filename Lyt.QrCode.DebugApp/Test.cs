@@ -65,15 +65,22 @@ internal sealed class Test
     {
         string imagePathLoad = filename + ".png";
         var sourceImage = LoadSourceImage(imagePathLoad);
+        var before = DateTime.Now;
+        DateTime after;
+        Console.WriteLine("Decode: " + filename);
         if (Qr.TryDecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
         {
-            // TODO: Print out results 
+            after = DateTime.Now;
             Console.WriteLine("Decoded, Content:  " + result.Text);
         }
         else
         {
+            after = DateTime.Now;
             Console.WriteLine("Failed to Decode");
-        } 
+        }
+
+        // About 60 ms for a 800x600 image 
+        Console.WriteLine("Decode: " + (after - before).TotalMilliseconds.ToString());
     }
 
     private static void Thresholding(string filename)

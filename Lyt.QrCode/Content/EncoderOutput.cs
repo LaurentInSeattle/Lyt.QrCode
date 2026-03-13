@@ -9,4 +9,6 @@ internal enum EncoderOutput
     Vectors, // string 
 
     Modules, // bool[,]
+
+    QrCode, // QrCode
 }

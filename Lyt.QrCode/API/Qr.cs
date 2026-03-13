@@ -107,8 +107,13 @@ public static partial class Qr
                     bool[,] modules = qrCode.GetModules();
                     rawResult = modules;
                     break;
+
+                case EncoderOutput.QrCode:
+                    rawResult = qrCode;
+                    break;
             }
 
+            // Must use exact type match (and not IsAssignableFrom) 
             if (rawResult.GetType() == typeof(TResult))
             {
                 // Safe to cast
