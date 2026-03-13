@@ -5,7 +5,6 @@ internal sealed class Test
     private const string rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests";
 
 #pragma warning disable CA1822 // Mark members as static
-#pragma warning disable IDE0022 // Use expression body for method
     internal void Run()
     {
         Encode("test");
@@ -152,6 +151,5 @@ internal sealed class Test
     }
 
 #pragma warning restore CA1822 // Mark members as static
-#pragma warning restore IDE0022 // Use expression body for method
 
 }

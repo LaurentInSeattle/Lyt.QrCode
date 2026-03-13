@@ -3,40 +3,43 @@ namespace Lyt.QrCode.Utilities;
 public static class EncodingUtilities
 {
     /// <summary> name of the default encoding of the current platform (name) </summary>
-    public static readonly string PLATFORM_DEFAULT_ENCODING;
+    public static readonly string PlatformDefaultEncodingName;
 
     /// <summary> type of default encoding of the current platform </summary>
-    public static readonly Encoding PLATFORM_DEFAULT_ENCODING_T;
+    public static readonly Encoding PlatformDefaultEncoding;
+
+    #region Retained for binary compatibility with earlier versions
+
+    // All four Encodings below default to PlatformDefaultEncoding if not supported on current platform 
 
     /// <summary> Shift JIS encoding if available </summary>
-    public static readonly Encoding? SHIFT_JIS_ENCODING;
+    public static readonly Encoding ShiftJisEncoding;
 
     /// <summary> GB 2312 encoding if available </summary>
-    public static readonly Encoding GB2312_ENCODING;
+    public static readonly Encoding Gb2312Encoding;
 
     /// <summary> ECU JP encoding if available </summary>
-    public static readonly Encoding EUC_JP_ENCODING;
+    public static readonly Encoding EucJpEncoding;
 
     /// <summary> ISO8859-1 encoding if available </summary>
-    public static readonly Encoding ISO88591_ENCODING;
+    public static readonly Encoding ISO88591Encoding;
 
-    private static readonly bool ASSUME_SHIFT_JIS;
+    private static readonly bool AssumeShiftJIS;
 
     /// <summary> Whether JIS_IS is supported or not </summary>
-    public static readonly bool JIS_IS_SUPPORTED;
+    public static readonly bool JISIsSupported;
 
     /// <summary> EUC_JP is supported or not </summary>
-    public static readonly bool EUC_JP_IS_SUPPORTED;
+    public static readonly bool EucJpIsSupported;
 
-    // Retained for ABI compatibility with earlier versions
     /// <summary> SJIS </summary>
-    public const string SHIFT_JIS = "SJIS";
+    public const string ShiftJis = "SJIS";
 
     /// <summary> GB2312 </summary>
     public const string GB2312 = "GB2312";
 
     /// <summary> EUC-JP </summary>
-    public const string EUC_JP = "EUC-JP";
+    public const string EucJp = "EUC-JP";
 
     /// <summary> UTF-8 </summary>
     public const string UTF8 = "UTF-8";
@@ -44,38 +47,65 @@ public static class EncodingUtilities
     /// <summary> ISO-8859-1 </summary>
     public const string ISO88591 = "ISO-8859-1";
 
-    // This is throwing annoying exceptions for not supported encodings 
-    // TODO: Retrieve all supported encodings 
-    // Create a dictionary 
-    // Check support 
-    /*
+    #endregion Retained for binary compatibility with earlier versions
+
+    internal static Dictionary<string, EncodingInfo> supportedEncodings;
+
+#pragma warning disable CS8618
+    // Non-nullable field must contain a non-null value when exiting constructor. 
+    // Compiler error: ShiftJisEncoding and EucJpEncoding are both initialized not null 
+    static EncodingUtilities()
+#pragma warning restore CS8618 
+    {
+#pragma warning disable IDE0028  // Simplify collection initialization
+        // with is still in preview
+        supportedEncodings = new(16);
+#pragma warning restore IDE0028 
+
         EncodingInfo[] codePages = Encoding.GetEncodings();
-        Console.WriteLine("Available Encodings:");
+        // Debug.WriteLine("Available Encodings:");
         foreach (EncodingInfo codePage in codePages)
         {
-            Console.WriteLine($"- Code page ID: {codePage.CodePage}, IANA name: {codePage.Name}, Display name: {codePage.DisplayName}");
+            // Debug.WriteLine($"- Code page ID: {codePage.CodePage}, IANA name: {codePage.Name}, Display name: {codePage.DisplayName}");
+            supportedEncodings[codePage.Name] = codePage;
         }
-    */
 
-    static EncodingUtilities()
+        PlatformDefaultEncodingName = UTF8;
+        PlatformDefaultEncoding = Encoding.UTF8;
+
+        Gb2312Encoding = GetEncoding(GB2312) ?? PlatformDefaultEncoding;
+        EucJpEncoding = GetEncoding(EucJp) ?? PlatformDefaultEncoding;
+        ISO88591Encoding = GetEncoding(ISO88591) ?? PlatformDefaultEncoding;
+        ShiftJisEncoding = GetEncoding(ShiftJis) ?? PlatformDefaultEncoding;
+        
+        JISIsSupported = ShiftJisEncoding is not null;
+        EucJpIsSupported = EucJpEncoding is not null;
+
+#pragma warning disable CS8602  // Dereference of a possibly null reference.
+        // Compiler error: ShiftJisEncoding and EucJpEncoding are not null here 
+        AssumeShiftJIS = 
+            (JISIsSupported && PlatformDefaultEncoding.WebName.Equals(ShiftJisEncoding.WebName)) || 
+            (EucJpIsSupported && PlatformDefaultEncoding.WebName.Equals(EucJpEncoding.WebName));
+#pragma warning restore CS8602 
+
+    }
+
+    /// <summary> returns the encoding object fo the specified name, or null if not supported  </summary>
+    /// <param name="encodingName"></param>
+    public static Encoding? GetEncoding(string encodingName)
     {
-        PLATFORM_DEFAULT_ENCODING = UTF8;
-        PLATFORM_DEFAULT_ENCODING_T = Encoding.UTF8;
+        if (string.IsNullOrEmpty(encodingName))
+        {
+            return null;
+        }
 
-        GB2312_ENCODING = CharacterSetECI.GetEncoding(GB2312) ?? PLATFORM_DEFAULT_ENCODING_T;
-        EUC_JP_ENCODING = CharacterSetECI.GetEncoding(EUC_JP) ?? PLATFORM_DEFAULT_ENCODING_T;
-        ISO88591_ENCODING = CharacterSetECI.GetEncoding(ISO88591) ?? PLATFORM_DEFAULT_ENCODING_T;
+        Encoding? encoding = null;
+        if (supportedEncodings.ContainsKey(encodingName))
+        {
+            encoding = Encoding.GetEncoding(encodingName);
+        } 
 
-        SHIFT_JIS_ENCODING = CharacterSetECI.GetEncoding(SHIFT_JIS);
-        JIS_IS_SUPPORTED = SHIFT_JIS_ENCODING is not null;
-        SHIFT_JIS_ENCODING ??= PLATFORM_DEFAULT_ENCODING_T;
-
-        EUC_JP_IS_SUPPORTED = EUC_JP_ENCODING is not null;
-        EUC_JP_ENCODING ??= PLATFORM_DEFAULT_ENCODING_T;
-
-        ASSUME_SHIFT_JIS = 
-            (JIS_IS_SUPPORTED && PLATFORM_DEFAULT_ENCODING_T.WebName.Equals(SHIFT_JIS_ENCODING.WebName)) || 
-            (EUC_JP_IS_SUPPORTED && PLATFORM_DEFAULT_ENCODING_T.WebName.Equals(EUC_JP_ENCODING.WebName));
+        return encoding;
     }
 
     /// <summary> Guesses the encoding. </summary>
@@ -87,7 +117,7 @@ public static class EncodingUtilities
     public static string GuessEncoding(byte[] bytes, string characterSet)
     {
         var c = GuessCharset(bytes, characterSet);
-        if (c == SHIFT_JIS_ENCODING && SHIFT_JIS_ENCODING != null)
+        if (c == ShiftJisEncoding && ShiftJisEncoding != null)
         {
             return "SJIS";
         }
@@ -107,7 +137,7 @@ public static class EncodingUtilities
     {
         if (!string.IsNullOrWhiteSpace(characterSet) )
         {
-            var encoding = CharacterSetECI.GetEncoding(characterSet);
+            var encoding = GetEncoding(characterSet);
             if (encoding != null)
             {
                 return encoding;
@@ -126,7 +156,7 @@ public static class EncodingUtilities
         // which should be by far the most common encodings.
         int length = bytes.Length;
         bool canBeISO88591 = true;
-        bool canBeShiftJIS = JIS_IS_SUPPORTED;
+        bool canBeShiftJIS = JISIsSupported;
         bool canBeUTF8 = true;
         int utf8BytesLeft = 0;
         int utf2BytesChars = 0;
@@ -283,9 +313,9 @@ public static class EncodingUtilities
         }
 
         // Easy -- if assuming Shift_JIS or >= 3 valid consecutive not-ascii characters (and no evidence it can't be), done
-        if (canBeShiftJIS && (ASSUME_SHIFT_JIS || sjisMaxKatakanaWordLength >= 3 || sjisMaxDoubleBytesWordLength >= 3) && SHIFT_JIS_ENCODING != null)
+        if (canBeShiftJIS && (AssumeShiftJIS || sjisMaxKatakanaWordLength >= 3 || sjisMaxDoubleBytesWordLength >= 3) && ShiftJisEncoding != null)
         {
-            return SHIFT_JIS_ENCODING;
+            return ShiftJisEncoding;
         }
         
         // Distinguishing Shift_JIS and ISO-8859-1 can be a little tough for short words. The crude heuristic is:
@@ -293,23 +323,23 @@ public static class EncodingUtilities
         //   - only two consecutive katakana chars in the whole text, or
         //   - at least 10% of bytes that could be "upper" not-alphanumeric Latin1,
         // - then we conclude Shift_JIS, else ISO-8859-1
-        if (canBeISO88591 && canBeShiftJIS && ISO88591_ENCODING != null && SHIFT_JIS_ENCODING != null)
+        if (canBeISO88591 && canBeShiftJIS && ISO88591Encoding != null && ShiftJisEncoding != null)
         {
             return 
                 (sjisMaxKatakanaWordLength == 2 && sjisKatakanaChars == 2) || isoHighOther * 10 >= length ? 
-                    SHIFT_JIS_ENCODING : 
-                    ISO88591_ENCODING;
+                    ShiftJisEncoding : 
+                    ISO88591Encoding;
         }
 
         // Otherwise, try in order ISO-8859-1, Shift JIS, UTF-8 and fall back to default platform encoding
-        if (canBeISO88591 && ISO88591_ENCODING != null)
+        if (canBeISO88591 && ISO88591Encoding != null)
         {
-            return ISO88591_ENCODING;
+            return ISO88591Encoding;
         }
 
-        if (canBeShiftJIS && SHIFT_JIS_ENCODING != null)
+        if (canBeShiftJIS && ShiftJisEncoding != null)
         {
-            return SHIFT_JIS_ENCODING;
+            return ShiftJisEncoding;
         }
         
         if (canBeUTF8)
@@ -318,6 +348,6 @@ public static class EncodingUtilities
         }
         
         // Otherwise, we take a wild guess with platform encoding
-        return PLATFORM_DEFAULT_ENCODING_T;
+        return PlatformDefaultEncoding;
     }
 }

@@ -241,8 +241,8 @@ public sealed partial class BitMatrixImage
                                     countHanzi--;
                                 }
 
-                                var encoding = EncodingUtilities.GB2312_ENCODING;
-                                encoding ??= EncodingUtilities.PLATFORM_DEFAULT_ENCODING_T;
+                                var encoding = EncodingUtilities.Gb2312Encoding;
+                                encoding ??= EncodingUtilities.PlatformDefaultEncoding;
                                 result.Append(encoding.GetString(buffer, 0, buffer.Length));
 
                                 return true;
@@ -412,10 +412,10 @@ public sealed partial class BitMatrixImage
                                     }
                                     else
                                     {
-                                        encoding = CharacterSetECI.GetEncoding(currentCharacterSetECI.EncodingName);
+                                        encoding = EncodingUtilities.GetEncoding(currentCharacterSetECI.EncodingName);
                                     }
 
-                                    encoding ??= EncodingUtilities.PLATFORM_DEFAULT_ENCODING_T;
+                                    encoding ??= EncodingUtilities.PlatformDefaultEncoding;
 
                                     result.Append(encoding.GetString(readBytes, 0, readBytes.Length));
                                     byteSegments.Add(readBytes);
@@ -465,8 +465,8 @@ public sealed partial class BitMatrixImage
                                     }
 
                                     // Shift_JIS may not be supported in some environments:
-                                    var encoding = EncodingUtilities.SHIFT_JIS_ENCODING;
-                                    encoding ??= EncodingUtilities.PLATFORM_DEFAULT_ENCODING_T;
+                                    var encoding = EncodingUtilities.ShiftJisEncoding;
+                                    encoding ??= EncodingUtilities.PlatformDefaultEncoding;
                                     result.Append(encoding.GetString(buffer, 0, buffer.Length));
 
                                     return true;

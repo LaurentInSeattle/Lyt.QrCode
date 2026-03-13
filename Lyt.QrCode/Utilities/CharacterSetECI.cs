@@ -1,7 +1,5 @@
 namespace Lyt.QrCode.Utilities;
 
-// TODO: Prevent throwing exceptions for unsupported encodings !!!
-
 /// <summary> Encapsulates a Character Set ECI, according to "Extended Channel Interpretations" 5.3.1.1 of ISO 18004. </summary>
 internal sealed class CharacterSetECI : ECI
 {
@@ -122,41 +120,6 @@ internal sealed class CharacterSetECI : ECI
         }
 
         // don't use property here because of StackOverflow
-        return charsetECI.encoding ??= GetEncoding(charsetECI.EncodingName);
-    }
-
-    /// <summary> returns the encoding object fo the specified name </summary>
-    /// <param name="encodingName"></param>
-    public static Encoding? GetEncoding(string encodingName)
-    {
-        if (string.IsNullOrEmpty(encodingName))
-        {
-            return null;
-        }
-
-        Encoding? encoding = null;
-
-        try
-        {
-            encoding = Encoding.GetEncoding(encodingName);
-        }
-        catch (ArgumentException)
-        {
-            try
-            {
-                // Silverlight only supports a limited number of character sets, trying fallback to UTF-8
-                encoding = Encoding.GetEncoding(EncodingUtilities.UTF8);
-            }
-            catch (Exception)
-            {
-                // Swallow ? 
-            }
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-
-        return encoding;
+        return charsetECI.encoding ??= EncodingUtilities.GetEncoding(charsetECI.EncodingName);
     }
 }
