@@ -31,7 +31,7 @@ internal sealed class PngBuilder
     }
 
     /// <summary>  Creates a PNG image for the provided Pixel Provider. Mostly for testing BitMatrix images. </summary>
-    internal static byte[] ToImage(IPixelProvider pixelProvider, int foreground = 0, int background = 0xFFFFFF)
+    internal static byte[] ToImage(IPixelProvider pixelProvider, int foreground = 0, int background = 0x00_FFFFFF)
     {
         var builder = new PngBuilder();
         builder.WriteHeader(pixelProvider.Width, pixelProvider.Height, 1, 3);
@@ -121,6 +121,7 @@ internal sealed class PngBuilder
 
     /// <summary> Writes the palette (PLTE chunk). </summary>
     /// <param name="palette">The color palettes as an array of RGB values.</param>
+    /// <remarks> Palette eliminate transparency</remarks>
     private void WritePalette(int[] palette)
     {
         this.WriteChunkStart(PLTE, palette.Length * 3);

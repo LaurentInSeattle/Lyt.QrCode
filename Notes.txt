@@ -2,8 +2,6 @@
 
 - More encoders / parsers for common types of data, such as URLs, contact information, calendar events, etc.
 
-- Code generators for API entries 
-
 - Support for JSon data, allowing users to encode structured data into QR codes.
 
 - Support for Compressed JSON 
@@ -15,3 +13,55 @@
 - Histogram equalization (CLAHE) for better image processing in the decoder
 
 
+-------------
+
+/*
+
+using SKDocument document = SKDocument.CreatePdf("output.pdf");
+        using SKBitmap bitmap = SKBitmap.Decode("file.png");
+        using SKCanvas pageCanvas = document.BeginPage(bitmap.Width, bitmap.Height);
+        pageCanvas.DrawBitmap(bitmap, new SKRect(0, 0, bitmap.Width, bitmap.Height));
+        document.EndPage();
+        document.Close();
+
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+
+// set your license here:
+// QuestPDF.Settings.License = LicenseType.Community;
+
+Document.Create(container =>
+{
+    container.Page(page =>
+    {
+        page.Size(PageSizes.A4);
+        page.Margin(2, Unit.Centimetre);
+        page.PageColor(Colors.White);
+        page.DefaultTextStyle(x => x.FontSize(20));
+        
+        page.Header()
+            .Text("Hello PDF!")
+            .SemiBold().FontSize(36).FontColor(Colors.Blue.Medium);
+        
+        page.Content()
+            .PaddingVertical(1, Unit.Centimetre)
+            .Column(x =>
+            {
+                x.Spacing(20);
+                
+                x.Item().Text(Placeholders.LoremIpsum());
+                x.Item().Image(Placeholders.Image(200, 100));
+            });
+        
+        page.Footer()
+            .AlignCenter()
+            .Text(x =>
+            {
+                x.Span("Page ");
+                x.CurrentPageNumber();
+            });
+    });
+})
+.GeneratePdf("hello.pdf");
+*/

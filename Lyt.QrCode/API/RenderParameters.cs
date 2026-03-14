@@ -7,6 +7,7 @@ public sealed class RenderParameters
     {
         // Only PNG for now 
         Png = 0,
+        Bmp = 1,
     }
 
     // Vector formats 

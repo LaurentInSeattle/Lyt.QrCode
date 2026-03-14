@@ -113,17 +113,24 @@ internal sealed class Test
     private static void Encode(string filename)
     {
         string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw";
-        if (Qr.TryEncode(text, out byte[]? image))
+        if (Qr.TryEncode(text, out byte[]? imagePng))
         {
             string fullPath = Path.Combine(rootPath, filename + ".png");
-            File.WriteAllBytes(fullPath, image);
+            File.WriteAllBytes(fullPath, imagePng);
         }
 
         var renderParameters = new RenderParameters()
         {
+            ImageFormat = RenderParameters.QrImageFormat.Bmp,
             Border = 2,
             Scale = 16,
         };
+
+        if (Qr.TryEncode(text, out byte[]? imageBmp))
+        {
+            string fullPath = Path.Combine(rootPath, filename + ".bmp");
+            File.WriteAllBytes(fullPath, imageBmp);
+        }
 
         if (Qr.TryEncode(text, out string? vectors, renderParameters))
         {

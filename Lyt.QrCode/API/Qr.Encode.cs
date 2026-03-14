@@ -83,6 +83,16 @@ public static partial class Qr
                                     renderParameters.Background);
                             rawResult = pngImage;
                             break;
+                        case RenderParameters.QrImageFormat.Bmp:
+                            byte[] bmpImage =
+                                PngBuilder.ToImage(
+                                    qrCode,
+                                    renderParameters.Scale,
+                                    renderParameters.Border,
+                                    renderParameters.Foreground,
+                                    renderParameters.Background);
+                            rawResult = bmpImage;
+                            break;
                     }
 
                     break;
