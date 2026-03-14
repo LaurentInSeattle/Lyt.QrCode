@@ -204,9 +204,9 @@ public static partial class Qr
             return true;
         }
 
-        if (content is WebLink linkContent)
+        if (content is Bookmark linkContent)
         {
-            qrContent = new WebLinkContent(linkContent);
+            qrContent = new BookmarkContent(linkContent);
             return true;
         }
 

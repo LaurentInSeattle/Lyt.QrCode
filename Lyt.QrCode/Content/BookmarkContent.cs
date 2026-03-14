@@ -1,8 +1,8 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public sealed class WebLink
+public sealed class Bookmark
 {
-        public WebLink(string url, string title ="")
+        public Bookmark(string url, string title ="")
         {
             if (string.IsNullOrWhiteSpace(url))
             {
@@ -20,7 +20,7 @@ public sealed class WebLink
         public string Url { get; }
 }
 
-public sealed class WebLinkContent(WebLink webLink) : QrContent<WebLink>(webLink)
+public sealed class BookmarkContent(Bookmark webLink) : QrContent<Bookmark>(webLink)
 {
     public override string RawString { get; set; } = $"MEBKM:TITLE:{webLink.Title};URL:{webLink.Url};;";
 
