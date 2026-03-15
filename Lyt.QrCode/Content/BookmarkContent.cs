@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public sealed class Bookmark
+public partial class Bookmark
 {
         public Bookmark(string url, string title ="")
         {
@@ -23,10 +23,4 @@ public sealed class Bookmark
 public sealed class BookmarkContent(Bookmark webLink) : QrContent<Bookmark>(webLink)
 {
     public override string RawString { get; set; } = $"MEBKM:TITLE:{webLink.Title};URL:{webLink.Url};;";
-
-    public override byte[] RawBytes
-    {
-        get => Encoding.UTF8.GetBytes(this.RawString);
-        set { /* do nothing */ }
-    }
 }
