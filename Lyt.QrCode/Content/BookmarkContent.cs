@@ -2,22 +2,22 @@
 
 public class Bookmark
 {
-        public Bookmark(string url, string title ="")
+    public Bookmark(string url, string title = "")
+    {
+        if (string.IsNullOrWhiteSpace(url))
         {
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                throw new ArgumentException("URL cannot be null or empty", nameof(url));
-            }
-    
-            this.Url = url;
-
-            // Title can be empty, but not null. 
-            this.Title = title;
+            throw new ArgumentException("URL cannot be null, empty or white space", nameof(url));
         }
 
-        public string Title { get; }
+        this.Url = url;
 
-        public string Url { get; }
+        // Title can be empty, but not null. 
+        this.Title = title;
+    }
+
+    public string Title { get; }
+
+    public string Url { get; }
 }
 
 public sealed class BookmarkContent(Bookmark webLink) : QrContent<Bookmark>(webLink)

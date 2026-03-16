@@ -81,7 +81,7 @@ public partial class Messaging
             };
 }
 
-public class MessagingContent (Messaging messaging) : QrContent<Messaging>(messaging)
+internal sealed class MessagingContent (Messaging messaging) : QrContent<Messaging>(messaging)
 {
     public override string RawString
     {
