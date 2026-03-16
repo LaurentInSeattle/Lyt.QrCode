@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static Lyt.QrCode.Content.Wifi;
+using static Lyt.QrCode.Content.Wifi.AuthenticationMode;
 
 #region Documentation 
 
@@ -49,7 +49,7 @@ public class Wifi
     public Wifi(
         string ssid,
         string password = "",
-        AuthenticationMode authenticationMode = AuthenticationMode.WPA2,
+        AuthenticationMode authenticationMode = WPA2,
         bool isHiddenNetwork = false,
         bool encodeUsingWifi_S = true)
     {
@@ -58,7 +58,7 @@ public class Wifi
             throw new ArgumentException("SsID is required, cannot be null, empty or white space", nameof(ssid));
         }
 
-        if (authenticationMode != AuthenticationMode.None && string.IsNullOrWhiteSpace(password))
+        if (authenticationMode != None && string.IsNullOrWhiteSpace(password))
         {
             throw new ArgumentException("Password is required, cannot be null, empty or white space", nameof(password));
         }
@@ -88,10 +88,8 @@ internal sealed class WifiContent(Wifi wifi) : QrContent<Wifi>(wifi)
         get
         {
             var wifi = this.Content;
-            string auth = 
-                wifi.Authentication == AuthenticationMode.None ? "nopass" : wifi.Authentication.ToString();
-            string password =
-                $"P:{(wifi.Authentication == AuthenticationMode.None ? string.Empty : wifi.Password)}" ;
+            string auth = wifi.Authentication == None ? "nopass" : wifi.Authentication.ToString();
+            string password = $"P:{(wifi.Authentication == None ? string.Empty : wifi.Password)}" ;
             string hidden = wifi.IsHiddenNetwork ? "H:true" : string.Empty;
 
             // Handle WIFI:S or WIFI:T Format 

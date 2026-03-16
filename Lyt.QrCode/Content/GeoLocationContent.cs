@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static Lyt.QrCode.Content.GeoLocation;
+using static Lyt.QrCode.Content.GeoLocation.GeoProtocol;
 
 #region Documentation 
 
@@ -22,7 +22,7 @@ public class GeoLocation
         BingMapsLink,
     }
 
-    public GeoLocation(double latitude, double longitude, GeoProtocol geoProtocol = GeoProtocol.Geo)
+    public GeoLocation(double latitude, double longitude, GeoProtocol geoProtocol = Geo)
     {
         if ((double.IsNaN(latitude)) ||
             (!double.IsFinite(latitude)) ||
@@ -63,9 +63,9 @@ public sealed class GeoLocationContent(GeoLocation location) : QrContent<GeoLoca
             string longString = geo.Longitude.ToString("F6");
             return this.Content.Protocol switch
             {
-                GeoProtocol.Geo => $"geo:{latString},{longString}",
-                GeoProtocol.GoogleMapsLink => $"https://www.google.com/maps/@{latString},{longString}",
-                GeoProtocol.BingMapsLink => $"https://www.bing.com/maps/search?style=r&cp={latString}%7E{longString}",
+                Geo => $"geo:{latString},{longString}",
+                GoogleMapsLink => $"https://www.google.com/maps/@{latString},{longString}",
+                BingMapsLink => $"https://www.bing.com/maps/search?style=r&cp={latString}%7E{longString}",
                 _ => throw new NotImplementedException("Unsupported geo protocol"),
             };
         }

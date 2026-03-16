@@ -1,7 +1,10 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public class PhoneNumber
+public partial class PhoneNumber
 {
+    [GeneratedRegex(@"^[0+]+|[ ()-]")]
+    private static partial Regex PhoneNumberRegex();
+
     public PhoneNumber(string number)
     {
         if (string.IsNullOrWhiteSpace(number))
@@ -9,7 +12,8 @@ public class PhoneNumber
             throw new ArgumentException("Phone number is required, cannot be null, empty or white space", nameof(number));
         }
 
-        this.Number = number;
+        string cleanedPhoneNumber = PhoneNumberRegex().Replace(number, string.Empty);
+        this.Number = cleanedPhoneNumber;
     }
 
     public string Number { get; private set; }

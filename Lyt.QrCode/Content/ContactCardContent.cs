@@ -37,6 +37,7 @@ public class ContactCard
     }
 
     /// <summary> The kind of address (home or work). </summary>
+    /// <remarks>  VCard Only  </remarks>
     public enum AddressKind
     {
         Home, // Default 

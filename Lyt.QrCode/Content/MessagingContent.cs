@@ -1,100 +1,85 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static Lyt.QrCode.Content.Messaging;
+using static Lyt.QrCode.Content.Messaging.MessagingProtocol;
 
 #region Documentation 
 
 /*
+    Text message protocols include
+    SMS (Short Message Service) for 160-character plain text,  MMS (Multimedia Messaging Service) for media, 
+    and RCS (Rich Communication Services) for modern, internet-based features. 
+    SMS is universal and cellular-based, while RCS offers high-res media, typing indicators, and encryption, 
+    designed to replace SMS. 
 
-MMS 
+Main Text Message Protocols
 
-        private readonly string _number, _subject;
-        private readonly MMSEncoding _encoding;
+    SMS (Short Message Service): The traditional standard for sending plain text messages up to 160 
+        characters, operating over cellular networks. 
+        It is highly reliable, works without internet, but lacks modern features.
+    MMS (Multimedia Messaging Service): An extension of SMS that allows for the transmission of multimedia 
+        files, including images, audio, and video.
+    RCS (Rich Communication Services):
+        A modern, next-generation protocol that functions like messenger apps (WhatsApp/iMessage), supporting 
+        high-resolution media, group chats, read receipts, and typing indicators. It operates over Wi-Fi or data.
+    OTT (Over-the-top) Messaging: Apps like WhatsApp or Meta Messenger that use the internet rather than 
+        cellular carriers to exchange messages.
 
-        public override string ToString() => _encoding switch
-        {
-            MMSEncoding.MMSTO => $"mmsto:{_number}{(string.IsNullOrEmpty(_subject) ? string.Empty : $"?subject={Uri.EscapeDataString(_subject)}")}",
-            MMSEncoding.MMS => $"mms:{_number}{(string.IsNullOrEmpty(_subject) ? string.Empty : $"?body={Uri.EscapeDataString(_subject)}")}",
-            _ => string.Empty,
-        };
-
-        /// <summary>
-        /// Defines the encoding types for the MMS payload.
-        /// </summary>
-        public enum MMSEncoding
-        {
-            /// <summary>
-            /// Uses the "mms:" URI scheme.
-            /// </summary>
-            MMS,
-
-            /// <summary>
-            /// Uses the "mmsto:" URI scheme.
-            /// </summary>
-            MMSTO
-        }
-
-SMS
-
-        private readonly string _number, _subject;
-        private readonly SMSEncoding _encoding;
-
-        public override string ToString() => _encoding switch
-        {
-            SMSEncoding.SMS => $"sms:{_number}{(string.IsNullOrEmpty(_subject) ? string.Empty : $"?body={Uri.EscapeDataString(_subject)}")}",
-            SMSEncoding.SMS_iOS => $"sms:{_number}{(string.IsNullOrEmpty(_subject) ? string.Empty : $";body={Uri.EscapeDataString(_subject)}")}",
-            SMSEncoding.SMSTO => $"SMSTO:{_number}:{_subject}",
-            _ => string.Empty,
-        };
-
-        public enum SMSEncoding
-        {
-            /// <summary>
-            /// Standard SMS encoding.
-            /// </summary>
-            SMS,
-            /// <summary>
-            /// SMSTO encoding.
-            /// </summary>
-            SMSTO,
-            /// <summary>
-            /// SMS encoding for iOS.
-            /// </summary>
-            SMS_iOS
-        }
-
-SKype : username
-
-        public override string ToString() => $"skype:{_skypeUsername}?call";
-
-
-WhatsApp : Number + text 
-            var cleanedPhone = Regex.Replace(_number, @"^[0+]+|[ ()-]", string.Empty);
-            return ($"https://wa.me/{cleanedPhone}?text={Uri.EscapeDataString(_message)}");
-
-*/
+ */
 
 #endregion Documentation 
 
-public class Messaging
+public partial class Messaging
 {
+    [GeneratedRegex(@"^[0+]+|[ ()-]")]
+    private static partial Regex PhoneNumberRegex();
+
     public enum MessagingProtocol
     {
         Sms , 
-        SmsTo, 
         SmsIos, 
         Mms, 
         MmsTo,
-        Skype,
         WhatsApp,
     }
 
-    public Messaging(string number, string text, MessagingProtocol messagingProtocol)
+    public Messaging(string number, string text, MessagingProtocol messagingProtocol = Sms)
     {
-        
-    }
-}
+        if (string.IsNullOrWhiteSpace(number))
+        {
+            throw new ArgumentException("Phone number is required, cannot be null, empty or white space", nameof(number));
+        }
 
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            throw new ArgumentException("Message text is required, cannot be null, empty or white space", nameof(text));
+        }
+        
+        string cleanedPhoneNumber = PhoneNumberRegex().Replace(number, string.Empty);
+        this.Number = cleanedPhoneNumber;
+        this.Text = text;
+        this.Protocol = messagingProtocol;
+    }
+
+    public string Number { get; private set; }
+
+    public string Text { get; private set; }
+    
+    public MessagingProtocol Protocol { get; private set; }
+
+    public string ProtocolToString() =>
+        this.Protocol switch
+            {
+                Sms => "sms:",
+                SmsIos => "sms:",
+
+                Mms => "mms:",
+                MmsTo => "mmsto:",
+
+                WhatsApp => "https:",
+
+                _ => throw new NotImplementedException(),
+            };
+}
 
 public class MessagingContent (Messaging messaging) : QrContent<Messaging>(messaging)
 {
@@ -102,15 +87,16 @@ public class MessagingContent (Messaging messaging) : QrContent<Messaging>(messa
     {
         get
         {
-            var msg = this.Content;
-            return ";"; 
-            //return this.Content.Protocol switch
-            //{
-            //    GeoProtocol.Geo => $"geo:{latString},{longString}",
-            //    GeoProtocol.GoogleMapsLink => $"https://www.google.com/maps/@{latString},{longString}",
-            //    GeoProtocol.BingMapsLink => $"https://www.bing.com/maps/search?style=r&cp={latString}%7E{longString}",
-            //    _ => throw new NotImplementedException("Unsupported geo protocol"),
-            //};
+            var ms = this.Content;
+            return ms.Protocol switch
+            {
+                Sms => $"sms:{ms.Number}?body={Uri.EscapeDataString(ms.Text)}",
+                SmsIos => $"sms:{ms.Number};body={Uri.EscapeDataString(ms.Text)}",
+                Mms => $"mms:{ms.Number}?body={Uri.EscapeDataString(ms.Text)}",
+                MmsTo => $"mmsto:{ms.Number}?subject={Uri.EscapeDataString(ms.Text)}",
+                WhatsApp => ($"https://wa.me/{ms.Number}?text={Uri.EscapeDataString(ms.Text)}"),
+                _ => throw new NotImplementedException("Unsupported messaging protocol"),
+            };
         }
     }
 }

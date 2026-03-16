@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static Lyt.QrCode.Content.Mail;
+using static Lyt.QrCode.Content.Mail.EmailProtocol;
 
 #region Documentation 
 
@@ -51,9 +51,9 @@ public class Mail
     public string ProtocolToString()
         => this.Protocol switch
         {
-            EmailProtocol.MailTo => "mailto:",
-            EmailProtocol.Smtp => "SMTP:",
-            EmailProtocol.MatMsg => "MATMSG:",
+            MailTo => "mailto:",
+            Smtp => "SMTP:",
+            MatMsg => "MATMSG:",
             _ => throw new NotImplementedException(),
         };
 }
@@ -69,7 +69,7 @@ internal sealed class MailContent(Mail mail) : QrContent<Mail>(mail)
             string recipient = mail.Recipient;
             switch (mail.Protocol)
             {
-                case EmailProtocol.MailTo:
+                case MailTo:
                     string subjectMailTo =
                         string.IsNullOrWhiteSpace(mail.Subject) ?
                             string.Empty :
@@ -102,8 +102,8 @@ internal sealed class MailContent(Mail mail) : QrContent<Mail>(mail)
 
                     break;
 
-                case EmailProtocol.Smtp:
-                case EmailProtocol.MatMsg:
+                case Smtp:
+                case MatMsg:
                     string subject =
                         string.IsNullOrWhiteSpace(mail.Subject) ?
                             string.Empty :
@@ -113,7 +113,7 @@ internal sealed class MailContent(Mail mail) : QrContent<Mail>(mail)
                             string.Empty :
                             EscapeBasic(mail.Body);
                     emailString = 
-                        mail.Protocol == EmailProtocol.Smtp ?
+                        mail.Protocol == Smtp ?
                             $"{recipient}:{subject}:{body}":
                             $"TO:{recipient};SUB:{subject};BODY:{body};;";
                     break;
