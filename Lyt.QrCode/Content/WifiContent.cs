@@ -58,7 +58,6 @@ public class Wifi
             throw new ArgumentException("SsID is required, cannot be null, empty or white space", nameof(ssid));
         }
 
-
         if (authenticationMode != AuthenticationMode.None && string.IsNullOrWhiteSpace(password))
         {
             throw new ArgumentException("Password is required, cannot be null, empty or white space", nameof(password));

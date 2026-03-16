@@ -24,8 +24,8 @@ public class ContactCard
 
     /// <summary> 
     /// The address format.
-    /// Default: European format, ([Street] [House Number] and [Postal Code] [City])
-    /// Reversed: North American and others format ([House Number] [Street] and [City] [Postal Code])
+    /// European format: [Street] [House Number] and [Postal Code] [City] - Default
+    /// North American (and others): [House Number] [Street] and [City] [Postal Code]) 
     /// </summary>
     public enum AddressFormat
     {
@@ -72,23 +72,38 @@ public class ContactCard
 
     public AddressFormat Format { get; set; } = AddressFormat.European;
 
+    // VCard Only 
     public AddressKind Kind { get; set; } = AddressKind.Home;
 
     // All other relevant optional Card fields as properties defaulting to empty 
     public string Nickname { get; set; } = string.Empty;
+
     public string Organization { get; set; } = string.Empty;
+
     public string OrganizationTitle { get; set; } = string.Empty;
+
     public string Phone { get; set; } = string.Empty;
+
     public string MobilePhone { get; set; } = string.Empty;
+
     public string WorkPhone { get; set; } = string.Empty;
+
     public string Email { get; set; } = string.Empty;
+
     public string Website { get; set; } = string.Empty;
+
     public string Street { get; set; } = string.Empty;
+
     public string HouseNumber { get; set; } = string.Empty;
+
     public string City { get; set; } = string.Empty;
+
     public string ZipCode { get; set; } = string.Empty;
+
     public string StateRegion { get; set; } = string.Empty;
+
     public string Country { get; set; } = string.Empty;
+
     public string Note { get; set; } = string.Empty;
 
     public string BirthdayString

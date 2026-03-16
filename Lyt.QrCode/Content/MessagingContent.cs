@@ -6,6 +6,7 @@
 #endregion Documentation 
 
 
-internal class PhoneContent
+
+internal class MessagingContent
 {
 }
