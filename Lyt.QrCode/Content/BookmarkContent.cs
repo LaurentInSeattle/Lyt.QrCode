@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public partial class Bookmark
+public class Bookmark
 {
         public Bookmark(string url, string title ="")
         {
