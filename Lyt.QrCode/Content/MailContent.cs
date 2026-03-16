@@ -10,7 +10,7 @@ using static Lyt.QrCode.Content.Mail;
 
 #endregion Documentation 
 
-internal class Mail 
+public class Mail 
 {
     /// <summary> The email protocol. </summary>
     public enum EmailProtocol
@@ -23,7 +23,6 @@ internal class Mail
 
         /// <summary> For the "MATMSG:" format. </summary>
         MatMsg,
-
     }
 
     // SIMPLIFIED: Does NOT implement the RFC 2368 in full.
