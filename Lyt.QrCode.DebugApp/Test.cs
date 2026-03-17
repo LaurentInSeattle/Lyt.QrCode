@@ -2,14 +2,70 @@
 
 internal sealed class Test
 {
-    private const string rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests";
+    private string rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests";
 
-#pragma warning disable CA1822 // Mark members as static
     internal void Run()
     {
-        // Encode("test");
+        rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Encode";
 
-        Encode(new QrBookmark("https://github.com/LaurentInSeattle/Lyt.QrCode", "QrCode Library"), "Bookmark"); 
+        this.Encode("This a test text string.", "Text");
+
+        string text = "012345RSTUVWXYZ $%*+-./:";
+        byte[] bytes = Encoding.UTF8.GetBytes(text);
+        this.Encode(bytes, "Bytes");
+
+        this.Encode(new QrBookmark("https://github.com/LaurentInSeattle/Lyt.QrCode", "QrCode Library"), "Bookmark");
+
+        this.Encode(
+            new QrCalendarEvent(
+                "Party",
+                DateTime.Parse("05/12/1926 20:00"),
+                DateTime.Parse("05/12/1926 23:00"),
+                isAllDay: false,
+                "Mario's Home", 
+                "Celebrate Luigi's birthday",
+                includeVcalendarTags: true), 
+            "Event");
+
+        this.Encode(new QrGeoLocation(37.810729, -122.476552), "Presidio");
+
+        this.Encode(
+            new QrMail(                
+                "ly.testud@outlook.com",
+                "Hello Laurent!",
+                "I hope all is well in California"),
+            "Mail");
+
+        var mecard = new QrMeCard("Laurent", "Testud")
+        {
+            City = "San Francisco",
+            StateRegion = "CA",
+            ZipCode = "94578",
+            Email = "ly.testud@outlook.com",
+            Website = "https://github.com/LaurentInSeattle/Lyt.QrCode",
+        };
+        this.Encode(mecard, "MeCard");
+
+        var vcard = new QrVCard("Laurent", "Testud")
+        {
+            City = "San Francisco",
+            StateRegion = "CA",
+            ZipCode = "94578",
+            Email = "ly.testud@outlook.com",
+            Website = "https://github.com/LaurentInSeattle/Lyt.QrCode",
+        };
+        this.Encode(vcard, "VCard");
+
+        this.Encode(new QrPhoneNumber("12066197812"), "Phone");
+
+        this.Encode(
+            new QrTextMessage("12066197812", "Hello Laurent!", QrTextMessage.MessagingProtocol.SmsIos),
+            "Sms");
+
+        var uri = new Uri("https://github.com/LaurentInSeattle/Lyt.QrCode");
+        this.Encode(new QrUri(uri), "Uri");
+
+        this.Encode(new QrWifi( "MySecretNetwork", "-Hello*0|0*World-"), "Wifi");
 
         //Thresholding("screen");
         //Thresholding("Sample");
@@ -19,13 +75,13 @@ internal sealed class Test
 
         //Decode("screen");
         //Decode("screenRotated");
-        Decode("screenPortrait");
+        //Decode("screenPortrait");
     }
 
     private static void OnDetect(QrPoint resultPoint)
         => Console.WriteLine("Detected: " + resultPoint.ToString());
 
-    private static void Detect(string filename)
+    private void Detect(string filename)
     {
         // Screen 
         // Should return: (331.5, 430.5), (333, 285.5), (486.5, 277)
@@ -44,7 +100,7 @@ internal sealed class Test
         //10:47:44:389    patternInfo: (190, 366.5), (205, 162), (421.5, 165)
 
         string imagePathLoad = filename + ".png";
-        var sourceImage = LoadSourceImage(imagePathLoad);
+        var sourceImage = this.LoadSourceImage(imagePathLoad);
         if (Qr.TryDecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
         {
             // TODO: Print out results 
@@ -63,10 +119,10 @@ internal sealed class Test
         }
     }
 
-    private static void Decode(string filename)
+    private void Decode(string filename)
     {
         string imagePathLoad = filename + ".png";
-        var sourceImage = LoadSourceImage(imagePathLoad);
+        var sourceImage = this.LoadSourceImage(imagePathLoad);
         var before = DateTime.Now;
         DateTime after;
         Console.WriteLine("Decode: " + filename);
@@ -85,21 +141,21 @@ internal sealed class Test
         Console.WriteLine("Decode: " + (after - before).TotalMilliseconds.ToString());
     }
 
-    private static void Thresholding(string filename)
+    private void Thresholding(string filename)
     {
         string imagePathLoad = filename + ".png";
-        var sourceImage = LoadSourceImage(imagePathLoad);
+        var sourceImage = this.LoadSourceImage(imagePathLoad);
         string imagePathSave = filename + "Save.png";
-        SaveSourceImage(imagePathSave, sourceImage);
+        this.SaveSourceImage(imagePathSave, sourceImage);
 
         var grayscaleImage = sourceImage.ToGrayscale();
         string imagePathSaveGray = filename + "Gray.png";
-        SaveGrayscaleImage(imagePathSaveGray, grayscaleImage);
+        this.SaveGrayscaleImage(imagePathSaveGray, grayscaleImage);
 
         var grayscaleImageEQ = sourceImage.ToGrayscale();
         grayscaleImageEQ.HistogramEqualization();
         string imagePathSaveGrayEQ = filename + "GrayEQ.png";
-        SaveGrayscaleImage(imagePathSaveGrayEQ, grayscaleImageEQ);
+        this.SaveGrayscaleImage(imagePathSaveGrayEQ, grayscaleImageEQ);
 
         var bitMatrixImage1 = grayscaleImage.ToBitMatrixBasicThresholding();
         byte[] bwImage1 = PngBuilder.ToImage(bitMatrixImage1);
@@ -112,7 +168,7 @@ internal sealed class Test
         File.WriteAllBytes(bwPath2, bwImage2);
     }
 
-    private static void Encode<T>(T content, string filename) where T : class
+    private void Encode<T>(T content, string filename) where T : class
     {
         if (Qr.TryEncode(content, out byte[]? imagePng))
         {
@@ -122,7 +178,7 @@ internal sealed class Test
         }
     }
 
-    private static void Encode(string filename)
+    private void Encode(string filename)
     {
         string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw";
         if (Qr.TryEncode(text, out byte[]? imagePng))
@@ -161,7 +217,7 @@ internal sealed class Test
         }
     }
 
-    private static SourceImage LoadSourceImage(string imagePath)
+    private SourceImage LoadSourceImage(string imagePath)
     {
         string fullPath = Path.Combine(rootPath, imagePath);
         using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(fullPath);
@@ -174,7 +230,7 @@ internal sealed class Test
         return sourceImage;
     }
 
-    private static void SaveSourceImage(string imagePath, SourceImage sourceImage)
+    private void SaveSourceImage(string imagePath, SourceImage sourceImage)
     {
         string fullPath = Path.Combine(rootPath, imagePath);
         using var image =
@@ -184,7 +240,7 @@ internal sealed class Test
         Console.WriteLine($"Saved image: {fullPath}, Size: {image.Width}x{image.Height}");
     }
 
-    private static void SaveGrayscaleImage(string imagePath, GrayscaleImage grayscaleImage)
+    private void SaveGrayscaleImage(string imagePath, GrayscaleImage grayscaleImage)
     {
         string fullPath = Path.Combine(rootPath, imagePath);
         using var image =
@@ -193,6 +249,4 @@ internal sealed class Test
         image.Save(fullPath);
         Console.WriteLine($"Saved image: {fullPath}, Size: {image.Width}x{image.Height}");
     }
-
-#pragma warning restore CA1822 // Mark members as static
 }

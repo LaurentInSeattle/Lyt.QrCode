@@ -25,9 +25,10 @@ public class QrMail : QrContent<QrMail>
         MatMsg,
     }
 
-    // SIMPLIFIED: Does NOT implement the RFC 2368 in full.
+    // VERY SIMPLIFIED: Does NOT implement the RFC 2368 in full.
     // CONSIDER: Implement CC, BCC, and more stuff...
-    public QrMail(EmailProtocol protocol, string recipient, string subject = "", string body = "")
+    public QrMail(
+        string recipient, string subject = "", string body = "", EmailProtocol protocol = EmailProtocol.MailTo)
     {
         if (string.IsNullOrWhiteSpace(recipient))
         {

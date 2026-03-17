@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static Lyt.QrCode.Content.Wifi.AuthenticationMode;
+using static Lyt.QrCode.Content.QrWifi.AuthenticationMode;
 
 #region Documentation 
 
@@ -28,7 +28,7 @@ using static Lyt.QrCode.Content.Wifi.AuthenticationMode;
 
 #endregion Documentation 
 
-public class Wifi : QrContent<Wifi>
+public class QrWifi : QrContent<QrWifi>
 {
     /// <summary> The authentication mode for the WiFi network. </summary>
     public enum AuthenticationMode
@@ -46,7 +46,7 @@ public class Wifi : QrContent<Wifi>
         WPA2
     }
 
-    public Wifi(
+    public QrWifi(
         string ssid,
         string password = "",
         AuthenticationMode authenticationMode = WPA2,
@@ -85,16 +85,15 @@ public class Wifi : QrContent<Wifi>
     {
         get
         {
-            var wifi = this;
-            string auth = wifi.Authentication == None ? "nopass" : wifi.Authentication.ToString();
-            string password = $"P:{(wifi.Authentication == None ? string.Empty : wifi.Password)}";
-            string hidden = wifi.IsHiddenNetwork ? "H:true" : string.Empty;
+            string auth = this.Authentication == None ? "nopass" : this.Authentication.ToString();
+            string password = $"P:{(this.Authentication == None ? string.Empty : this.Password)}";
+            string hidden = this.IsHiddenNetwork ? "H:true" : string.Empty;
 
             // Handle WIFI:S or WIFI:T Format 
             return
-                wifi.EncodeUsingWifi_S ?
-                    $"WIFI:S:{wifi.Ssid};T:{auth};{password};{hidden};" :
-                    $"WIFI:T:{auth};S:{wifi.Ssid};{password};{hidden};";
+                this.EncodeUsingWifi_S ?
+                    $"WIFI:S:{this.Ssid};T:{auth};{password};{hidden};" :
+                    $"WIFI:T:{auth};S:{this.Ssid};{password};{hidden};";
         }
     }
 }
