@@ -14,6 +14,16 @@ public delegate void DetectorCallback(QrPoint point);
 /// Partial: Decode API 
 public static partial class Qr
 {
+    internal static DecoderOutput decoderOutput; 
+
+    static Qr()
+    {
+        if (Debugger.IsAttached) { Debugger.Break(); }
+        decoderOutput = DecoderOutput.Create();
+    }
+
+    public static bool TryAddCustomQrContentType(Type type) => decoderOutput.TryAddQrParser(type);
+
     public static bool TryDecodeQrCodeFromImage(
         SourceImage sourceImage,
         [NotNullWhen(true)] out DecoderResult? decoderResult,
