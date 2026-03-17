@@ -1,11 +1,11 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public partial class PhoneNumber
+public partial class QrPhoneNumber : QrContent<QrPhoneNumber>
 {
     [GeneratedRegex(@"^[0+]+|[ ()-]")]
     private static partial Regex PhoneNumberRegex();
 
-    public PhoneNumber(string number)
+    public QrPhoneNumber(string number)
     {
         if (string.IsNullOrWhiteSpace(number))
         {
@@ -17,9 +17,6 @@ public partial class PhoneNumber
     }
 
     public string Number { get; private set; }
-}
 
-public class PhoneNumberContent (PhoneNumber phoneNumber) : QrContent<PhoneNumber>(phoneNumber)
-{
-    public override string RawString => $"tel:{this.Content.Number}";
+    public override string RawString => $"tel:{this.Number}";
 }

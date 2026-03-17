@@ -1,11 +1,9 @@
-﻿namespace Lyt.QrCode.Content;
+﻿namespace Lyt.QrCode.Content.Internal;
 
-public class QrContent<T>(T content, bool isBinaryData = false)
+public class QrContent<T>(bool isBinaryData = false)
     : QrContent(isBinaryData)
     where T : class
 {
-    public T Content { get; set; } = content;
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string EscapeBasic(string content) => content.Replace(":", "\\:");
 }

@@ -9,7 +9,7 @@ internal sealed class Test
     {
         // Encode("test");
 
-        Encode(new Bookmark("https://github.com/LaurentInSeattle/Lyt.QrCode", "QrCode Library"), "Bookmark"); 
+        Encode(new QrBookmark("https://github.com/LaurentInSeattle/Lyt.QrCode", "QrCode Library"), "Bookmark"); 
 
         //Thresholding("screen");
         //Thresholding("Sample");

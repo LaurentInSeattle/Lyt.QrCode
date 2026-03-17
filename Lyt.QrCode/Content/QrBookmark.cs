@@ -1,10 +1,8 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public class Bookmark : QrContent<Bookmark>
+public class QrBookmark : QrContent<QrBookmark>
 {
-    static Bookmark fake = new Bookmark("fake"); 
-
-    public Bookmark(string url, string title = "") : base(fake, isBinaryData: false)
+    public QrBookmark(string url, string title = "") : base(isBinaryData: false)
     {
         if (string.IsNullOrWhiteSpace(url))
         {

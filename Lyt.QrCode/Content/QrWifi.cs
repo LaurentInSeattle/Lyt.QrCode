@@ -28,7 +28,7 @@ using static Lyt.QrCode.Content.Wifi.AuthenticationMode;
 
 #endregion Documentation 
 
-public class Wifi
+public class Wifi : QrContent<Wifi>
 {
     /// <summary> The authentication mode for the WiFi network. </summary>
     public enum AuthenticationMode
@@ -52,6 +52,7 @@ public class Wifi
         AuthenticationMode authenticationMode = WPA2,
         bool isHiddenNetwork = false,
         bool encodeUsingWifi_S = true)
+        : base(isBinaryData: false)
     {
         if (string.IsNullOrWhiteSpace(ssid))
         {
@@ -79,24 +80,21 @@ public class Wifi
     public bool IsHiddenNetwork { get; }
 
     public bool EncodeUsingWifi_S { get; }
-}
 
-internal sealed class WifiContent(Wifi wifi) : QrContent<Wifi>(wifi)
-{
     public override string RawString
     {
         get
         {
-            var wifi = this.Content;
+            var wifi = this;
             string auth = wifi.Authentication == None ? "nopass" : wifi.Authentication.ToString();
-            string password = $"P:{(wifi.Authentication == None ? string.Empty : wifi.Password)}" ;
+            string password = $"P:{(wifi.Authentication == None ? string.Empty : wifi.Password)}";
             string hidden = wifi.IsHiddenNetwork ? "H:true" : string.Empty;
 
             // Handle WIFI:S or WIFI:T Format 
             return
                 wifi.EncodeUsingWifi_S ?
                     $"WIFI:S:{wifi.Ssid};T:{auth};{password};{hidden};" :
-                    $"WIFI:T:{auth};S:{wifi.Ssid};{password};{hidden};" ;
+                    $"WIFI:T:{auth};S:{wifi.Ssid};{password};{hidden};";
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static Lyt.QrCode.Content.Messaging.MessagingProtocol;
+using static Lyt.QrCode.Content.QrTextMessage.MessagingProtocol;
 
 #region Documentation 
 
@@ -28,7 +28,7 @@ Main Text Message Protocols
 
 #endregion Documentation 
 
-public partial class Messaging
+public partial class QrTextMessage : QrContent<QrTextMessage>
 {
     [GeneratedRegex(@"^[0+]+|[ ()-]")]
     private static partial Regex PhoneNumberRegex();
@@ -42,7 +42,7 @@ public partial class Messaging
         WhatsApp,
     }
 
-    public Messaging(string number, string text, MessagingProtocol messagingProtocol = Sms)
+    public QrTextMessage(string number, string text, MessagingProtocol messagingProtocol = Sms)
     {
         if (string.IsNullOrWhiteSpace(number))
         {
@@ -79,15 +79,11 @@ public partial class Messaging
 
                 _ => throw new NotImplementedException(),
             };
-}
-
-internal sealed class MessagingContent (Messaging messaging) : QrContent<Messaging>(messaging)
-{
     public override string RawString
     {
         get
         {
-            var ms = this.Content;
+            var ms = this;
             return ms.Protocol switch
             {
                 Sms => $"sms:{ms.Number}?body={Uri.EscapeDataString(ms.Text)}",

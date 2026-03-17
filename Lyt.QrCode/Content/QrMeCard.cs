@@ -1,17 +1,14 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static Lyt.QrCode.Content.ContactCard;
 
-public class MeCard(string firstName, string lastName) : ContactCard(firstName, lastName) { }
-
-internal sealed class MeCardContent(MeCard meCard) : QrContent<MeCard>(meCard)
+public class QrMeCard(string firstName, string lastName) : QrContactCard<QrMeCard>(firstName, lastName)
 {
     public override string RawString
     {
         get
         {
             var sb = new StringBuilder();
-            var card = this.Content;
+            var card = this;
 
             // These may have been set to whitespace via properties after construction so we need to check
             // again and set to empty if needed. 

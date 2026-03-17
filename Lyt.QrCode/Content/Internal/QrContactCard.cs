@@ -1,4 +1,4 @@
-﻿namespace Lyt.QrCode.Content;
+﻿namespace Lyt.QrCode.Content.Internal;
 
 #region Documentation 
 
@@ -9,7 +9,11 @@
 
 #endregion Documentation 
 
-public class ContactCard
+/// <summary> 
+/// Represents a contact card containing personal and organizational information, 
+/// base class for vCard and MeCard formats.
+/// </summary>
+public class QrContactCard<T> : QrContent<T> where T : class 
 {
     /// <summary> 
     /// The address format.
@@ -25,17 +29,7 @@ public class ContactCard
         NorthAmerica,
     }
 
-    /// <summary> The kind of address (home or work). </summary>
-    /// <remarks>  VCard Only  </remarks>
-    public enum AddressKind
-    {
-        Home, // Default 
-        Work,
-        HomePref,
-        WorkPref,
-    }
-
-    public ContactCard(string firstName, string lastName)
+    public QrContactCard(string firstName, string lastName) : base (isBinaryData: false)
     {
         if (string.IsNullOrWhiteSpace(firstName))
         {
@@ -104,5 +98,4 @@ public class ContactCard
     }
 
     public DateTime? Birthday { get; set; } = null;
-
 }

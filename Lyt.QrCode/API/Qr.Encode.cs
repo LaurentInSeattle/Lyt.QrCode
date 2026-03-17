@@ -4,6 +4,7 @@
 
 // Present in GlobalUsings.cs: BUT KEEP for avoiding ambiguous reference to System.Net
 using Lyt.QrCode.Content;
+using Lyt.QrCode.Content.Internal;
 
 /// Factory class for creating QR code images and vector paths from various content types.
 public static partial class Qr
@@ -179,7 +180,7 @@ public static partial class Qr
                 return false;
             }
 
-            qrContent = new StringContent(stringContent);
+            qrContent = new QrString(stringContent);
             return true;
         }
 
@@ -200,7 +201,7 @@ public static partial class Qr
                 return false ;
             } 
 
-            qrContent = new BytesContent(bytesContent);
+            qrContent = new QrBytes(bytesContent);
             return true;
         }
 

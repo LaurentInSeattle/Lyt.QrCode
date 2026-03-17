@@ -1,7 +1,5 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using System.Runtime.InteropServices.JavaScript;
-
 #region Documentation 
 /*
  
@@ -29,28 +27,28 @@ DESCRIPTION: Details about the event.
 
 #endregion Documentation 
 
-public class CalendarEvent
+public class QrCalendarEvent : QrContent<QrCalendarEvent>
 {
-    public CalendarEvent(
-        string summary, 
-        DateTime start, DateTime end,  bool isAllDay = false,
-        string location = "", string description = "", 
-        bool includeVcalendarTags = false)
+    public QrCalendarEvent(
+        string summary,
+        DateTime start, DateTime end, bool isAllDay = false,
+        string location = "", string description = "",
+        bool includeVcalendarTags = false) : base(isBinaryData: false)
     {
         this.Summary = summary;
         this.Location = location;
         this.Description = description;
-        this.IncludeVcalendarTags= includeVcalendarTags;
+        this.IncludeVcalendarTags = includeVcalendarTags;
 
-        string dtFormatStart ;
-        string dtFormatEnd ;
+        string dtFormatStart;
+        string dtFormatEnd;
         if (isAllDay)
         {
             // format only the date: No time
             dtFormatStart = dtFormatEnd = "yyyyMMdd";
         }
         else
-        { 
+        {
             dtFormatStart = dtFormatEnd = "yyyyMMddTHHmmss";
 
             // Override format for UTC Date/Time's
@@ -76,43 +74,39 @@ public class CalendarEvent
     public string EndString { get; private set; }
 
     public string Location { get; private set; }
-    
+
     public string Description { get; private set; }
 
     public bool IncludeVcalendarTags { get; private set; }
-}
 
-public sealed class CalendarEventContent(CalendarEvent calendarEvent) : QrContent<CalendarEvent>(calendarEvent)
-{
     public override string RawString
     {
         get
         {
             var sb = new StringBuilder();
-            var evt = this.Content;
-            if ( evt.IncludeVcalendarTags)
+            if (this.IncludeVcalendarTags)
             {
                 sb.AppendLine("BEGIN:VCALENDAR");
                 sb.AppendLine("VERSION: 2.0");
             }
 
             sb.AppendLine("BEGIN:VEVENT");
-            sb.AppendLine( $"SUMMARY:{evt.Summary}");
-            sb.AppendLine($"DTSTART:{evt.StartString}");
-            sb.AppendLine($"DTEND:{evt.EndString}");
+            sb.AppendLine($"SUMMARY:{this.Summary}");
+            sb.AppendLine($"DTSTART:{this.StartString}");
+            sb.AppendLine($"DTEND:{this.EndString}");
 
-            if (!string.IsNullOrWhiteSpace(evt.Location))
+            if (!string.IsNullOrWhiteSpace(this.Location))
             {
-                sb.AppendLine($"SUMMARY:{evt.Location}");
+                sb.AppendLine($"SUMMARY:{this.Location}");
             }
 
-            if (!string.IsNullOrWhiteSpace(evt.Description))
+            if (!string.IsNullOrWhiteSpace(this.Description))
             {
-                sb.AppendLine($"DESCRIPTION:{evt.Description}");
+                sb.AppendLine($"DESCRIPTION:{this.Description}");
             }
 
             sb.AppendLine("END:VEVENT");
-            if (evt.IncludeVcalendarTags)
+            if (this.IncludeVcalendarTags)
             {
                 sb.AppendLine("END:VCALENDAR");
             }

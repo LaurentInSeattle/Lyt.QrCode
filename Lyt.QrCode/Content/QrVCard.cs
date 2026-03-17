@@ -1,9 +1,18 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static Lyt.QrCode.Content.ContactCard;
-
-internal class VCard(string firstName, string lastName) : ContactCard(firstName, lastName)
+internal class QrVCard(string firstName, string lastName) 
+    : QrContactCard<QrVCard>(firstName, lastName)
 {
+    /// <summary> The kind of address (home or work). </summary>
+    /// <remarks>  VCard Only  </remarks>
+    public enum AddressKind
+    {
+        Home, // Default 
+        Work,
+        HomePref,
+        WorkPref,
+    }
+
     public AddressKind Kind { get; set; } = AddressKind.Home;
 
     public string AddressKindToString()
@@ -15,16 +24,13 @@ internal class VCard(string firstName, string lastName) : ContactCard(firstName,
             AddressKind.WorkPref => "work,pref",
             _ => "home,pref"
         };
-}
 
-internal sealed class VCardContent(VCard vCard) : QrContent<VCard>(vCard)
-{
     public override string RawString
     {
         get
         {
             var sb = new StringBuilder();
-            var card = this.Content;
+            var card = this;
 
             // These may have been set to whitespace via properties after construction so we need to check
             // again and set to empty if needed. 

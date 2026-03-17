@@ -1,4 +1,4 @@
-﻿namespace Lyt.QrCode.Content;
+﻿namespace Lyt.QrCode.Content.Internal;
 
 internal enum EncoderOutput
 {

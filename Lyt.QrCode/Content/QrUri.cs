@@ -1,8 +1,8 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static UriContent; 
+using static QrUri; 
 
-public sealed class UriContent(Uri uri, Kind kind = Kind.Canonical) : QrContent<Uri>(uri)
+public sealed class QrUri(Uri uri, Kind kind = Kind.Canonical) : QrContent<Uri>
 {
     public enum Kind
     {
@@ -10,6 +10,8 @@ public sealed class UriContent(Uri uri, Kind kind = Kind.Canonical) : QrContent<
         Original, 
         Absolute,
     }
+
+    public Uri Content { get; set; } = uri;
 
     public Kind UriKind { get; set; } = kind;
 

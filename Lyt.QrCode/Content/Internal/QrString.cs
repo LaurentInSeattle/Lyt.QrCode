@@ -1,7 +1,9 @@
-﻿namespace Lyt.QrCode.Content;
+﻿namespace Lyt.QrCode.Content.Internal;
 
-public class StringContent(string content) : QrContent<string>(content)
+internal class QrString(string content) : QrContent<string>
 {
+    public string Content { get; set; } = content;
+
     public override string RawString
     {
         get => this.Content;

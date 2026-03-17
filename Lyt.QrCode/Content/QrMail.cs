@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static Lyt.QrCode.Content.Mail.EmailProtocol;
+using static Lyt.QrCode.Content.QrMail.EmailProtocol;
 
 #region Documentation 
 
@@ -10,7 +10,7 @@ using static Lyt.QrCode.Content.Mail.EmailProtocol;
 
 #endregion Documentation 
 
-public class Mail 
+public class QrMail : QrContent<QrMail>
 {
     /// <summary> The email protocol. </summary>
     public enum EmailProtocol
@@ -27,7 +27,7 @@ public class Mail
 
     // SIMPLIFIED: Does NOT implement the RFC 2368 in full.
     // CONSIDER: Implement CC, BCC, and more stuff...
-    public Mail(EmailProtocol protocol, string recipient, string subject = "", string body = "")
+    public QrMail(EmailProtocol protocol, string recipient, string subject = "", string body = "")
     {
         if (string.IsNullOrWhiteSpace(recipient))
         {
@@ -56,28 +56,24 @@ public class Mail
             MatMsg => "MATMSG:",
             _ => throw new NotImplementedException(),
         };
-}
 
-internal sealed class MailContent(Mail mail) : QrContent<Mail>(mail)
-{
     public override string RawString
     {
         get
         {
-            Mail mail = this.Content;
             string emailString; 
-            string recipient = mail.Recipient;
-            switch (mail.Protocol)
+            string recipient = this.Recipient;
+            switch (this.Protocol)
             {
                 case MailTo:
                     string subjectMailTo =
-                        string.IsNullOrWhiteSpace(mail.Subject) ?
+                        string.IsNullOrWhiteSpace(this.Subject) ?
                             string.Empty :
-                            string.Concat("subject=", Uri.EscapeDataString(mail.Subject));
+                            string.Concat("subject=", Uri.EscapeDataString(this.Subject));
                     string bodyMailTo =
-                        string.IsNullOrWhiteSpace(mail.Body) ?
+                        string.IsNullOrWhiteSpace(this.Body) ?
                             string.Empty :
-                            string.Concat("body=", Uri.EscapeDataString(mail.Body));
+                            string.Concat("body=", Uri.EscapeDataString(this.Body));
                     emailString = recipient; 
                     if (!string.IsNullOrEmpty(subjectMailTo) || !string.IsNullOrEmpty(bodyMailTo))
                     {
@@ -105,15 +101,15 @@ internal sealed class MailContent(Mail mail) : QrContent<Mail>(mail)
                 case Smtp:
                 case MatMsg:
                     string subject =
-                        string.IsNullOrWhiteSpace(mail.Subject) ?
+                        string.IsNullOrWhiteSpace(this.Subject) ?
                             string.Empty :
-                            EscapeBasic(mail.Subject);
+                            EscapeBasic(this.Subject);
                     string body =
-                        string.IsNullOrWhiteSpace(mail.Body) ?
+                        string.IsNullOrWhiteSpace(this.Body) ?
                             string.Empty :
-                            EscapeBasic(mail.Body);
+                            EscapeBasic(this.Body);
                     emailString = 
-                        mail.Protocol == Smtp ?
+                        this.Protocol == Smtp ?
                             $"{recipient}:{subject}:{body}":
                             $"TO:{recipient};SUB:{subject};BODY:{body};;";
                     break;
@@ -122,7 +118,7 @@ internal sealed class MailContent(Mail mail) : QrContent<Mail>(mail)
                     throw new NotImplementedException();
             }
 
-            return string.Concat(mail.ProtocolToString(), emailString); 
+            return string.Concat(this.ProtocolToString(), emailString); 
         }
     }
 }

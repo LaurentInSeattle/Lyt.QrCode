@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static Lyt.QrCode.Content.GeoLocation.GeoProtocol;
+using static Lyt.QrCode.Content.QrGeoLocation.GeoProtocol;
 
 #region Documentation 
 
@@ -10,7 +10,7 @@ using static Lyt.QrCode.Content.GeoLocation.GeoProtocol;
 
 #endregion Documentation 
 
-public class GeoLocation
+public class QrGeoLocation : QrContent<QrGeoLocation>
 {
     /// <summary> The preferred protocol for encoding the location. </summary>
     public enum GeoProtocol
@@ -18,11 +18,14 @@ public class GeoLocation
         /// <summary> The regular "geo:" URI scheme. Default </summary>
         Geo,
 
+        /// <summary> Convenience URL builders for Google and Bing. More later.</summary>
         GoogleMapsLink,
         BingMapsLink,
     }
 
-    public GeoLocation(double latitude, double longitude, GeoProtocol geoProtocol = Geo)
+    public QrGeoLocation(
+        double latitude, double longitude, GeoProtocol geoProtocol = Geo) 
+        : base( isBinaryData: false)
     {
         if ((double.IsNaN(latitude)) ||
             (!double.IsFinite(latitude)) ||
@@ -50,18 +53,14 @@ public class GeoLocation
     public double Longitude { get; private set; }
 
     public GeoProtocol Protocol { get; private set; }
-}
 
-public sealed class GeoLocationContent(GeoLocation location) : QrContent<GeoLocation>(location)
-{
     public override string RawString
     {
         get
         {
-            var geo = this.Content;
-            string latString = geo.Latitude.ToString("F6");
-            string longString = geo.Longitude.ToString("F6");
-            return this.Content.Protocol switch
+            string latString = this.Latitude.ToString("F6");
+            string longString = this.Longitude.ToString("F6");
+            return this.Protocol switch
             {
                 Geo => $"geo:{latString},{longString}",
                 GoogleMapsLink => $"https://www.google.com/maps/@{latString},{longString}",
