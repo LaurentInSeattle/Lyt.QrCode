@@ -6,66 +6,66 @@ internal sealed class Test
 
     internal void Run()
     {
-        rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Encode";
+        //rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Encode";
 
-        this.Encode("This a test text string.", "Text");
+        //this.Encode("This a test text string.", "Text");
 
-        string text = "012345RSTUVWXYZ $%*+-./:";
-        byte[] bytes = Encoding.UTF8.GetBytes(text);
-        this.Encode(bytes, "Bytes");
+        //string text = "012345RSTUVWXYZ $%*+-./:";
+        //byte[] bytes = Encoding.UTF8.GetBytes(text);
+        //this.Encode(bytes, "Bytes");
 
-        this.Encode(new QrBookmark("https://github.com/LaurentInSeattle/Lyt.QrCode", "QrCode Library"), "Bookmark");
+        //this.Encode(new QrBookmark("https://github.com/LaurentInSeattle/Lyt.QrCode", "QrCode Library"), "Bookmark");
 
-        this.Encode(
-            new QrCalendarEvent(
-                "Party",
-                DateTime.Parse("05/12/1926 20:00"),
-                DateTime.Parse("05/12/1926 23:00"),
-                isAllDay: false,
-                "Mario's Home", 
-                "Celebrate Luigi's birthday",
-                includeVcalendarTags: true), 
-            "Event");
+        //this.Encode(
+        //    new QrCalendarEvent(
+        //        "Party",
+        //        DateTime.Parse("05/12/1926 20:00"),
+        //        DateTime.Parse("05/12/1926 23:00"),
+        //        isAllDay: false,
+        //        "Mario's Home", 
+        //        "Celebrate Luigi's birthday",
+        //        includeVcalendarTags: true), 
+        //    "Event");
 
-        this.Encode(new QrGeoLocation(37.810729, -122.476552), "Presidio");
+        //this.Encode(new QrGeoLocation(37.810729, -122.476552), "Presidio");
 
-        this.Encode(
-            new QrMail(                
-                "ly.testud@outlook.com",
-                "Hello Laurent!",
-                "I hope all is well in California"),
-            "Mail");
+        //this.Encode(
+        //    new QrMail(                
+        //        "ly.testud@outlook.com",
+        //        "Hello Laurent!",
+        //        "I hope all is well in California"),
+        //    "Mail");
 
-        var mecard = new QrMeCard("Laurent", "Testud")
-        {
-            City = "San Francisco",
-            StateRegion = "CA",
-            ZipCode = "94578",
-            Email = "ly.testud@outlook.com",
-            Website = "https://github.com/LaurentInSeattle/Lyt.QrCode",
-        };
-        this.Encode(mecard, "MeCard");
+        //var mecard = new QrMeCard("Laurent", "Testud")
+        //{
+        //    City = "San Francisco",
+        //    StateRegion = "CA",
+        //    ZipCode = "94578",
+        //    Email = "ly.testud@outlook.com",
+        //    Website = "https://github.com/LaurentInSeattle/Lyt.QrCode",
+        //};
+        //this.Encode(mecard, "MeCard");
 
-        var vcard = new QrVCard("Laurent", "Testud")
-        {
-            City = "San Francisco",
-            StateRegion = "CA",
-            ZipCode = "94578",
-            Email = "ly.testud@outlook.com",
-            Website = "https://github.com/LaurentInSeattle/Lyt.QrCode",
-        };
-        this.Encode(vcard, "VCard");
+        //var vcard = new QrVCard("Laurent", "Testud")
+        //{
+        //    City = "San Francisco",
+        //    StateRegion = "CA",
+        //    ZipCode = "94578",
+        //    Email = "ly.testud@outlook.com",
+        //    Website = "https://github.com/LaurentInSeattle/Lyt.QrCode",
+        //};
+        //this.Encode(vcard, "VCard");
 
-        this.Encode(new QrPhoneNumber("12066197812"), "Phone");
+        //this.Encode(new QrPhoneNumber("12066197812"), "Phone");
 
-        this.Encode(
-            new QrTextMessage("12066197812", "Hello Laurent!", QrTextMessage.MessagingProtocol.SmsIos),
-            "Sms");
+        //this.Encode(
+        //    new QrTextMessage("12066197812", "Hello Laurent!", QrTextMessage.MessagingProtocol.SmsIos),
+        //    "Sms");
 
-        var uri = new Uri("https://github.com/LaurentInSeattle/Lyt.QrCode");
-        this.Encode(new QrUri(uri), "Uri");
+        //var uri = new Uri("https://github.com/LaurentInSeattle/Lyt.QrCode");
+        //this.Encode(new QrUri(uri), "Uri");
 
-        this.Encode(new QrWifi( "MySecretNetwork", "-Hello*0|0*World-"), "Wifi");
+        //this.Encode(new QrWifi( "MySecretNetwork", "-Hello*0|0*World-"), "Wifi");
 
         //Thresholding("screen");
         //Thresholding("Sample");
@@ -73,7 +73,8 @@ internal sealed class Test
         // Detect("screen");
         // Detect("Sample");
 
-        //Decode("screen");
+        rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Decode";
+        Decode("screen");
         //Decode("screenRotated");
         //Decode("screenPortrait");
     }

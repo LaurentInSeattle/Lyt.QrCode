@@ -2,6 +2,16 @@
 
 internal static partial class StringExtensions
 {
+    // An array of all possible newline delimiters
+    private static readonly string[] lineSeparators = ["\r\n", "\r", "\n"];
+
+    /// <summary> Split the provided string into an array of lines </summary>
+    /// <remarks> Consider using ReadOnlySpan<char>.Split() instead. </remarks>
+    public static string[] SplitLines(this string source) =>
+        source.Split(
+            lineSeparators,
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
     [GeneratedRegex("^[0-9]*$", RegexOptions.Compiled)]
     private static partial Regex CompiledNumericRegex();
 

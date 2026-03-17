@@ -18,7 +18,6 @@ public static partial class Qr
 
     static Qr()
     {
-        if (Debugger.IsAttached) { Debugger.Break(); }
         decoderOutput = DecoderOutput.Create();
     }
 
