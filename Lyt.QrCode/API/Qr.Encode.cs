@@ -204,12 +204,6 @@ public static partial class Qr
             return true;
         }
 
-        if (content is Bookmark linkContent)
-        {
-            qrContent = new BookmarkContent(linkContent);
-            return true;
-        }
-
         if (content is QrContent qrC)
         {
             if (qrC.IsBinaryData)

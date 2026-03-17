@@ -7,7 +7,9 @@ internal sealed class Test
 #pragma warning disable CA1822 // Mark members as static
     internal void Run()
     {
-        Encode("test");
+        // Encode("test");
+
+        Encode(new Bookmark("https://github.com/LaurentInSeattle/Lyt.QrCode", "QrCode Library"), "Bookmark"); 
 
         //Thresholding("screen");
         //Thresholding("Sample");
@@ -110,6 +112,16 @@ internal sealed class Test
         File.WriteAllBytes(bwPath2, bwImage2);
     }
 
+    private static void Encode<T>(T content, string filename) where T : class
+    {
+        if (Qr.TryEncode(content, out byte[]? imagePng))
+        {
+            Console.WriteLine("Encoded: " + filename);
+            string fullPath = Path.Combine(rootPath, filename + ".png");
+            File.WriteAllBytes(fullPath, imagePng);
+        }
+    }
+
     private static void Encode(string filename)
     {
         string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw";
@@ -183,5 +195,4 @@ internal sealed class Test
     }
 
 #pragma warning restore CA1822 // Mark members as static
-
 }

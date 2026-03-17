@@ -1,8 +1,10 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public class Bookmark
+public class Bookmark : QrContent<Bookmark>
 {
-    public Bookmark(string url, string title = "")
+    static Bookmark fake = new Bookmark("fake"); 
+
+    public Bookmark(string url, string title = "") : base(fake, isBinaryData: false)
     {
         if (string.IsNullOrWhiteSpace(url))
         {
@@ -18,9 +20,6 @@ public class Bookmark
     public string Title { get; }
 
     public string Url { get; }
-}
 
-public sealed class BookmarkContent(Bookmark webLink) : QrContent<Bookmark>(webLink)
-{
-    public override string RawString { get; set; } = $"MEBKM:TITLE:{webLink.Title};URL:{webLink.Url};;";
+    public override string RawString => $"MEBKM:TITLE:{this.Title};URL:{this.Url};;";
 }
