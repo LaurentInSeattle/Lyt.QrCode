@@ -9,15 +9,16 @@ internal class DecoderOutput : Dictionary<Type, MethodInfo>
         var supportedTypes = new List<Type>()
         {
             typeof(QrBookmark),
-            typeof(QrCalendarEvent),
             typeof(QrGeoLocation),
-            typeof(QrMail),
-            typeof(QrMeCard),
-            typeof(QrVCard),
             typeof(QrPhoneNumber),
-            typeof(QrTextMessage),
-            typeof(QrUri),
             typeof(QrWifi),
+
+            //typeof(QrCalendarEvent),
+            //typeof(QrMail),
+            //typeof(QrMeCard),
+            //typeof(QrVCard),
+            //typeof(QrTextMessage),
+            //typeof(QrUri),
         };
 
         foreach (Type supportedType in supportedTypes)

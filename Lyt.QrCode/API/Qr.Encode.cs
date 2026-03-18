@@ -202,7 +202,7 @@ public static partial class Qr
                 return false ;
             }
 
-            qrContent = new QrContent() { RawBytes = bytesContent };
+            qrContent = new QrContent(isBinaryData:true) { RawBytes = bytesContent};
             return true;
         }
 

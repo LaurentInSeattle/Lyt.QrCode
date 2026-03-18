@@ -8,8 +8,8 @@ internal sealed class Test
     {
         rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Encode";
 
-        this.Encode("This a test text string.", "Text");
-        this.Decode("Text");
+        //this.Encode("This a test text string.", "Text");
+        //this.Decode("Text");
 
         string text = "012345RSTUVWXYZ $%*+-./:";
         byte[] bytes = Encoding.UTF8.GetBytes(text);
@@ -75,9 +75,9 @@ internal sealed class Test
         // Detect("screen");
         // Detect("Sample");
 
-        rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Decode";
+        //rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Decode";
 
-        this.Decode("Wifi");
+        //this.Decode("Wifi");
         //this.Decode("Presidio");
         //this.Decode("Phone");
         //this.Decode("Bookmark");
