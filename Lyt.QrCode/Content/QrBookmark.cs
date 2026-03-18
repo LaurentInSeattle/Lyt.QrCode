@@ -9,7 +9,7 @@ public class QrBookmark : QrContent<QrBookmark>
             throw new ArgumentException("URL cannot be null, empty or white space", nameof(url));
         }
 
-        this.Url = url;
+        this.Url = Uri.EscapeDataString(url);
 
         // Title can be empty, but not null. 
         this.Title = title;

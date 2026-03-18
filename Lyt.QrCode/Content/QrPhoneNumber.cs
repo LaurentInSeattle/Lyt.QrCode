@@ -19,4 +19,32 @@ public partial class QrPhoneNumber : QrContent<QrPhoneNumber>
     public string Number { get; private set; }
 
     public override string RawString => $"tel:{this.Number}";
+
+    public static bool TryParse(string source, [NotNullWhen(true)] out QrPhoneNumber? qrPhoneNumber)
+    {
+        const string key = "tel:";
+        qrPhoneNumber = null;
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            throw new ArgumentException("URL cannot be null, empty or white space", nameof(source));
+        }
+
+        try
+        {
+            if (!source.StartsWith(key))
+            {
+                return false;
+            }
+
+            source = source[key.Length..];
+            qrPhoneNumber = new QrPhoneNumber(source);
+            return true;
+        }
+        catch
+        {
+            // Swallow everything 
+        }
+
+        return false;
+    }
 }

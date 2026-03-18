@@ -14,14 +14,36 @@ public delegate void DetectorCallback(QrPoint point);
 /// Partial: Decode API 
 public static partial class Qr
 {
-    internal static DecoderOutput decoderOutput; 
+    internal static DecoderOutput decoderOutput;
 
-    static Qr()
-    {
-        decoderOutput = DecoderOutput.Create();
-    }
+    static Qr() => decoderOutput = DecoderOutput.Create();
 
     public static bool TryAddCustomQrContentType(Type type) => decoderOutput.TryAddQrParser(type);
+
+    public static bool TryDecodeQrCodeFromImage<T>(
+        SourceImage sourceImage,
+        [NotNullWhen(true)] out T? decodedContent,
+        DetectorCallback? detectorCallback = null,
+        DecodeParameters? decodeParameters = null)
+        where T : QrContent
+    {
+        decodedContent = null;
+        if (TryDecodeQrCodeFromImage(
+            sourceImage, out DecoderResult? decoderResult, detectorCallback, decodeParameters))
+        {
+            if (decoderResult.ParsedObject is object decodedObject)
+            {
+                if (decoderResult.ParsedObject.GetType() == typeof(T))
+                {
+                    // safe to cast
+                    decodedContent = (T)decodedObject;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
     public static bool TryDecodeQrCodeFromImage(
         SourceImage sourceImage,
@@ -40,7 +62,42 @@ public static partial class Qr
 
         if (sourceImage.TryDecode(decodeParameters, detectorCallback, out decoderResult))
         {
+            if (!decodeParameters.SkipParsing)
+            {
+                return TryParse(decoderResult);
+            }
+
             return true;
+        }
+
+        return false;
+    }
+
+    public static bool TryParse(DecoderResult decoderResult)
+    {
+        string source = decoderResult.Text;
+        if (!string.IsNullOrWhiteSpace(source))
+        {
+            foreach (var kvp in decoderOutput)
+            {
+                // Invoke with null first parameter because the method is static 
+                // out parameter will be returned in the arguments array,
+                // copied over the original useless one
+                MethodInfo method = kvp.Value;
+                object?[] arguments = [source, null];
+                object? value = method.Invoke(null, arguments);
+                if ((value is bool parsed) && (parsed) && (arguments[1] is object decodedObject))
+                {
+                    Type expectedType = kvp.Key;
+                    if (expectedType == decodedObject.GetType())
+                    {
+                        // Success 
+                        decoderResult.ParsedType = expectedType;
+                        decoderResult.ParsedObject = decodedObject;
+                        return true;
+                    }
+                }
+            }
         }
 
         return false;

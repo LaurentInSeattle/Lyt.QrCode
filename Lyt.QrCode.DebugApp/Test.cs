@@ -6,7 +6,7 @@ internal sealed class Test
 
     internal void Run()
     {
-        //rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Encode";
+        rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Encode";
 
         //this.Encode("This a test text string.", "Text");
 
@@ -14,7 +14,7 @@ internal sealed class Test
         //byte[] bytes = Encoding.UTF8.GetBytes(text);
         //this.Encode(bytes, "Bytes");
 
-        //this.Encode(new QrBookmark("https://github.com/LaurentInSeattle/Lyt.QrCode", "QrCode Library"), "Bookmark");
+        this.Encode(new QrBookmark("https://github.com/LaurentInSeattle/Lyt.QrCode", "QrCode Library"), "Bookmark");
 
         //this.Encode(
         //    new QrCalendarEvent(
@@ -74,7 +74,9 @@ internal sealed class Test
         // Detect("Sample");
 
         rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Decode";
-        Decode("screen");
+        this.Decode("Phone");
+        // Decode("Bookmark");
+        // Decode("screen");
         //Decode("screenRotated");
         //Decode("screenPortrait");
     }

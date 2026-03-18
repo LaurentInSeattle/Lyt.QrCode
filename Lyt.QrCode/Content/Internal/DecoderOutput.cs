@@ -13,7 +13,7 @@ internal class DecoderOutput : Dictionary<Type, MethodInfo>
             typeof(QrGeoLocation),
             typeof(QrMail),
             typeof(QrMeCard),
-            typeof(QrPhoneNumber),
+            typeof(QrVCard),
             typeof(QrPhoneNumber),
             typeof(QrTextMessage),
             typeof(QrUri),
