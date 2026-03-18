@@ -181,7 +181,7 @@ public static partial class Qr
                 return false;
             }
 
-            qrContent = new QrString(stringContent);
+            qrContent = new QrContent() { RawString = stringContent }; 
             return true;
         }
 
@@ -200,9 +200,9 @@ public static partial class Qr
             if (!ValidateBytes(bytesContent))
             {
                 return false ;
-            } 
+            }
 
-            qrContent = new QrBytes(bytesContent);
+            qrContent = new QrContent() { RawBytes = bytesContent };
             return true;
         }
 

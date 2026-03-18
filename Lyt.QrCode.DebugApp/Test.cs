@@ -8,11 +8,13 @@ internal sealed class Test
     {
         rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Encode";
 
-        //this.Encode("This a test text string.", "Text");
+        this.Encode("This a test text string.", "Text");
+        this.Decode("Text");
 
-        //string text = "012345RSTUVWXYZ $%*+-./:";
-        //byte[] bytes = Encoding.UTF8.GetBytes(text);
-        //this.Encode(bytes, "Bytes");
+        string text = "012345RSTUVWXYZ $%*+-./:";
+        byte[] bytes = Encoding.UTF8.GetBytes(text);
+        this.Encode(bytes, "Bytes");
+        this.Decode("Bytes");
 
         // this.Encode(new QrBookmark("https://github.com/LaurentInSeattle/Lyt.QrCode", "QrCode Library"), "Bookmark");
 
@@ -129,9 +131,9 @@ internal sealed class Test
     {
         string imagePathLoad = filename + ".png";
         var sourceImage = this.LoadSourceImage(imagePathLoad);
-        var before = DateTime.Now;
-        DateTime after;
         Console.WriteLine("Decode: " + filename);
+        DateTime after;
+        var before = DateTime.Now;
         if (Qr.TryDecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
         {
             after = DateTime.Now;
@@ -148,7 +150,7 @@ internal sealed class Test
         }
 
         // About 60 ms for a 800x600 image 
-        Console.WriteLine("Decode: " + (after - before).TotalMilliseconds.ToString());
+        Console.WriteLine("Milleseconds to decode: " + (after - before).TotalMilliseconds.ToString("F1"));
     }
 
     private void Thresholding(string filename)
