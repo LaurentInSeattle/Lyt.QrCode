@@ -26,7 +26,7 @@ public partial class QrPhoneNumber : QrContent<QrPhoneNumber>
         qrPhoneNumber = null;
         if (string.IsNullOrWhiteSpace(source))
         {
-            throw new ArgumentException("URL cannot be null, empty or white space", nameof(source));
+            throw new ArgumentException("Sourcestring cannot be null, empty or white space", nameof(source));
         }
 
         try

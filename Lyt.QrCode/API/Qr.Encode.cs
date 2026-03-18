@@ -39,6 +39,7 @@ public static partial class Qr
         if (!renderParameters.Validate())
         {
             // Invalid parameters - use default values
+            Debug.WriteLine("Invalid parameters - use default values");
             if (Debugger.IsAttached) { Debugger.Break(); }
             renderParameters = new RenderParameters();
         }

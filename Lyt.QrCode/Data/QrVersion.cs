@@ -68,7 +68,8 @@ internal sealed class QrVersion
 
     internal int VersionNumber { get; }
 
-    internal int DimensionForVersion { get; }
+    /// <summary> Gets the dimension for the version number. </summary>
+    internal int DimensionForVersion => 17 + 4 * this.VersionNumber;
 
     internal static bool IsValidDimension(int dimension)
     {

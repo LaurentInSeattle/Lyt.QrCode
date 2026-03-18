@@ -56,6 +56,7 @@ public static partial class Qr
         if (!decodeParameters.Validate())
         {
             // Invalid parameters - use default values
+            Debug.WriteLine("Invalid parameters - use default values");
             if (Debugger.IsAttached) { Debugger.Break(); }
             decodeParameters = new DecodeParameters();
         }
@@ -64,10 +65,15 @@ public static partial class Qr
         {
             if (!decodeParameters.SkipParsing)
             {
-                return TryParse(decoderResult);
-            }
+                bool parsed = TryParse(decoderResult);
+                if (!parsed)
+                {
+                    Debug.WriteLine("Could not identify any supported content");
+                }
 
-            return true;
+                // Decoding if successful, even we have failed to parse any content 
+                return true;
+            }
         }
 
         return false;

@@ -83,8 +83,8 @@ public sealed partial class BitMatrixImage
         if (TryDecodeBytes(resultBytes, qrVersion, decodeParameters.CharacterSet, out decoderResult))
         {
             // success !
-            decoderResult.ErrorsCorrected = errorsCorrected;
-            decoderResult.ECLevel = ecLevel.ToString();
+            //decoderResult.ErrorsCorrected = errorsCorrected;
+            //decoderResult.ECLevel = ecLevel.ToString();
             return true;
         }
 
@@ -107,14 +107,20 @@ public sealed partial class BitMatrixImage
         var byteSegments = new List<byte[]>();
         int symbolSequence;
         int parityData;
-        int symbologyModifier;
+        // int symbologyModifier;
 
         try
         {
             CharacterSetECI? currentCharacterSetECI = null;
             bool fc1InEffect = false;
+
+#pragma warning disable CS0219 
+            // Variable is assigned but its value is never used
+            // Related to sumbology modifier. Consider delete
             bool hasFNC1first = false;
             bool hasFNC1second = false;
+#pragma warning restore CS0219 
+
             EncodingMode mode;
             do
             {
@@ -141,15 +147,18 @@ public sealed partial class BitMatrixImage
                         break;
 
                     case EncodingMode.Names.Fnc1FirstPosition:
-                        hasFNC1first = true; // symbology detection
-                                             // We do little with FNC1 except alter the parsed result a bit according to the spec
-                        fc1InEffect = true;
-                        break;
-                    case EncodingMode.Names.Fnc1SecondPosition:
-                        hasFNC1second = true; // symbology detection
                         // We do little with FNC1 except alter the parsed result a bit according to the spec
+                        hasFNC1first = true; // symbology detection
+                                             
                         fc1InEffect = true;
                         break;
+
+                    case EncodingMode.Names.Fnc1SecondPosition:
+                        // We do little with FNC1 except alter the parsed result a bit according to the spec
+                        hasFNC1second = true; // symbology detection
+                        fc1InEffect = true;
+                        break;
+
                     case EncodingMode.Names.StructuredAppend:
                         if (bits.Available < 16)
                         {
@@ -486,40 +495,41 @@ public sealed partial class BitMatrixImage
                 }
             } while (mode != EncodingMode.Terminator);
 
-            if (currentCharacterSetECI != null)
-            {
-                if (hasFNC1first)
-                {
-                    symbologyModifier = 4;
-                }
-                else if (hasFNC1second)
-                {
-                    symbologyModifier = 6;
-                }
-                else
-                {
-                    symbologyModifier = 2;
-                }
-            }
-            else
-            {
-                if (hasFNC1first)
-                {
-                    symbologyModifier = 3;
-                }
-                else if (hasFNC1second)
-                {
-                    symbologyModifier = 5;
-                }
-                else
-                {
-                    symbologyModifier = 1;
-                }
-            }
+            //if (currentCharacterSetECI != null)
+            //{
+            //    if (hasFNC1first)
+            //    {
+            //        symbologyModifier = 4;
+            //    }
+            //    else if (hasFNC1second)
+            //    {
+            //        symbologyModifier = 6;
+            //    }
+            //    else
+            //    {
+            //        symbologyModifier = 2;
+            //    }
+            //}
+            //else
+            //{
+            //    if (hasFNC1first)
+            //    {
+            //        symbologyModifier = 3;
+            //    }
+            //    else if (hasFNC1second)
+            //    {
+            //        symbologyModifier = 5;
+            //    }
+            //    else
+            //    {
+            //        symbologyModifier = 1;
+            //    }
+            //}
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
             // Most likely from ReadBits() calls
+            Debug.WriteLine(ex.ToString());
             return false;
         }
 
@@ -527,8 +537,9 @@ public sealed partial class BitMatrixImage
         {
             RawBytes = bytes,
             Text = result.ToString(),
-            ByteSegments = byteSegments,
-            SymbologyModifier = symbologyModifier,
+            // TODO : Relocate these elements into some debug data structure 
+            //ByteSegments = byteSegments,
+            //SymbologyModifier = symbologyModifier,
         };
 
         return true;
@@ -556,8 +567,8 @@ public sealed partial class BitMatrixImage
         {
             codewordsInts[i] = codewordBytes[i] & 0xFF;
         }
-        int numECCodewords = codewordBytes.Length - numDataCodewords;
 
+        int numECCodewords = codewordBytes.Length - numDataCodewords;
         try
         {
             // Reed Solomon decoding can throw exceptions
@@ -586,7 +597,7 @@ public sealed partial class BitMatrixImage
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int CopyBit(int i, int j, int versionBits) => this[i, j] ? (versionBits << 1) | 0x1 : versionBits << 1;
 
-    #region CopyBit ~ TODO ? ~ Maybe 
+    #region Original CopyBit ~ TODO ? ~ Maybe 
     // TODO: Make local vars of Decode 
     // TODO: Figure out if any need for this 'mirrored' bool 
     // NOT ever Written , only read in CopyBit below

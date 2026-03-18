@@ -96,4 +96,100 @@ public class QrWifi : QrContent<QrWifi>
                     $"WIFI:T:{auth};S:{this.Ssid};{password};{hidden};";
         }
     }
+
+    public static bool TryParse(string source, [NotNullWhen(true)] out QrWifi? qrWifi)
+    {
+        const string key = "WIFI:";
+        qrWifi = null;
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            throw new ArgumentException("Source string cannot be null, empty or white space", nameof(source));
+        }
+
+        try
+        {
+            if (!source.StartsWith(key))
+            {
+                return false;
+            }
+
+            source = source[key.Length..];
+            string[] tokens = source.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if ((tokens.Length < 2) || (tokens.Length > 4))
+            {
+                return false;
+            }
+
+            string ssid;
+            string auth;
+            if (tokens[0].StartsWith("S:") && tokens[1].StartsWith("T:"))
+            {
+                ssid = tokens[0][2..];
+                auth = tokens[1][2..];
+            }
+            else if (tokens[0].StartsWith("T:") && tokens[1].StartsWith("S:"))
+            {
+                auth = tokens[0][2..];
+                ssid = tokens[1][2..];
+            }
+            else
+            {
+                return false;
+            }
+
+            AuthenticationMode authenticationMode = default;
+            if (auth == "nopass")
+            {
+                authenticationMode = AuthenticationMode.None;
+            }
+            else if (auth == "WPA")
+            {
+                authenticationMode = AuthenticationMode.WPA;
+            }
+            else if (auth == "WPA2")
+            {
+                authenticationMode = AuthenticationMode.WPA2;
+            }
+            else if (auth == "WEP`")
+            {
+                authenticationMode = AuthenticationMode.WEP;
+            }
+            else
+            {
+                return false;
+            }
+
+            string password = string.Empty;
+            bool isHiddenNetwork = false;
+            if (authenticationMode != AuthenticationMode.None)
+            {
+                // There must be a password
+                password = tokens[2];
+                password = password[2..];
+                if (tokens.Length == 4)
+                {
+                    string hidden = tokens[3];
+                    isHiddenNetwork = hidden == "H:true";
+                }
+            }
+            else
+            {
+                // No password: Last is hidden, also optional 
+                if (tokens.Length == 3)
+                {
+                    string hidden = tokens[3];
+                    isHiddenNetwork = hidden == "H:true";
+                }
+            }
+
+            qrWifi = new QrWifi(ssid, password, authenticationMode, isHiddenNetwork);
+            return true;
+        }
+        catch
+        {
+            // Swallow everything else 
+        }
+
+        return false;
+    }
 }

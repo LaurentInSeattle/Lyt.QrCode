@@ -24,8 +24,8 @@ public class QrGeoLocation : QrContent<QrGeoLocation>
     }
 
     public QrGeoLocation(
-        double latitude, double longitude, GeoProtocol geoProtocol = Geo) 
-        : base( isBinaryData: false)
+        double latitude, double longitude, GeoProtocol geoProtocol = Geo)
+        : base(isBinaryData: false)
     {
         if ((double.IsNaN(latitude)) ||
             (!double.IsFinite(latitude)) ||
@@ -68,5 +68,50 @@ public class QrGeoLocation : QrContent<QrGeoLocation>
                 _ => throw new NotImplementedException("Unsupported geo protocol"),
             };
         }
+    }
+
+    public static bool TryParse(string source, [NotNullWhen(true)] out QrGeoLocation? qrGeoLocation)
+    {
+        const string key = "geo:";
+        qrGeoLocation = null;
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            throw new ArgumentException("Source string cannot be null, empty or white space", nameof(source));
+        }
+
+        try
+        {
+            if (!source.StartsWith(key))
+            {
+                return false;
+            }
+
+            source = source[key.Length..];
+            string[] tokens = source.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (tokens.Length != 2)
+            {
+                return false;
+            }
+
+            if (!double.TryParse(tokens[0], out double latitude))
+            {
+                return false;
+
+            }
+
+            if (!double.TryParse(tokens[1], out double longitude))
+            {
+                return false;
+            }
+
+            qrGeoLocation = new QrGeoLocation(latitude, longitude);
+            return true;
+        }
+        catch
+        {
+            // Swallow everything else 
+        }
+
+        return false;
     }
 }

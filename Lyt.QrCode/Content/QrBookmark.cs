@@ -25,7 +25,7 @@ public class QrBookmark : QrContent<QrBookmark>
     {
         if (string.IsNullOrWhiteSpace(source))
         {
-            throw new ArgumentException("URL cannot be null, empty or white space", nameof(source));
+            throw new ArgumentException("Source string cannot be null, empty or white space", nameof(source));
         }
 
         const string key = "MEBKM:";
