@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public partial class QrPhoneNumber : QrContent<QrPhoneNumber>
+public partial class QrPhoneNumber : QrContent<QrPhoneNumber>, IQrParsable<QrPhoneNumber>
 {
     [GeneratedRegex(@"^[0+]+|[ ()-]")]
     private static partial Regex PhoneNumberRegex();

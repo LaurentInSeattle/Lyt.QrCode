@@ -27,7 +27,7 @@ DESCRIPTION: Details about the event.
 
 #endregion Documentation 
 
-public class QrCalendarEvent : QrContent<QrCalendarEvent>
+public class QrCalendarEvent : QrContent<QrCalendarEvent>, IQrParsable<QrCalendarEvent>
 {
     public QrCalendarEvent(
         string summary,
@@ -114,4 +114,7 @@ public class QrCalendarEvent : QrContent<QrCalendarEvent>
             return sb.ToString();
         }
     }
+
+    public static bool TryParse(string source, [NotNullWhen(true)] out QrCalendarEvent? qrCalendarEvent)
+        => throw new NotImplementedException();
 }

@@ -2,7 +2,7 @@
 
 using static QrUri; 
 
-public sealed class QrUri(Uri uri, Kind kind = Kind.Canonical) : QrContent<Uri>
+public sealed class QrUri(Uri uri, Kind kind = Kind.Canonical) : QrContent, IQrParsable<QrUri>
 {
     public enum Kind
     {
@@ -22,4 +22,7 @@ public sealed class QrUri(Uri uri, Kind kind = Kind.Canonical) : QrContent<Uri>
         Kind.Absolute => this.Content.AbsoluteUri,
         _ => throw new NotImplementedException(),
     };
+
+    public static bool TryParse(string source, [NotNullWhen(true)] out QrUri? qrUri)
+        => throw new NotImplementedException();
 }

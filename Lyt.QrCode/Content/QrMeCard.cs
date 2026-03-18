@@ -1,7 +1,7 @@
 ﻿namespace Lyt.QrCode.Content;
 
-
-public class QrMeCard(string firstName, string lastName) : QrContactCard<QrMeCard>(firstName, lastName)
+public class QrMeCard(string firstName, string lastName) 
+    : QrContactCard(firstName, lastName) , IQrParsable<QrMeCard>
 {
     public override string RawString
     {
@@ -96,4 +96,7 @@ public class QrMeCard(string firstName, string lastName) : QrContactCard<QrMeCar
             return sb.ToString();
         }
     }
+
+    public static bool TryParse(string source, [NotNullWhen(true)] out QrMeCard? qrMeCard)
+        => throw new NotImplementedException();
 }

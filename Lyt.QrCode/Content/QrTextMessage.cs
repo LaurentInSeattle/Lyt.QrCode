@@ -28,7 +28,7 @@ Main Text Message Protocols
 
 #endregion Documentation 
 
-public partial class QrTextMessage : QrContent<QrTextMessage>
+public partial class QrTextMessage : QrContent<QrTextMessage>, IQrParsable<QrTextMessage>
 {
     [GeneratedRegex(@"^[0+]+|[ ()-]")]
     private static partial Regex PhoneNumberRegex();
@@ -95,4 +95,7 @@ public partial class QrTextMessage : QrContent<QrTextMessage>
             };
         }
     }
+
+    public static bool TryParse(string source, [NotNullWhen(true)] out QrTextMessage? qrTextMessage)
+        => throw new NotImplementedException();
 }

@@ -1,5 +1,6 @@
 ﻿namespace Lyt.QrCode.Detector;
 
+/// <summary> Immutable holding class for a 2D point with float coordinates X and Y. </summary>
 public class QrPoint(float x, float y)
 {
     public float X { get; } = x;

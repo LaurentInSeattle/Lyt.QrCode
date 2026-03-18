@@ -1,7 +1,7 @@
 ﻿namespace Lyt.QrCode.Content;
 
 internal class QrVCard(string firstName, string lastName) 
-    : QrContactCard<QrVCard>(firstName, lastName)
+    : QrContactCard(firstName, lastName) , IQrParsable<QrVCard>
 {
     /// <summary> The kind of address (home or work). </summary>
     /// <remarks>  VCard Only  </remarks>
@@ -123,4 +123,7 @@ internal class QrVCard(string firstName, string lastName)
             return sb.ToString();
         }
     }
+
+    public static bool TryParse(string source, [NotNullWhen(true)] out QrVCard? qrVCard)
+        => throw new NotImplementedException();
 }

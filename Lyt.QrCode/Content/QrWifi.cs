@@ -28,7 +28,7 @@ using static Lyt.QrCode.Content.QrWifi.AuthenticationMode;
 
 #endregion Documentation 
 
-public class QrWifi : QrContent<QrWifi>
+public class QrWifi : QrContent<QrWifi>, IQrParsable<QrWifi>
 {
     /// <summary> The authentication mode for the WiFi network. </summary>
     public enum AuthenticationMode

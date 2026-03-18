@@ -10,7 +10,7 @@ using static Lyt.QrCode.Content.QrMail.EmailProtocol;
 
 #endregion Documentation 
 
-public class QrMail : QrContent<QrMail>
+public class QrMail : QrContent<QrMail>, IQrParsable<QrMail>
 {
     /// <summary> The email protocol. </summary>
     public enum EmailProtocol
@@ -122,4 +122,7 @@ public class QrMail : QrContent<QrMail>
             return string.Concat(this.ProtocolToString(), emailString); 
         }
     }
+
+    public static bool TryParse(string source, [NotNullWhen(true)] out QrMail? qrMail)
+        => throw new NotImplementedException();
 }

@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public class QrBookmark : QrContent<QrBookmark>
+public class QrBookmark : QrContent<QrBookmark>, IQrParsable<QrBookmark>
 {
     public QrBookmark(string url, string title = "") : base(isBinaryData: false)
     {

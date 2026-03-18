@@ -10,7 +10,7 @@ using static Lyt.QrCode.Content.QrGeoLocation.GeoProtocol;
 
 #endregion Documentation 
 
-public class QrGeoLocation : QrContent<QrGeoLocation>
+public class QrGeoLocation : QrContent<QrGeoLocation>, IQrParsable<QrGeoLocation>
 {
     /// <summary> The preferred protocol for encoding the location. </summary>
     public enum GeoProtocol
