@@ -12,13 +12,12 @@ internal class DecoderOutput : Dictionary<Type, MethodInfo>
             typeof(QrGeoLocation),
             typeof(QrPhoneNumber),
             typeof(QrWifi),
-
-            //typeof(QrCalendarEvent),
-            //typeof(QrMail),
-            //typeof(QrMeCard),
-            //typeof(QrVCard),
-            //typeof(QrTextMessage),
-            //typeof(QrUri),
+            typeof(QrCalendarEvent),
+            typeof(QrMail),
+            typeof(QrMeCard),
+            typeof(QrVCard),
+            typeof(QrTextMessage),
+            typeof(QrUri),
         };
 
         foreach (Type supportedType in supportedTypes)

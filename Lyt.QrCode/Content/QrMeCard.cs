@@ -98,5 +98,24 @@ public class QrMeCard(string firstName, string lastName)
     }
 
     public static bool TryParse(string source, [NotNullWhen(true)] out QrMeCard? qrMeCard)
-        => throw new NotImplementedException();
+    {
+        qrMeCard = null;
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            throw new ArgumentException("Source string cannot be null, empty or white space", nameof(source));
+        }
+
+        try
+        {
+            // TODO
+            //qrMail = new QrMail();
+            return true;
+        }
+        catch
+        {
+            // Swallow everything else 
+        }
+
+        return false;
+    }
 }

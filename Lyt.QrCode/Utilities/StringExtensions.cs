@@ -7,6 +7,7 @@ internal static partial class StringExtensions
 
     /// <summary> Split the provided string into an array of lines </summary>
     /// <remarks> Consider using ReadOnlySpan<char>.Split() instead. </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string[] SplitLines(this string source) =>
         source.Split(
             lineSeparators,

@@ -125,5 +125,24 @@ internal class QrVCard(string firstName, string lastName)
     }
 
     public static bool TryParse(string source, [NotNullWhen(true)] out QrVCard? qrVCard)
-        => throw new NotImplementedException();
+    {
+        qrVCard = null;
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            throw new ArgumentException("Source string cannot be null, empty or white space", nameof(source));
+        }
+
+        try
+        {
+            // TODO
+            //qrMail = new QrMail();
+            return true;
+        }
+        catch
+        {
+            // Swallow everything else 
+        }
+
+        return false;
+    }
 }

@@ -11,10 +11,10 @@ internal sealed class Test
         //this.Encode("This a test text string.", "Text");
         //this.Decode("Text");
 
-        string text = "012345RSTUVWXYZ $%*+-./:";
-        byte[] bytes = Encoding.UTF8.GetBytes(text);
-        this.Encode(bytes, "Bytes");
-        this.Decode("Bytes");
+        //string text = "012345RSTUVWXYZ $%*+-./:";
+        //byte[] bytes = Encoding.UTF8.GetBytes(text);
+        //this.Encode(bytes, "Bytes");
+        //this.Decode("Bytes");
 
         // this.Encode(new QrBookmark("https://github.com/LaurentInSeattle/Lyt.QrCode", "QrCode Library"), "Bookmark");
 
@@ -77,10 +77,11 @@ internal sealed class Test
 
         //rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Decode";
 
-        //this.Decode("Wifi");
+        this.Decode("Wifi");
         //this.Decode("Presidio");
         //this.Decode("Phone");
         //this.Decode("Bookmark");
+
         // Decode("screen");
         //Decode("screenRotated");
         //Decode("screenPortrait");
@@ -199,9 +200,9 @@ internal sealed class Test
             File.WriteAllBytes(fullPath, imagePng);
         }
 
-        var renderParameters = new RenderParameters()
+        var encodeParameters = new EncodeParameters()
         {
-            ImageFormat = RenderParameters.QrImageFormat.Bmp,
+            ImageFormat = EncodeParameters.QrImageFormat.Bmp,
             Border = 2,
             Scale = 16,
         };
@@ -212,7 +213,7 @@ internal sealed class Test
             File.WriteAllBytes(fullPath, imageBmp);
         }
 
-        if (Qr.TryEncode(text, out string? vectors, renderParameters))
+        if (Qr.TryEncode(text, out string? vectors, encodeParameters))
         {
             string fullPath = Path.Combine(rootPath, filename + ".svg");
             File.WriteAllText(fullPath, vectors);

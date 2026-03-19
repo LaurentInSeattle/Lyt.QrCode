@@ -30,18 +30,18 @@ public static partial class Qr
     public static bool TryEncode<TContent, TResult>(
         TContent content,
         [NotNullWhen(true)] out TResult? result,
-        RenderParameters? renderParameters = null)
+        EncodeParameters? encodeParameters = null)
         where TContent : class
         where TResult : class
     {
         result = null;
-        renderParameters ??= new RenderParameters();
-        if (!renderParameters.Validate())
+        encodeParameters ??= new EncodeParameters();
+        if (!encodeParameters.Validate())
         {
             // Invalid parameters - use default values
             Debug.WriteLine("Invalid parameters - use default values");
             if (Debugger.IsAttached) { Debugger.Break(); }
-            renderParameters = new RenderParameters();
+            encodeParameters = new EncodeParameters();
         }
 
         if (!TryCreateQrContent<TContent>(content, out QrContent? qrContent))
@@ -59,8 +59,8 @@ public static partial class Qr
         {
             var qrCode =
                 qrContent.IsBinaryData ?
-                    QrCode.EncodeBytes(qrContent.RawBytes, ErrorCorrectionLevel.Quartile) :
-                    QrCode.EncodeText(qrContent.RawString, ErrorCorrectionLevel.Quartile);
+                    QrCode.EncodeBytes(qrContent.RawBytes, encodeParameters.ErrorCorrectionLevel) :
+                    QrCode.EncodeText(qrContent.RawString, encodeParameters.ErrorCorrectionLevel);
 
             object? rawResult; 
             switch (encoderOutput)
@@ -70,29 +70,29 @@ public static partial class Qr
                     return false;
 
                 case EncoderOutput.Image:
-                    switch (renderParameters.ImageFormat)
+                    switch (encodeParameters.ImageFormat)
                     {
                         default:
                             return false;
 
-                        case RenderParameters.QrImageFormat.Png:
+                        case EncodeParameters.QrImageFormat.Png:
                             byte[] pngImage =
                                 PngBuilder.ToImage(
                                     qrCode,
-                                    renderParameters.Scale,
-                                    renderParameters.Border,
-                                    renderParameters.Foreground,
-                                    renderParameters.Background);
+                                    encodeParameters.Scale,
+                                    encodeParameters.Border,
+                                    encodeParameters.Foreground,
+                                    encodeParameters.Background);
                             rawResult = pngImage;
                             break;
-                        case RenderParameters.QrImageFormat.Bmp:
+                        case EncodeParameters.QrImageFormat.Bmp:
                             byte[] bmpImage =
                                 PngBuilder.ToImage(
                                     qrCode,
-                                    renderParameters.Scale,
-                                    renderParameters.Border,
-                                    renderParameters.Foreground,
-                                    renderParameters.Background);
+                                    encodeParameters.Scale,
+                                    encodeParameters.Border,
+                                    encodeParameters.Foreground,
+                                    encodeParameters.Background);
                             rawResult = bmpImage;
                             break;
                     }
@@ -103,10 +103,10 @@ public static partial class Qr
                     string vectorPath =
                         PathBuilder.ToSvgImageString(
                             qrCode,
-                            renderParameters.Border,
-                            renderParameters.Foreground,
-                            renderParameters.Background,
-                            renderParameters.VectorFormat);
+                            encodeParameters.Border,
+                            encodeParameters.Foreground,
+                            encodeParameters.Background,
+                            encodeParameters.VectorFormat);
                     rawResult = vectorPath;
                     break;
 
