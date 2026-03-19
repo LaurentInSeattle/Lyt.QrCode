@@ -18,7 +18,7 @@ public partial class QrPhoneNumber : QrContent<QrPhoneNumber>, IQrParsable<QrPho
 
     public string Number { get; private set; }
 
-    public override string RawString => $"tel:{this.Number}";
+    public override string QrString => $"tel:{this.Number}";
 
     public static bool TryParse(string source, [NotNullWhen(true)] out QrPhoneNumber? qrPhoneNumber)
     {

@@ -33,11 +33,16 @@ public partial class QrTextMessage : QrContent<QrTextMessage>, IQrParsable<QrTex
     [GeneratedRegex(@"^[0+]+|[ ()-]")]
     private static partial Regex PhoneNumberRegex();
 
+    private const string protocolSms = "sms:";
+    private const string protocolMms = "mms:";
+    private const string protocolMmsTo = "mmsto:";
+    private const string protocolWhatsApp = "https://wa.me/";
+
     public enum MessagingProtocol
     {
-        Sms , 
-        SmsIos, 
-        Mms, 
+        Sms,
+        SmsIos,
+        Mms,
         MmsTo,
         WhatsApp,
     }
@@ -53,7 +58,7 @@ public partial class QrTextMessage : QrContent<QrTextMessage>, IQrParsable<QrTex
         {
             throw new ArgumentException("Message text is required, cannot be null, empty or white space", nameof(text));
         }
-        
+
         string cleanedPhoneNumber = PhoneNumberRegex().Replace(number, string.Empty);
         this.Number = cleanedPhoneNumber;
         this.Text = text;
@@ -63,34 +68,34 @@ public partial class QrTextMessage : QrContent<QrTextMessage>, IQrParsable<QrTex
     public string Number { get; private set; }
 
     public string Text { get; private set; }
-    
+
     public MessagingProtocol Protocol { get; private set; }
 
     public string ProtocolToString() =>
         this.Protocol switch
-            {
-                Sms => "sms:",
-                SmsIos => "sms:",
+        {
+            Sms => protocolSms,
+            SmsIos => protocolSms,
+            Mms => protocolMms,
+            MmsTo => protocolMmsTo,
+            WhatsApp => protocolWhatsApp,
 
-                Mms => "mms:",
-                MmsTo => "mmsto:",
+            _ => throw new NotImplementedException(),
+        };
 
-                WhatsApp => "https:",
-
-                _ => throw new NotImplementedException(),
-            };
-    public override string RawString
+    public override string QrString
     {
         get
         {
-            var ms = this;
-            return ms.Protocol switch
+            var m = this;
+            return m.Protocol switch
             {
-                Sms => $"sms:{ms.Number}?body={Uri.EscapeDataString(ms.Text)}",
-                SmsIos => $"sms:{ms.Number};body={Uri.EscapeDataString(ms.Text)}",
-                Mms => $"mms:{ms.Number}?body={Uri.EscapeDataString(ms.Text)}",
-                MmsTo => $"mmsto:{ms.Number}?subject={Uri.EscapeDataString(ms.Text)}",
-                WhatsApp => ($"https://wa.me/{ms.Number}?text={Uri.EscapeDataString(ms.Text)}"),
+                Sms => $"{protocolSms}{m.Number}?body={Uri.EscapeDataString(m.Text)}",
+                SmsIos => $"{protocolSms}{m.Number};body={Uri.EscapeDataString(m.Text)}",
+                Mms => $"{protocolMms}{m.Number}?body={Uri.EscapeDataString(m.Text)}",
+                MmsTo => $"{protocolMmsTo}{m.Number}?subject={Uri.EscapeDataString(m.Text)}",
+                WhatsApp => ($"{protocolWhatsApp}{m.Number}?text={Uri.EscapeDataString(m.Text)}"),
+
                 _ => throw new NotImplementedException("Unsupported messaging protocol"),
             };
         }
@@ -106,8 +111,82 @@ public partial class QrTextMessage : QrContent<QrTextMessage>, IQrParsable<QrTex
 
         try
         {
-            // TODO
-            //qrMail = new QrMail();
+            MessagingProtocol protocol = MessagingProtocol.Sms;
+            string number = string.Empty;
+            string text = string.Empty;
+
+            if (! // NOT any of these four 
+                (source.StartsWith(protocolSms) ||
+                source.StartsWith(protocolMms) ||
+                source.StartsWith(protocolMmsTo) ||
+                source.StartsWith(protocolWhatsApp)))
+            {
+                return false;
+            }
+
+            string[] tokens = source.Split(['?', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (tokens.Length != 2)
+            {
+                return false;
+            }
+
+            string maybeNumber = tokens[0];
+            if (maybeNumber.StartsWith(protocolSms) )
+            {
+                maybeNumber = maybeNumber[protocolSms.Length..];
+                protocol = MessagingProtocol.Sms; 
+            }
+            else if (maybeNumber.StartsWith(protocolMms))
+            {
+                maybeNumber = maybeNumber[protocolMms.Length..];
+                protocol = MessagingProtocol.Mms;
+            }
+            else if (maybeNumber.StartsWith(protocolMmsTo))
+            {
+                maybeNumber = maybeNumber[protocolMmsTo.Length..];
+                protocol = MessagingProtocol.MmsTo;
+            }
+            else if (maybeNumber.StartsWith(protocolWhatsApp))
+            {
+                maybeNumber = maybeNumber[protocolWhatsApp.Length..];
+                protocol = MessagingProtocol.WhatsApp;
+            }
+            else
+            {
+                return false;
+            }
+
+            if (maybeNumber.Length >= 3)
+            {
+                number = maybeNumber;
+            }
+
+            if (string.IsNullOrWhiteSpace(number) || string.IsNullOrWhiteSpace(text))
+            {
+                return false;
+            }
+
+            string maybeText = tokens[1];
+            if (maybeText.Length <5)
+            {
+                return false;
+            }
+
+            string messageKey = protocol switch
+            {
+                MessagingProtocol.Sms or MessagingProtocol.Mms => "body=",
+                MessagingProtocol.MmsTo => "subject=",
+                MessagingProtocol.WhatsApp => "text=",
+                _ => throw new NotImplementedException("Unsupported messaging protocol"),
+            };
+
+            text = maybeText[messageKey.Length..];
+            if (string.IsNullOrWhiteSpace( text))
+            {
+                return false;
+            }
+
+            qrTextMessage = new QrTextMessage(number, text, protocol);
             return true;
         }
         catch

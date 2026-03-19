@@ -4,7 +4,7 @@ internal class QrVCard(string firstName, string lastName)
     : QrContactCard(firstName, lastName) , IQrParsable<QrVCard>
 {
     /// <summary> The kind of address (home or work). </summary>
-    /// <remarks>  VCard Only  </remarks>
+    /// <remarks>  MeCard does not have that, VCard Only  </remarks>
     public enum AddressKind
     {
         Home, // Default 
@@ -25,7 +25,7 @@ internal class QrVCard(string firstName, string lastName)
             _ => "home,pref"
         };
 
-    public override string RawString
+    public override string QrString
     {
         get
         {

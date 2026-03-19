@@ -58,7 +58,7 @@ public class QrMail : QrContent<QrMail>, IQrParsable<QrMail>
             _ => throw new NotImplementedException(),
         };
 
-    public override string RawString
+    public override string QrString
     {
         get
         {

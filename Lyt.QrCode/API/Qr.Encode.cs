@@ -59,8 +59,8 @@ public static partial class Qr
         {
             var qrCode =
                 qrContent.IsBinaryData ?
-                    QrCode.EncodeBytes(qrContent.RawBytes, encodeParameters.ErrorCorrectionLevel) :
-                    QrCode.EncodeText(qrContent.RawString, encodeParameters.ErrorCorrectionLevel);
+                    QrCode.EncodeBytes(qrContent.QrBytes, encodeParameters.ErrorCorrectionLevel) :
+                    QrCode.EncodeText(qrContent.QrString, encodeParameters.ErrorCorrectionLevel);
 
             object? rawResult; 
             switch (encoderOutput)
@@ -181,7 +181,7 @@ public static partial class Qr
                 return false;
             }
 
-            qrContent = new QrContent() { RawString = stringContent }; 
+            qrContent = new QrContent() { QrString = stringContent }; 
             return true;
         }
 
@@ -202,7 +202,7 @@ public static partial class Qr
                 return false ;
             }
 
-            qrContent = new QrContent(isBinaryData:true) { RawBytes = bytesContent};
+            qrContent = new QrContent(isBinaryData:true) { QrBytes = bytesContent};
             return true;
         }
 
@@ -210,14 +210,14 @@ public static partial class Qr
         {
             if (qrC.IsBinaryData)
             {
-                if (ValidateBytes(qrC.RawBytes))
+                if (ValidateBytes(qrC.QrBytes))
                 {
                     return false; 
                 } 
             } 
             else
             {
-                if (!ValidateString(qrC.RawString))
+                if (!ValidateString(qrC.QrString))
                 {
                     return false;
                 }

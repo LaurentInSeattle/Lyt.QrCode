@@ -12,9 +12,9 @@ public class QrContent(bool isBinaryData = false)
 {
     public virtual bool IsBinaryData { get; set; } = isBinaryData;
 
-    public virtual string RawString { get; set; } = string.Empty;
+    public virtual string QrString { get; set; } = string.Empty;
 
-    public virtual byte[] RawBytes { get; set; } = [];
+    public virtual byte[] QrBytes { get; set; } = [];
 }
 
 public interface IQrParsable<TSelf> where TSelf : IQrParsable<TSelf>

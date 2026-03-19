@@ -3,7 +3,7 @@
 public class QrMeCard(string firstName, string lastName) 
     : QrContactCard(firstName, lastName) , IQrParsable<QrMeCard>
 {
-    public override string RawString
+    public override string QrString
     {
         get
         {

@@ -19,7 +19,7 @@ public class QrBookmark : QrContent<QrBookmark>, IQrParsable<QrBookmark>
 
     public string Url { get; }
 
-    public override string RawString => $"MEBKM:TITLE:{this.Title};URL:{this.Url};;";
+    public override string QrString => $"MEBKM:TITLE:{this.Title};URL:{this.Url};;";
 
     public static bool TryParse(string source, [NotNullWhen(true)] out QrBookmark? qrBookmark)
     {

@@ -123,7 +123,7 @@ public class QrCalendarEvent : QrContent<QrCalendarEvent>, IQrParsable<QrCalenda
 
     public bool IsAllDay { get; private set; }
 
-    public override string RawString
+    public override string QrString
     {
         get
         {

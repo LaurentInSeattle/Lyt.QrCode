@@ -81,7 +81,7 @@ public class QrWifi : QrContent<QrWifi>, IQrParsable<QrWifi>
 
     public bool EncodeUsingWifi_S { get; }
 
-    public override string RawString
+    public override string QrString
     {
         get
         {

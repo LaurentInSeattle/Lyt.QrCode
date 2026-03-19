@@ -15,7 +15,7 @@ public sealed class QrUri(Uri uri, Kind kind = Kind.Canonical) : QrContent, IQrP
 
     public Kind UriKind { get; set; } = kind;
 
-    public override string RawString => this.UriKind switch
+    public override string QrString => this.UriKind switch
     {
         Kind.Canonical => this.Content.ToString(),
         Kind.Original => this.Content.OriginalString,

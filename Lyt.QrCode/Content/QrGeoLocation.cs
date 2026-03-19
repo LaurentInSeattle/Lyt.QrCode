@@ -54,7 +54,7 @@ public class QrGeoLocation : QrContent<QrGeoLocation>, IQrParsable<QrGeoLocation
 
     public GeoProtocol Protocol { get; private set; }
 
-    public override string RawString
+    public override string QrString
     {
         get
         {
