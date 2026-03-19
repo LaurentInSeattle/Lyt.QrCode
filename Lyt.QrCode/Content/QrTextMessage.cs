@@ -131,10 +131,10 @@ public partial class QrTextMessage : QrContent<QrTextMessage>, IQrParsable<QrTex
             }
 
             string maybeNumber = tokens[0];
-            if (maybeNumber.StartsWith(protocolSms) )
+            if (maybeNumber.StartsWith(protocolSms))
             {
                 maybeNumber = maybeNumber[protocolSms.Length..];
-                protocol = MessagingProtocol.Sms; 
+                protocol = MessagingProtocol.Sms;
             }
             else if (maybeNumber.StartsWith(protocolMms))
             {
@@ -167,7 +167,7 @@ public partial class QrTextMessage : QrContent<QrTextMessage>, IQrParsable<QrTex
             }
 
             string maybeText = tokens[1];
-            if (maybeText.Length <5)
+            if (maybeText.Length < 5)
             {
                 return false;
             }
@@ -181,7 +181,8 @@ public partial class QrTextMessage : QrContent<QrTextMessage>, IQrParsable<QrTex
             };
 
             text = maybeText[messageKey.Length..];
-            if (string.IsNullOrWhiteSpace( text))
+            text = Uri.UnescapeDataString(text);
+            if (string.IsNullOrWhiteSpace(text))
             {
                 return false;
             }
