@@ -1,5 +1,7 @@
 ﻿namespace Lyt.QrCode.Content;
 
+/// <summary> </summary>
+/// <remarks> NOT supported in IOS :( </remarks>
 public class QrBookmark : QrContent<QrBookmark>, IQrParsable<QrBookmark>
 {
     public QrBookmark(string url, string title = "") : base(isBinaryData: false)
@@ -59,6 +61,8 @@ public class QrBookmark : QrContent<QrBookmark>, IQrParsable<QrBookmark>
                     // URL cannot be empty 
                     return false;
                 }
+
+                url= Uri.UnescapeDataString(url);
 
                 continue;
             }

@@ -2,13 +2,15 @@
 
 internal sealed class Test
 {
+    private const string link = "https://github.com/LaurentInSeattle/Lyt.QrCode";
+
     private string rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests";
 
     internal void Run()
     {
         rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Encode";
 
-        //this.Encode("This a test text string.", "Text");
+        //this.Encode("This a test plain text string.", "Text");
         //this.Decode("Text");
 
         //string text = "012345RSTUVWXYZ $%*+-./:";
@@ -16,13 +18,15 @@ internal sealed class Test
         //this.Encode(bytes, "Bytes");
         //this.Decode("Bytes");
 
-        // this.Encode(new QrBookmark("https://github.com/LaurentInSeattle/Lyt.QrCode", "QrCode Library"), "Bookmark");
+        this.Encode(link, "Link");
+        this.Encode(new QrUri(new(link)), "Url");
+        this.Encode(new QrBookmark(link, "QrCode Library"), "Bookmark");
 
         //this.Encode(
         //    new QrCalendarEvent(
-        //        "Party",
-        //        DateTime.Parse("05/12/1926 20:00"),
-        //        DateTime.Parse("05/12/1926 23:00"),
+        //        "Birthday Party",
+        //        DateTime.Parse("05/12/2026 20:00"),
+        //        DateTime.Parse("05/12/2026 23:00"),
         //        isAllDay: false,
         //        "Mario's Home", 
         //        "Celebrate Luigi's birthday",
@@ -77,7 +81,8 @@ internal sealed class Test
 
         //rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Decode";
 
-        this.Decode("Wifi");
+        this.Decode("Url");
+        // this.Decode("Wifi");
         //this.Decode("Presidio");
         //this.Decode("Phone");
         //this.Decode("Bookmark");

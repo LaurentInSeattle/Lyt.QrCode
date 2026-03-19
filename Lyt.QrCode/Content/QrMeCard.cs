@@ -1,7 +1,7 @@
 ﻿namespace Lyt.QrCode.Content;
 
 public class QrMeCard(string firstName, string lastName) 
-    : QrContactCard(firstName, lastName) , IQrParsable<QrMeCard>
+    : QrContactCard<QrMeCard>(firstName, lastName) , IQrParsable<QrMeCard>
 {
     public override string QrString
     {
@@ -108,7 +108,9 @@ public class QrMeCard(string firstName, string lastName)
         try
         {
             // TODO
-            //qrMail = new QrMail();
+            string firstName = string.Empty;
+            string lastName = string.Empty;
+            qrMeCard = new QrMeCard(firstName, lastName);
             return true;
         }
         catch

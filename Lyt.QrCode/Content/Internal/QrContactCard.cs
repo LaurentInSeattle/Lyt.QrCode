@@ -13,7 +13,7 @@
 /// Represents a contact card containing personal and organizational information, 
 /// base class for vCard and MeCard formats.
 /// </summary>
-public class QrContactCard : QrContent, IQrParsable<QrContactCard> 
+public class QrContactCard<T> : QrContent<T> where T : class , IQrParsable<T>
 {
     /// <summary> 
     /// The address format.
@@ -99,6 +99,6 @@ public class QrContactCard : QrContent, IQrParsable<QrContactCard>
 
     public DateTime? Birthday { get; set; } = null;
 
-    public static bool TryParse(string source, [NotNullWhen(true)] out QrContactCard? _)
+    static bool TryParse(string source, [NotNullWhen(true)] out T? _)
         => throw new NotImplementedException();
 }

@@ -134,7 +134,7 @@ public class QrMail : QrContent<QrMail>, IQrParsable<QrMail>
         try
         {
             // TODO
-            //qrMail = new QrMail();
+            qrMail = new QrMail("meh");
             return true;
         }
         catch

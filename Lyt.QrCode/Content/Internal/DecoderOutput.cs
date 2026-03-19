@@ -8,6 +8,7 @@ internal class DecoderOutput : Dictionary<Type, MethodInfo>
 
         var supportedTypes = new List<Type>()
         {
+            typeof(QrUri),
             typeof(QrBookmark),
             typeof(QrGeoLocation),
             typeof(QrPhoneNumber),
@@ -17,18 +18,13 @@ internal class DecoderOutput : Dictionary<Type, MethodInfo>
             typeof(QrMeCard),
             typeof(QrVCard),
             typeof(QrTextMessage),
-            typeof(QrUri),
         };
 
         foreach (Type supportedType in supportedTypes)
         {
-            if (decoderOutput.TryAddQrParser(supportedType))
+            if (!decoderOutput.TryAddQrParser(supportedType))
             {
-                Debug.WriteLine("Supported type: " + supportedType.Name);
-            }
-            else
-            {
-                Debug.WriteLine("==>   Unsupported type: " + supportedType.Name);
+                Debug.WriteLine("==> Parser:  Unsupported type: " + supportedType.Name);
             }
         }
 

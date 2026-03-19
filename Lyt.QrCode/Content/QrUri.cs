@@ -1,12 +1,13 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static QrUri; 
+using static QrUri;
 
-public sealed class QrUri(Uri uri, Kind kind = Kind.Canonical) : QrContent, IQrParsable<QrUri>
+/// <summary> </summary>
+/// <remarks> NOT supported in IOS :( </remarks>
+public sealed class QrUri(Uri uri, Kind kind = Kind.Absolute) : QrContent<QrUri>, IQrParsable<QrUri>
 {
     public enum Kind
     {
-        Canonical, 
         Original, 
         Absolute,
     }
@@ -17,9 +18,9 @@ public sealed class QrUri(Uri uri, Kind kind = Kind.Canonical) : QrContent, IQrP
 
     public override string QrString => this.UriKind switch
     {
-        Kind.Canonical => this.Content.ToString(),
-        Kind.Original => this.Content.OriginalString,
-        Kind.Absolute => this.Content.AbsoluteUri,
+        Kind.Original => Uri.EscapeDataString(this.Content.OriginalString),
+        Kind.Absolute => Uri.EscapeDataString(this.Content.AbsoluteUri),
+
         _ => throw new NotImplementedException(),
     };
 
@@ -33,8 +34,9 @@ public sealed class QrUri(Uri uri, Kind kind = Kind.Canonical) : QrContent, IQrP
 
         try
         {
-            // TODO
-            //qrMail = new QrMail();
+            string maybeUri = Uri.UnescapeDataString(source);
+            var uri = new Uri(maybeUri); 
+            qrUri = new QrUri(uri, uri.IsAbsoluteUri ? Kind.Absolute : Kind.Original);
             return true;
         }
         catch

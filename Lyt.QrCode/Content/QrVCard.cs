@@ -1,7 +1,7 @@
 ﻿namespace Lyt.QrCode.Content;
 
-internal class QrVCard(string firstName, string lastName) 
-    : QrContactCard(firstName, lastName) , IQrParsable<QrVCard>
+public class QrVCard(string firstName, string lastName) 
+    : QrContactCard<QrVCard>(firstName, lastName) , IQrParsable<QrVCard>
 {
     /// <summary> The kind of address (home or work). </summary>
     /// <remarks>  MeCard does not have that, VCard Only  </remarks>
@@ -134,8 +134,9 @@ internal class QrVCard(string firstName, string lastName)
 
         try
         {
-            // TODO
-            //qrMail = new QrMail();
+            string firstName = string.Empty; 
+            string lastName = string.Empty; 
+            qrVCard = new QrVCard(firstName, lastName);
             return true;
         }
         catch
