@@ -1,5 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
+/// <summary> Phone number class to create QR Code using the 'tel:' protocol. </summary>
 public partial class QrPhoneNumber : QrContent<QrPhoneNumber>, IQrParsable<QrPhoneNumber>
 {
     [GeneratedRegex(@"^[0+]+|[ ()-]")]

@@ -8,7 +8,6 @@ internal class DecoderOutput : Dictionary<Type, MethodInfo>
 
         var supportedTypes = new List<Type>()
         {
-            typeof(QrUri),
             typeof(QrBookmark),
             typeof(QrGeoLocation),
             typeof(QrPhoneNumber),
@@ -18,6 +17,10 @@ internal class DecoderOutput : Dictionary<Type, MethodInfo>
             typeof(QrMeCard),
             typeof(QrVCard),
             typeof(QrTextMessage),
+
+            // Any string can be interpreted as an URI 
+            // Figure out something !
+            // typeof(QrUri),
         };
 
         foreach (Type supportedType in supportedTypes)
@@ -85,8 +88,8 @@ internal class DecoderOutput : Dictionary<Type, MethodInfo>
         if (realType != type )
         {
             return false; 
-        } 
- 
+        }
+
         this.Add(type, methodInfo);
         return true;
     }

@@ -2,6 +2,13 @@
 
 using static QrUri;
 
+#region Documentation 
+
+// https://en.wikipedia.org/wiki/List_of_URI_schemes
+
+#endregion Documentation 
+
+
 /// <summary> </summary>
 /// <remarks> NOT supported in IOS :( </remarks>
 public sealed class QrUri(Uri uri, Kind kind = Kind.Absolute) : QrContent<QrUri>, IQrParsable<QrUri>
@@ -34,6 +41,9 @@ public sealed class QrUri(Uri uri, Kind kind = Kind.Absolute) : QrContent<QrUri>
 
         try
         {
+            // TODO 
+            // Detect a valid URL scheme  ! 
+
             string maybeUri = Uri.UnescapeDataString(source);
             var uri = new Uri(maybeUri); 
             qrUri = new QrUri(uri, uri.IsAbsoluteUri ? Kind.Absolute : Kind.Original);

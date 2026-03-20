@@ -1,8 +1,14 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public class QrVCard(string firstName, string lastName) 
-    : QrContactCard<QrVCard>(firstName, lastName) , IQrParsable<QrVCard>
+using static Lyt.QrCode.Data.EncodingMode;
+
+/// <summary> A support class to encode VCards within a QR code  </summary>
+public class QrVCard : QrContactCard<QrVCard>, IQrParsable<QrVCard>
 {
+    public QrVCard(string firstName, string lastName) : base(firstName, lastName) { }
+
+    private QrVCard() : base() { }
+
     /// <summary> The kind of address (home or work). </summary>
     /// <remarks>  MeCard does not have that, VCard Only  </remarks>
     public enum AddressKind
@@ -15,6 +21,8 @@ public class QrVCard(string firstName, string lastName)
 
     public AddressKind Kind { get; set; } = AddressKind.Home;
 
+    public string Fullname { get; set; } = string.Empty;
+
     public string AddressKindToString()
         => this.Kind switch
         {
@@ -23,6 +31,16 @@ public class QrVCard(string firstName, string lastName)
             AddressKind.HomePref => "home,pref",
             AddressKind.WorkPref => "work,pref",
             _ => "home,pref"
+        };
+
+    public static AddressKind AddressKindFromString(string key)
+        => key switch
+        {
+            "home" => AddressKind.Home,
+            "work" => AddressKind.Work ,
+            "home,pref" => AddressKind.HomePref,
+            "work,pref" => AddressKind.WorkPref,
+            _ => AddressKind.Home
         };
 
     public override string QrString
@@ -52,36 +70,43 @@ public class QrVCard(string firstName, string lastName)
             // Format 4.0 Only (from 2011- should be fine in 2026 and later on) 
             sb.AppendLine("BEGIN:VCARD");
             sb.AppendLine($"VERSION:4.0");
-
             sb.AppendLine($"N:{card.LastName};{card.FirstName};;;");
-            sb.AppendLine($"FN:{card.FirstName} {card.LastName}");
 
-            if (!string.IsNullOrEmpty(card.Nickname))
+            if (!string.IsNullOrWhiteSpace(card.Fullname))
+            {
+                sb.AppendLine($"FN:{card.Fullname}");
+            }
+            else
+            {
+                sb.AppendLine($"FN:{card.FirstName} {card.LastName}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(card.Nickname))
             {
                 sb.AppendLine($"NICKNAME:{card.Nickname}");
             }
 
-            if (!string.IsNullOrEmpty(card.Organization))
+            if (!string.IsNullOrWhiteSpace(card.Organization))
             {
                 sb.AppendLine($"ORG:{card.Organization}");
             }
 
-            if (!string.IsNullOrEmpty(card.OrganizationTitle))
+            if (!string.IsNullOrWhiteSpace(card.Title))
             {
-                sb.AppendLine($"TITLE:{card.OrganizationTitle}");
+                sb.AppendLine($"TITLE:{card.Title}");
             }
 
-            if (!string.IsNullOrEmpty(card.Phone))
+            if (!string.IsNullOrWhiteSpace(card.Phone))
             {
                 sb.AppendLine($"TEL;TYPE=home,voice;VALUE=uri:tel:{card.Phone}");
             }
 
-            if (!string.IsNullOrEmpty(card.MobilePhone))
+            if (!string.IsNullOrWhiteSpace(card.MobilePhone))
             {
                 sb.AppendLine($"TEL;TYPE=home,cell;VALUE=uri:tel:{card.MobilePhone}");
             }
 
-            if (!string.IsNullOrEmpty(card.WorkPhone))
+            if (!string.IsNullOrWhiteSpace(card.WorkPhone))
             {
                 sb.AppendLine($"TEL;TYPE=work,voice;VALUE=uri:tel:{card.WorkPhone}");
             }
@@ -134,9 +159,180 @@ public class QrVCard(string firstName, string lastName)
 
         try
         {
-            string firstName = string.Empty; 
-            string lastName = string.Empty; 
-            qrVCard = new QrVCard(firstName, lastName);
+            if (!source.StartsWith("BEGIN:VCARD"))
+            {
+                return false;
+            }
+
+            qrVCard = new QrVCard();
+
+            string[] lines = source.SplitLines();
+
+            foreach (string rawLine in lines)
+            {
+                if (rawLine.StartsWith("BEGIN") || rawLine.StartsWith("END") || rawLine.StartsWith("VERSION"))
+                {
+                    continue;
+                }
+
+                string line = rawLine.Trim(';');
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    return false;
+                }
+
+                const string nameKey = "N:";
+                const string fullnameKey = "FN:";
+                const string nicknameKey = "NICKNAME:";
+                const string orgKey = "ORG:";
+                const string titleKey = "TITLE:";
+                const string phoneKey = "TEL;TYPE=home,voice;VALUE=uri:tel:";
+                const string mobilePhoneKey = "TEL;TYPE=home,cell;VALUE=uri:tel:";
+                const string workPhoneKey = "TEL;TYPE=work,voice;VALUE=uri:tel:";
+                const string addressPartialKey = "ADR;TYPE=";
+                const string birthdayKey = "BDAY:";
+                const string emailKey = "EMAIL:";
+                const string websiteKey = "URL:";
+                const string noteKey = "NOTE:";
+
+
+                if (line.StartsWith(nameKey))
+                {
+                    string names = line[nameKey.Length..];
+                    string[] tokens = names.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    qrVCard.LastName = tokens[0];
+                    qrVCard.FirstName = tokens[1];
+                    continue;
+                }
+
+                if (line.StartsWith(fullnameKey))
+                {
+                    qrVCard.Fullname = line[fullnameKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(nicknameKey))
+                {
+                    qrVCard.Nickname = line[nicknameKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(orgKey))
+                {
+                    qrVCard.Organization = line[orgKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(titleKey))
+                {
+                    qrVCard.Title = line[titleKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(phoneKey))
+                {
+                    qrVCard.Phone = line[phoneKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(mobilePhoneKey))
+                {
+                    qrVCard.MobilePhone = line[mobilePhoneKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(workPhoneKey))
+                {
+                    qrVCard.WorkPhone = line[workPhoneKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(birthdayKey))
+                {
+                    qrVCard.BirthdayString = line[birthdayKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(emailKey))
+                {
+                    qrVCard.Email = line[emailKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(websiteKey))
+                {
+                    qrVCard.Website = line[websiteKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(noteKey))
+                {
+                    qrVCard.Note = line[noteKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(addressPartialKey))
+                {
+                    // Not use of rawLine here so that we get the proper count of address items
+                    string addressRaw = rawLine[addressPartialKey.Length..];
+
+                    // Split on ':' to get the address kind 
+                    string[] tokens = 
+                        addressRaw.Split(':', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    if (tokens.Length != 2 )
+                    {
+                        // Just skip this address item instead of failing 
+                        continue; 
+                    } 
+
+                    qrVCard.Kind = AddressKindFromString(tokens[0]);
+
+                    // Split on ';' to get the address elements 
+                    // DO NOT: StringSplitOptions.RemoveEmptyEntries
+                    // DO NOT: StringSplitOptions.TrimEntries
+                    string[] addressTokens = tokens[1].Split(';', StringSplitOptions.None);
+                    if (addressTokens.Length < 5)
+                    {
+                        // Just skip this address item instead of failing 
+                        continue;
+                    }
+
+                    qrVCard.City = addressTokens[1];    
+                    qrVCard.StateRegion = addressTokens[2];
+                    qrVCard.ZipCode = addressTokens[3];
+                    qrVCard.Country = addressTokens[4];
+
+                    qrVCard.Format = AddressFormat.European; 
+                    string streetHouse = addressTokens[0];
+                    int firstSpace = streetHouse.IndexOf(' ');
+                    if (firstSpace == -1)
+                    {
+                        // No separator: assume Street field and no number 
+                        qrVCard.Street = streetHouse;
+                    } 
+                    else
+                    {
+                        string firstPart = streetHouse[..firstSpace];
+                        string lastPart = streetHouse[firstSpace..];
+                        if (int.TryParse(firstPart, out int _))
+                        {
+                            // first part is a number !
+                            qrVCard.Format = AddressFormat.NorthAmerica;
+                            qrVCard.HouseNumber = firstPart; 
+                            qrVCard.Street = lastPart;
+                        } 
+                        else
+                        {
+                            // Assume euro and reverse order (compared to North America) 
+                            qrVCard.HouseNumber = lastPart;
+                            qrVCard.Street = firstPart;
+                        }
+                    }
+
+                    continue;
+                }
+            }
+
             return true;
         }
         catch

@@ -48,27 +48,34 @@ internal sealed class Test
         //    StateRegion = "CA",
         //    ZipCode = "94578",
         //    Email = "ly.testud@outlook.com",
-        //    Website = "https://github.com/LaurentInSeattle/Lyt.QrCode",
+        //    Website = link,
         //};
         //this.Encode(mecard, "MeCard");
 
-        //var vcard = new QrVCard("Laurent", "Testud")
-        //{
-        //    City = "San Francisco",
-        //    StateRegion = "CA",
-        //    ZipCode = "94578",
-        //    Email = "ly.testud@outlook.com",
-        //    Website = "https://github.com/LaurentInSeattle/Lyt.QrCode",
-        //};
-        //this.Encode(vcard, "VCard");
+        var vcard = new QrVCard("Laurent", "Testud")
+        {
+            Fullname = "Laurent Yves Testud", 
+            Nickname = "Enzo",
+            Format = QrContactCard<QrVCard>.AddressFormat.NorthAmerica,
+            Kind= QrVCard.AddressKind.Work,
+            HouseNumber = "7152",
+            Street="Market St.",
+            City = "San Francisco",
+            StateRegion = "CA",
+            ZipCode = "94578",
+            Email = "ly.testud@outlook.com",
+            Website = link,
+        };
 
-        this.Encode(new QrPhoneNumber("12064258779733"), "Phone");
+        this.Encode(vcard, "VCard");
+
+        // this.Encode(new QrPhoneNumber("12064258779733"), "Phone");
 
         //this.Encode(
         //    new QrTextMessage("12066197812", "Hello Laurent!", QrTextMessage.MessagingProtocol.SmsIos),
         //    "Sms");
 
-        //var uri = new Uri("https://github.com/LaurentInSeattle/Lyt.QrCode");
+        //var uri = new Uri(link);
         //this.Encode(new QrUri(uri), "Uri");
 
         //this.Encode(new QrWifi( "MySecretNetwork", "-Hello*0|0*World-"), "Wifi");
@@ -81,15 +88,16 @@ internal sealed class Test
 
         //rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Decode";
 
-        this.Decode("Url");
+        // this.Decode("Url");
         // this.Decode("Wifi");
-        //this.Decode("Presidio");
-        //this.Decode("Phone");
-        //this.Decode("Bookmark");
+        // this.Decode("Presidio");
+        // this.Decode("Phone");
+        // this.Decode("Bookmark");
+        this.Decode("VCard");
 
         // Decode("screen");
-        //Decode("screenRotated");
-        //Decode("screenPortrait");
+        // Decode("screenRotated");
+        // Decode("screenPortrait");
     }
 
     private static void OnDetect(QrPoint resultPoint)

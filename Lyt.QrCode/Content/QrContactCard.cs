@@ -1,4 +1,4 @@
-﻿namespace Lyt.QrCode.Content.Internal;
+﻿namespace Lyt.QrCode.Content;
 
 #region Documentation 
 
@@ -13,7 +13,7 @@
 /// Represents a contact card containing personal and organizational information, 
 /// base class for vCard and MeCard formats.
 /// </summary>
-public class QrContactCard<T> : QrContent<T> where T : class , IQrParsable<T>
+public class QrContactCard<T> : QrContent<T> where T : class, IQrParsable<T>
 {
     /// <summary> 
     /// The address format.
@@ -29,7 +29,8 @@ public class QrContactCard<T> : QrContent<T> where T : class , IQrParsable<T>
         NorthAmerica,
     }
 
-    public QrContactCard(string firstName, string lastName) : base (isBinaryData: false)
+    /// <summary> Constructor for use by applications  </summary>
+    public QrContactCard(string firstName, string lastName) : base(isBinaryData: false)
     {
         if (string.IsNullOrWhiteSpace(firstName))
         {
@@ -47,18 +48,27 @@ public class QrContactCard<T> : QrContent<T> where T : class , IQrParsable<T>
         this.Birthday = null;
     }
 
-    public string FirstName { get; }
+    /// <summary> Constructor for internal use when parsing contact cards. </summary>
+    protected QrContactCard() : base(isBinaryData: false)
+    {
+        this.FirstName = string.Empty;
+        this.LastName = string.Empty;
+        this.BirthdayString = string.Empty;
+        this.Birthday = null;
+    }
 
-    public string LastName { get; }
+    public string FirstName { get; protected set; }
+
+    public string LastName { get; protected set; }
 
     public AddressFormat Format { get; set; } = AddressFormat.European;
 
     // All other relevant optional Card fields as properties defaulting to empty 
+    public string Title { get; set; } = string.Empty;
+
     public string Nickname { get; set; } = string.Empty;
 
     public string Organization { get; set; } = string.Empty;
-
-    public string OrganizationTitle { get; set; } = string.Empty;
 
     public string Phone { get; set; } = string.Empty;
 

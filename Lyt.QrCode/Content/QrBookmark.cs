@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Content;
 
-/// <summary> </summary>
+/// <summary> A bookmark class using the MEBKM protocol. </summary>
 /// <remarks> NOT supported in IOS :( </remarks>
 public class QrBookmark : QrContent<QrBookmark>, IQrParsable<QrBookmark>
 {

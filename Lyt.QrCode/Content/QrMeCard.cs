@@ -1,8 +1,11 @@
 ﻿namespace Lyt.QrCode.Content;
 
-public class QrMeCard(string firstName, string lastName) 
-    : QrContactCard<QrMeCard>(firstName, lastName) , IQrParsable<QrMeCard>
+public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
 {
+    public QrMeCard(string firstName, string lastName) : base(firstName, lastName) { }
+
+    private QrMeCard() : base() { }
+
     public override string QrString
     {
         get
@@ -44,9 +47,9 @@ public class QrMeCard(string firstName, string lastName)
                 sb.Append($"ORG:{card.Organization};");
             }
 
-            if (!string.IsNullOrWhiteSpace(card.OrganizationTitle))
+            if (!string.IsNullOrWhiteSpace(card.Title))
             {
-                sb.Append($"TITLE:{card.OrganizationTitle};");
+                sb.Append($"TITLE:{card.Title};");
             }
 
             if (!string.IsNullOrWhiteSpace(card.Phone))
@@ -107,11 +110,16 @@ public class QrMeCard(string firstName, string lastName)
 
         try
         {
+            if (!source.StartsWith("MECARD:"))
+            {
+                return false;
+            }
+
             // TODO
             string firstName = string.Empty;
             string lastName = string.Empty;
-            qrMeCard = new QrMeCard(firstName, lastName);
-            return true;
+            qrMeCard = new QrMeCard();
+            return false;
         }
         catch
         {
