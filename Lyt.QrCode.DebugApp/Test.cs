@@ -62,7 +62,7 @@ internal sealed class Test
         //};
         //this.Encode(vcard, "VCard");
 
-        //this.Encode(new QrPhoneNumber("12066197812"), "Phone");
+        this.Encode(new QrPhoneNumber("12064258779733"), "Phone");
 
         //this.Encode(
         //    new QrTextMessage("12066197812", "Hello Laurent!", QrTextMessage.MessagingProtocol.SmsIos),

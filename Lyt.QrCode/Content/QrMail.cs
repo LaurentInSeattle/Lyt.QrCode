@@ -25,6 +25,17 @@ public class QrMail : QrContent<QrMail>, IQrParsable<QrMail>
         MatMsg,
     }
 
+    private const string protocolMailTo = "mailto:";
+    private const string protocolSmtp = "SMTP:";
+    private const string protocolMatMsg = "MATMSG:";
+
+    private const string toMatMsgKey = "TO:";
+    private const string subjectMatMsgKey = "SUB:";
+    private const string bodyMatMsgKey = "BODY:";
+
+    const string subjectMailToKey = "subject=";
+    const string bodyMailToKey = "body=";
+
     // VERY SIMPLIFIED: Does NOT implement the RFC 2368 in full.
     // CONSIDER: Implement CC, BCC, and more stuff...
     public QrMail(
@@ -49,12 +60,12 @@ public class QrMail : QrContent<QrMail>, IQrParsable<QrMail>
 
     public string Body { get; private set; }
     
-    public string ProtocolToString()
-        => this.Protocol switch
+    public string ProtocolToString() => 
+        this.Protocol switch
         {
-            MailTo => "mailto:",
-            Smtp => "SMTP:",
-            MatMsg => "MATMSG:",
+            MailTo => protocolMailTo,
+            Smtp => protocolSmtp,
+            MatMsg => protocolMatMsg,
             _ => throw new NotImplementedException(),
         };
 
@@ -133,8 +144,118 @@ public class QrMail : QrContent<QrMail>, IQrParsable<QrMail>
 
         try
         {
-            // TODO
-            qrMail = new QrMail("meh");
+            if (! // NOT any of these three
+                (source.StartsWith(protocolMailTo) ||
+                source.StartsWith(protocolSmtp) ||
+                source.StartsWith(protocolMatMsg)))
+            {
+                return false;
+            }
+
+            EmailProtocol protocol = EmailProtocol.MailTo;
+            if (source.StartsWith(protocolMailTo))
+            {
+                source = source[protocolMailTo.Length..];
+                protocol = MailTo;
+            }
+            else if (source.StartsWith(protocolSmtp))
+            {
+                source = source[protocolSmtp.Length..];
+                protocol = Smtp;
+            }
+            else if (source.StartsWith(protocolMatMsg))
+            {
+                source = source[protocolMatMsg.Length..];
+                protocol = MatMsg;
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+
+            char splitChar = protocol switch
+            {
+                MailTo => '?', // Split using '?' 
+                Smtp => ':',   // Split using ':' 
+                MatMsg => ';', // Split using ';' 
+                _ => throw new NotImplementedException(),
+            };
+
+            string recipient = string.Empty;
+            string subject = string.Empty;
+            string body = string.Empty;
+
+            // Do NOT remove empty entries ! 
+            string[] tokens = source.Split([splitChar], StringSplitOptions.TrimEntries);
+            switch (protocol)
+            {
+                case MailTo:
+                    recipient = tokens[0];
+                    foreach (string token in tokens)
+                    {
+                        if (token.StartsWith(subjectMailToKey))
+                        {
+                            subject = token[subjectMailToKey.Length..];
+                        }
+
+                        if (token.StartsWith(bodyMailToKey))
+                        {
+                            body = token[bodyMailToKey.Length..];
+                        }
+                    }
+
+                    break;
+
+                case Smtp:
+                    recipient = tokens[0];
+                    if( tokens.Length == 2)
+                    {
+                        subject = tokens[1];
+                    }
+                    if (tokens.Length == 3)
+                    {
+                        subject = tokens[1];
+                        body = tokens[2];
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    break;
+
+                case MatMsg:
+                    foreach (string token in tokens)
+                    {
+                        if (token.StartsWith(toMatMsgKey))
+                        {
+                            recipient = token[toMatMsgKey.Length..];
+                        }
+
+                        if (token.StartsWith(subjectMatMsgKey))
+                        {
+                            subject = token[subjectMatMsgKey.Length..];
+                        }
+
+                        if (token.StartsWith(bodyMatMsgKey))
+                        {
+                            body = token[bodyMatMsgKey.Length..];
+                        }
+                    }
+
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
+
+            // Must have a recipient 
+            if (string.IsNullOrWhiteSpace(recipient))
+            {
+                return false;
+            } 
+
+            qrMail = new QrMail(recipient, subject, body, protocol);
             return true;
         }
         catch
