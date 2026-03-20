@@ -18,9 +18,9 @@ internal sealed class Test
         //this.Encode(bytes, "Bytes");
         //this.Decode("Bytes");
 
-        this.Encode(link, "Link");
-        this.Encode(new QrUri(new(link)), "Url");
-        this.Encode(new QrBookmark(link, "QrCode Library"), "Bookmark");
+        //this.Encode(link, "Link");
+        //this.Encode(new QrUri(new(link)), "Url");
+        //this.Encode(new QrBookmark(link, "QrCode Library"), "Bookmark");
 
         //this.Encode(
         //    new QrCalendarEvent(
@@ -42,32 +42,48 @@ internal sealed class Test
         //        "I hope all is well in California"),
         //    "Mail");
 
-        //var mecard = new QrMeCard("Laurent", "Testud")
-        //{
-        //    City = "San Francisco",
-        //    StateRegion = "CA",
-        //    ZipCode = "94578",
-        //    Email = "ly.testud@outlook.com",
-        //    Website = link,
-        //};
-        //this.Encode(mecard, "MeCard");
-
-        var vcard = new QrVCard("Laurent", "Testud")
+        var mecard = new QrMeCard("Laurent", "Testud")
         {
-            Fullname = "Laurent Yves Testud", 
             Nickname = "Enzo",
-            Format = QrContactCard<QrVCard>.AddressFormat.NorthAmerica,
-            Kind= QrVCard.AddressKind.Work,
             HouseNumber = "7152",
-            Street="Market St.",
+            Street = "Market St.",
             City = "San Francisco",
             StateRegion = "CA",
             ZipCode = "94578",
             Email = "ly.testud@outlook.com",
             Website = link,
+            Country = "USA",
+            MobilePhone = "+1 (206) 619 3868",
+            Note = "Hello World!",
+            BirthdayString = "05/12/1968",
+            Organization = "Home",
+            Title = "Mr.",
         };
 
-        this.Encode(vcard, "VCard");
+        this.Encode(mecard, "MeCard");
+
+        //var vcard = new QrVCard("Laurent", "Testud")
+        //{
+        //    Fullname = "Laurent Yves Testud",
+        //    Nickname = "Enzo",
+        //    Format = QrContactCard<QrVCard>.AddressFormat.NorthAmerica,
+        //    Kind = QrVCard.AddressKind.Work,
+        //    HouseNumber = "7152",
+        //    Street = "Market St.",
+        //    City = "San Francisco",
+        //    StateRegion = "CA",
+        //    ZipCode = "94578",
+        //    Email = "ly.testud@outlook.com",
+        //    Website = link,
+        //    Country = "USA",
+        //    MobilePhone = "+1 (206) 619 3868",
+        //    Note = "Hello World!",
+        //    BirthdayString = "05/12/1968",
+        //    Organization = "Home",
+        //    Title = "Mr.",
+        //};
+
+        //this.Encode(vcard, "VCard");
 
         // this.Encode(new QrPhoneNumber("12064258779733"), "Phone");
 
@@ -93,7 +109,9 @@ internal sealed class Test
         // this.Decode("Presidio");
         // this.Decode("Phone");
         // this.Decode("Bookmark");
-        this.Decode("VCard");
+        // this.Decode("VCard");
+        
+        this.Decode("MeCard");
 
         // Decode("screen");
         // Decode("screenRotated");
@@ -155,7 +173,7 @@ internal sealed class Test
             if (result.IsParsed)
             {
                 Console.WriteLine("Parsed, Type:  " + result.ParsedType!.FullName);
-            } 
+            }
         }
         else
         {

@@ -1,7 +1,5 @@
 ﻿namespace Lyt.QrCode.Content;
 
-using static Lyt.QrCode.Data.EncodingMode;
-
 /// <summary> A support class to encode VCards within a QR code  </summary>
 public class QrVCard : QrContactCard<QrVCard>, IQrParsable<QrVCard>
 {
@@ -249,7 +247,18 @@ public class QrVCard : QrContactCard<QrVCard>, IQrParsable<QrVCard>
 
                 if (line.StartsWith(birthdayKey))
                 {
-                    qrVCard.BirthdayString = line[birthdayKey.Length..];
+                    string birthdayString = line[birthdayKey.Length..];
+                    if ( DateTime.TryParseExact(
+                        birthdayString, 
+                        "yyyyMMdd", 
+                        CultureInfo.InvariantCulture, 
+                        DateTimeStyles.None, 
+                        out DateTime parsedDate))
+                    {
+                        qrVCard.Birthday = parsedDate;
+                    }
+
+                    qrVCard.BirthdayString = birthdayString; 
                     continue;
                 }
 

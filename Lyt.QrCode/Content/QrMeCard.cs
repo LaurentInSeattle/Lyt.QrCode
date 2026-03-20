@@ -1,5 +1,7 @@
 ﻿namespace Lyt.QrCode.Content;
 
+/// <summary> A support class to encode MeCards within a QR code  </summary>
+/// <remark> MeCards are somewhat more compact than VCards </remark>
 public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
 {
     public QrMeCard(string firstName, string lastName) : base(firstName, lastName) { }
@@ -31,7 +33,7 @@ public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
                 string.IsNullOrEmpty(countryString);
 
             sb.Append("MECARD:");
-            sb.Append($"N:{card.LastName},{card.FirstName}");
+            sb.Append($"N:{card.LastName},{card.FirstName};");
             if (!string.IsNullOrWhiteSpace(card.Nickname))
             {
                 sb.Append($"NICKNAME:{card.Nickname};");
