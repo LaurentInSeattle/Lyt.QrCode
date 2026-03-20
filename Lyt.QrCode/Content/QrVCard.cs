@@ -3,6 +3,22 @@
 /// <summary> A support class to encode VCards within a QR code  </summary>
 public class QrVCard : QrContactCard<QrVCard>, IQrParsable<QrVCard>
 {
+    // TODO: Merge some of these into the base class 
+
+    private const string nameKey = "N:";
+    private const string fullnameKey = "FN:";
+    private const string nicknameKey = "NICKNAME:";
+    private const string orgKey = "ORG:";
+    private const string titleKey = "TITLE:";
+    private const string phoneKey = "TEL;TYPE=home,voice;VALUE=uri:tel:";
+    private const string mobilePhoneKey = "TEL;TYPE=home,cell;VALUE=uri:tel:";
+    private const string workPhoneKey = "TEL;TYPE=work,voice;VALUE=uri:tel:";
+    private const string addressPartialKey = "ADR;TYPE=";
+    private const string birthdayKey = "BDAY:";
+    private const string emailKey = "EMAIL:";
+    private const string websiteKey = "URL:";
+    private const string noteKey = "NOTE:";
+
     public QrVCard(string firstName, string lastName) : base(firstName, lastName) { }
 
     private QrVCard() : base() { }
@@ -113,7 +129,7 @@ public class QrVCard : QrContactCard<QrVCard>, IQrParsable<QrVCard>
             {
                 string addressStringHeader = "ADR;TYPE=" + card.AddressKindToString() + ":";
                 string streetHouse =
-                    card.Format == AddressFormat.European ?
+                    card.Format == ContactAddressFormat.European ?
                         $"{streetString} {houseNumberString}" :
                         $"{houseNumberString} {streetString}";
                 string addressString =
@@ -179,27 +195,21 @@ public class QrVCard : QrContactCard<QrVCard>, IQrParsable<QrVCard>
                     return false;
                 }
 
-                const string nameKey = "N:";
-                const string fullnameKey = "FN:";
-                const string nicknameKey = "NICKNAME:";
-                const string orgKey = "ORG:";
-                const string titleKey = "TITLE:";
-                const string phoneKey = "TEL;TYPE=home,voice;VALUE=uri:tel:";
-                const string mobilePhoneKey = "TEL;TYPE=home,cell;VALUE=uri:tel:";
-                const string workPhoneKey = "TEL;TYPE=work,voice;VALUE=uri:tel:";
-                const string addressPartialKey = "ADR;TYPE=";
-                const string birthdayKey = "BDAY:";
-                const string emailKey = "EMAIL:";
-                const string websiteKey = "URL:";
-                const string noteKey = "NOTE:";
-
-
                 if (line.StartsWith(nameKey))
                 {
                     string names = line[nameKey.Length..];
                     string[] tokens = names.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    if (tokens.Length ==  0)
+                    {
+                        return false; 
+                    }
+
                     qrVCard.LastName = tokens[0];
-                    qrVCard.FirstName = tokens[1];
+                    if (tokens.Length >= 2)
+                    {
+                        qrVCard.FirstName = tokens[1];
+                    }
+
                     continue;
                 }
 
@@ -311,7 +321,7 @@ public class QrVCard : QrContactCard<QrVCard>, IQrParsable<QrVCard>
                     qrVCard.ZipCode = addressTokens[3];
                     qrVCard.Country = addressTokens[4];
 
-                    qrVCard.Format = AddressFormat.European; 
+                    qrVCard.Format = ContactAddressFormat.European; 
                     string streetHouse = addressTokens[0];
                     int firstSpace = streetHouse.IndexOf(' ');
                     if (firstSpace == -1)
@@ -326,7 +336,7 @@ public class QrVCard : QrContactCard<QrVCard>, IQrParsable<QrVCard>
                         if (int.TryParse(firstPart, out int _))
                         {
                             // first part is a number !
-                            qrVCard.Format = AddressFormat.NorthAmerica;
+                            qrVCard.Format = ContactAddressFormat.NorthAmerica;
                             qrVCard.HouseNumber = firstPart; 
                             qrVCard.Street = lastPart;
                         } 

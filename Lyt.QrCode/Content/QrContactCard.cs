@@ -10,25 +10,25 @@
 #endregion Documentation 
 
 /// <summary> 
+/// The address format for both VCard and MeCard.
+/// European format: [Street] [House Number] and [Postal Code] [City] - Default
+/// North American (and others): [House Number] [Street] and [City] [Postal Code]) 
+/// </summary>
+public enum ContactAddressFormat
+{
+    /// <summary> European format (Default) </summary>
+    European,
+
+    /// <summary> North American and others format. </summary>
+    NorthAmerica,
+}
+
+/// <summary> 
 /// Represents a contact card containing personal and organizational information, 
 /// base class for vCard and MeCard formats.
 /// </summary>
 public class QrContactCard<T> : QrContent<T> where T : class, IQrParsable<T>
 {
-    /// <summary> 
-    /// The address format.
-    /// European format: [Street] [House Number] and [Postal Code] [City] - Default
-    /// North American (and others): [House Number] [Street] and [City] [Postal Code]) 
-    /// </summary>
-    public enum AddressFormat
-    {
-        /// <summary> European format (Default) </summary>
-        European,
-
-        /// <summary> North American and others format. </summary>
-        NorthAmerica,
-    }
-
     /// <summary> Constructor for use by applications  </summary>
     public QrContactCard(string firstName, string lastName) : base(isBinaryData: false)
     {
@@ -61,7 +61,7 @@ public class QrContactCard<T> : QrContent<T> where T : class, IQrParsable<T>
 
     public string LastName { get; protected set; }
 
-    public AddressFormat Format { get; set; } = AddressFormat.European;
+    public ContactAddressFormat Format { get; set; } = ContactAddressFormat.European;
 
     // All other relevant optional Card fields as properties defaulting to empty 
     public string Title { get; set; } = string.Empty;

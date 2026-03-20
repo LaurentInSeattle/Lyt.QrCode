@@ -2,8 +2,22 @@
 
 /// <summary> A support class to encode MeCards within a QR code  </summary>
 /// <remark> MeCards are somewhat more compact than VCards </remark>
+/// <remark> Will encode and decode phone numbers in this order: Regular, Mobile, Work</remark>
 public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
 {
+    private const string protocol = "MECARD:";
+
+    private const string nameKey = "N:";
+    private const string nicknameKey = "NICKNAME:";
+    private const string orgKey = "ORG:";
+    private const string titleKey = "TITLE:";
+    private const string phoneKey = "TEL:";
+    private const string addressKey = "ADR:,,";
+    private const string birthdayKey = "BDAY:";
+    private const string emailKey = "EMAIL:";
+    private const string websiteKey = "URL:";
+    private const string noteKey = "NOTE:";
+
     public QrMeCard(string firstName, string lastName) : base(firstName, lastName) { }
 
     private QrMeCard() : base() { }
@@ -32,7 +46,7 @@ public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
                 string.IsNullOrEmpty(zipCodeString) &&
                 string.IsNullOrEmpty(countryString);
 
-            sb.Append("MECARD:");
+            sb.Append(protocol);
             sb.Append($"N:{card.LastName},{card.FirstName};");
             if (!string.IsNullOrWhiteSpace(card.Nickname))
             {
@@ -87,7 +101,7 @@ public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
             if (!allEmpty)
             {
                 string streetHouse =
-                    card.Format == AddressFormat.European ?
+                    card.Format == ContactAddressFormat.European ?
                         $"{streetString} {houseNumberString}" :
                         $"{houseNumberString} {streetString}";
                 string addressString =
@@ -112,15 +126,109 @@ public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
 
         try
         {
-            if (!source.StartsWith("MECARD:"))
+            if (!source.StartsWith(protocol))
             {
                 return false;
             }
 
-            // TODO
+            source = source[protocol.Length..];
+            string[] tokens = source.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             string firstName = string.Empty;
             string lastName = string.Empty;
             qrMeCard = new QrMeCard();
+
+            foreach (string line in tokens)
+            {
+                if (line.StartsWith(nameKey))
+                {
+                    string names = line[nameKey.Length..];
+                    string[] namesTokens = names.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    if (namesTokens.Length == 0)
+                    {
+                        return false;
+                    }
+
+                    qrMeCard.LastName = namesTokens[0];
+                    if (tokens.Length >= 2)
+                    {
+                        qrMeCard.FirstName = namesTokens[1];
+                    }
+
+                    continue;
+                }
+
+                if (line.StartsWith(nicknameKey))
+                {
+                    qrMeCard.Nickname = line[nicknameKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(orgKey))
+                {
+                    qrMeCard.Organization = line[orgKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(titleKey))
+                {
+                    qrMeCard.Title = line[titleKey.Length..];
+                    continue;
+                }
+
+                //if (line.StartsWith(phoneKey))
+                //{
+                //    qrVCard.Phone = line[phoneKey.Length..];
+                //    continue;
+                //}
+
+                //if (line.StartsWith(mobilePhoneKey))
+                //{
+                //    qrVCard.MobilePhone = line[mobilePhoneKey.Length..];
+                //    continue;
+                //}
+
+                //if (line.StartsWith(workPhoneKey))
+                //{
+                //    qrVCard.WorkPhone = line[workPhoneKey.Length..];
+                //    continue;
+                //}
+
+                if (line.StartsWith(birthdayKey))
+                {
+                    string birthdayString = line[birthdayKey.Length..];
+                    if (DateTime.TryParseExact(
+                        birthdayString,
+                        "yyyyMMdd",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out DateTime parsedDate))
+                    {
+                        qrMeCard.Birthday = parsedDate;
+                    }
+
+                    qrMeCard.BirthdayString = birthdayString;
+                    continue;
+                }
+
+                if (line.StartsWith(emailKey))
+                {
+                    qrMeCard.Email = line[emailKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(websiteKey))
+                {
+                    qrMeCard.Website = line[websiteKey.Length..];
+                    continue;
+                }
+
+                if (line.StartsWith(noteKey))
+                {
+                    qrMeCard.Note = line[noteKey.Length..];
+                    continue;
+                }
+            }
+
             return false;
         }
         catch

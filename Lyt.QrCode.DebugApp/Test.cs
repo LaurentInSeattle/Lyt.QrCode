@@ -45,6 +45,7 @@ internal sealed class Test
         var mecard = new QrMeCard("Laurent", "Testud")
         {
             Nickname = "Enzo",
+            Format = ContactAddressFormat.NorthAmerica,
             HouseNumber = "7152",
             Street = "Market St.",
             City = "San Francisco",
@@ -66,7 +67,7 @@ internal sealed class Test
         //{
         //    Fullname = "Laurent Yves Testud",
         //    Nickname = "Enzo",
-        //    Format = QrContactCard<QrVCard>.AddressFormat.NorthAmerica,
+        //    Format = ContactAddressFormat.NorthAmerica,
         //    Kind = QrVCard.AddressKind.Work,
         //    HouseNumber = "7152",
         //    Street = "Market St.",
