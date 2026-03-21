@@ -27,13 +27,13 @@ public static partial class Qr
     public const int MaxStringAlphanumeric = 4_296;
     public const int MaxStringKanji = 1_817;
 
-    public static EncodeResults<TResult> Encode<TContent, TResult>(
+    public static EncodeResult<TResult> Encode<TContent, TResult>(
         TContent content,
         EncodeParameters? encodeParameters = null)
         where TContent : class
         where TResult : class
     {
-        var apiResult = new EncodeResults<TResult>() { Message = "Unknown Error" } ;
+        var apiResult = new EncodeResult<TResult>() { Message = "Unknown Error" } ;
         TResult? result = null;
         encodeParameters ??= new EncodeParameters();
         if (!encodeParameters.Validate())

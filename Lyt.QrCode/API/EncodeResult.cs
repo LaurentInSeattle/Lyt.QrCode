@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.API;
 
-public class EncodeResults<T> where T : class
+public class EncodeResult<T> where T : class
 {
     [MemberNotNullWhen(true, nameof(Result))]
     public bool Success { get; set; }

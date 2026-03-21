@@ -237,7 +237,7 @@ internal sealed class Test
             File.WriteAllBytes(fullPath, imagePng);
         }
 
-        EncodeResults<byte[]> encode = Qr.Encode<string, byte[]>(text);
+        var encode = Qr.Encode<string, byte[]>(text);
         if (encode.Success)
         {
             string fullPath = Path.Combine(rootPath, filename + ".png");
