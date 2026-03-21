@@ -1,14 +1,26 @@
 ﻿
 
-- More encoders / parsers for common types of data, such as URLs, contact information, calendar events, etc.
+TODO's 
+
+- Finalize Support for QrUri 
+
+- Finalize Encoding API: passing message log down to generator 
+
+- Finalize Decoding API 
+
+- Implement non-svg paths 
+
+- Sample code in Console project 
+
+- Sample code in Avalonia project
+
+MAYBE's 
 
 - Support for JSon data, allowing users to encode structured data into QR codes.
 
 - Support for Compressed JSON 
 
-- Sample code in Console project 
-
-- Sample code in Avalonia project
+CONSIDER
 
 - Histogram equalization (CLAHE) for better image processing in the decoder
 

@@ -56,10 +56,10 @@ public sealed class TestSegmentEncoding
         string svg = PathBuilder.ToSvgImageString(qrCode, 16, 2);
         File.WriteAllText("C:\\Users\\Laurent\\Desktop\\test.svg", svg);
 
-        if (Qr.TryEncode(new QrBookmark(text, "Jigsaw"), out byte[]? image2))
-        {
-            File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image2);
-        }
+        //if (Qr.TryEncode(new QrBookmark(text, "Jigsaw"), out byte[]? image2))
+        //{
+        //    File.WriteAllBytes("C:\\Users\\Laurent\\Desktop\\test.png", image2);
+        //}
     }
 
 

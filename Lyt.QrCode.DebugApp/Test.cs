@@ -220,28 +220,22 @@ internal sealed class Test
 
     private void Encode<T>(T content, string filename) where T : class
     {
-        if (Qr.TryEncode(content, out byte[]? imagePng))
+        var encode = Qr.Encode<T, byte[]>(content);
+        if (encode.Success)
         {
             Console.WriteLine("Encoded: " + filename);
             string fullPath = Path.Combine(rootPath, filename + ".png");
-            File.WriteAllBytes(fullPath, imagePng);
+            File.WriteAllBytes(fullPath, encode.Result);
         }
     }
 
     private void Encode(string filename)
     {
-        string text = "https://github.com/LaurentInSeattle/Lyt.Jigsaw";
-        if (Qr.TryEncode(text, out byte[]? imagePng))
+        var encodeImage = Qr.Encode<string, byte[]>(link);
+        if (encodeImage.Success)
         {
             string fullPath = Path.Combine(rootPath, filename + ".png");
-            File.WriteAllBytes(fullPath, imagePng);
-        }
-
-        var encode = Qr.Encode<string, byte[]>(text);
-        if (encode.Success)
-        {
-            string fullPath = Path.Combine(rootPath, filename + ".png");
-            File.WriteAllBytes(fullPath, encode.Result);
+            File.WriteAllBytes(fullPath, encodeImage.Result);
         }
 
         var encodeParameters = new EncodeParameters()
@@ -251,26 +245,30 @@ internal sealed class Test
             Scale = 16,
         };
 
-        if (Qr.TryEncode(text, out byte[]? imageBmp))
+        encodeImage = Qr.Encode<string, byte[]>(link);
+        if (encodeImage.Success)
         {
             string fullPath = Path.Combine(rootPath, filename + ".bmp");
-            File.WriteAllBytes(fullPath, imageBmp);
+            File.WriteAllBytes(fullPath, encodeImage.Result);
         }
 
-        if (Qr.TryEncode(text, out string? vectors, encodeParameters))
+        var encodeVectors = Qr.Encode<string, string>(link, encodeParameters);
+        if (encodeVectors.Success)
         {
             string fullPath = Path.Combine(rootPath, filename + ".svg");
-            File.WriteAllText(fullPath, vectors);
+            File.WriteAllText(fullPath, encodeVectors.Result);
         }
 
-        if (Qr.TryEncode(text, out bool[,]? modules))
+        var encodeModules = Qr.Encode<string, bool[,]>(link);
+        if (encodeModules.Success)
         {
-            Console.WriteLine("Encoded: " + modules.ToString());
+            Console.WriteLine("Encoded: " + encodeModules.Result.ToString());
         }
 
-        if (Qr.TryEncode(text, out QrCode? qrCode))
+        var encodeQrCode = Qr.Encode<string, QrCode>(link); 
+        if (encodeQrCode.Success)
         {
-            Console.WriteLine("Encoded: " + qrCode.ErrorCorrectionLevel.ToString());
+            Console.WriteLine("Encoded: " + encodeQrCode.Result.ErrorCorrectionLevel.ToString());
         }
     }
 

@@ -27,51 +27,38 @@ public static partial class Qr
     public const int MaxStringAlphanumeric = 4_296;
     public const int MaxStringKanji = 1_817;
 
+    public static async Task<EncodeResult<TResult>> EncodeAsync<TContent, TResult>(
+        TContent content,
+        EncodeParameters? encodeParameters = null)
+        where TContent : class
+        where TResult : class
+        => await Task.Run(() => { return Qr.Encode<TContent, TResult>(content, encodeParameters); });
+
     public static EncodeResult<TResult> Encode<TContent, TResult>(
         TContent content,
         EncodeParameters? encodeParameters = null)
         where TContent : class
         where TResult : class
     {
-        var apiResult = new EncodeResult<TResult>() { Message = "Unknown Error" } ;
-        TResult? result = null;
+        var apiResult = new EncodeResult<TResult>();
         encodeParameters ??= new EncodeParameters();
         if (!encodeParameters.Validate())
         {
             // Invalid parameters - use default values
-            apiResult.Message = "Invalid parameters - use default values";
+            apiResult.AddInfoMessage("Invalid parameters: using default values");
             encodeParameters = new EncodeParameters();
         }
 
-        return apiResult;
-    }
-
-    public static bool TryEncode<TContent, TResult>(
-        TContent content,
-        [NotNullWhen(true)] out TResult? result,
-        EncodeParameters? encodeParameters = null)
-        where TContent : class
-        where TResult : class
-    {
-        result = null;
-        encodeParameters ??= new EncodeParameters();
-        if (!encodeParameters.Validate())
+        if (!TryCreateQrContent<TContent>(content, apiResult, out QrContent? qrContent))
         {
-            // Invalid parameters - use default values
-            Debug.WriteLine("Invalid parameters - use default values");
-            if (Debugger.IsAttached) { Debugger.Break(); }
-            encodeParameters = new EncodeParameters();
+            apiResult.AddErrorMessage("Invalid Content.");
+            return apiResult;
         }
 
-        if (!TryCreateQrContent<TContent>(content, out QrContent? qrContent))
-        {
-            return false;
-        }
-
-        if (!TryDetermineEncoderOutput<TResult>(out EncoderOutput encoderOutput)
+        if (!TryDetermineEncoderOutput<TResult>(apiResult, out EncoderOutput encoderOutput)
             || encoderOutput == EncoderOutput.Unsupported)
         {
-            return false;
+            return apiResult;
         }
 
         try
@@ -81,18 +68,20 @@ public static partial class Qr
                     QrCode.EncodeBytes(qrContent.QrBytes, encodeParameters.ErrorCorrectionLevel) :
                     QrCode.EncodeText(qrContent.QrString, encodeParameters.ErrorCorrectionLevel);
 
-            object? rawResult; 
+            object? rawResult;
             switch (encoderOutput)
             {
                 default:
                 case EncoderOutput.Unsupported:
-                    return false;
+                    apiResult.AddErrorMessage("Encoder output is not supported.");
+                    return apiResult;
 
                 case EncoderOutput.Image:
                     switch (encodeParameters.ImageFormat)
                     {
                         default:
-                            return false;
+                            apiResult.AddErrorMessage("Image format is not supported.");
+                            return apiResult;
 
                         case EncodeParameters.QrImageFormat.Png:
                             byte[] pngImage =
@@ -143,21 +132,28 @@ public static partial class Qr
             if (rawResult.GetType() == typeof(TResult))
             {
                 // Safe to cast
-                result = (TResult) rawResult;
-                return true;
-            } 
+                apiResult.Result = (TResult)rawResult;
+                return apiResult;
+            }
+
+            apiResult.AddErrorMessage("Encoder output cannot be safely cast to specified by TResult generic parameter.");
         }
         catch (Exception ex)
         {
             if (Debugger.IsAttached) { Debugger.Break(); }
             Debug.WriteLine(ex.ToString());
+
+            apiResult.AddErrorMessage("Exception thrown." + ex.Message);
+            apiResult.AddErrorMessage(ex.ToString());
         }
 
-        return false;
+        return apiResult;
     }
 
     private static bool TryCreateQrContent<T>(
-        T content, [NotNullWhen(true)] out QrContent? qrContent)
+        T content,
+        MessageLog messageLog,
+        [NotNullWhen(true)] out QrContent? qrContent)
         where T : class
     {
         qrContent = null;
@@ -170,15 +166,18 @@ public static partial class Qr
         {
             if (string.IsNullOrWhiteSpace(stringContent))
             {
+                messageLog.AddErrorMessage("String content is empty.");
                 return false;
             }
 
             if (stringContent.IsNumeric() && (stringContent.Length > MaxStringNumeric))
             {
+                messageLog.AddErrorMessage("Numeric string content is too long to fit in a QR code.");
                 return false;
             }
             else if (stringContent.IsAlphanumeric() && (stringContent.Length > MaxStringAlphanumeric))
             {
+                messageLog.AddErrorMessage("Alphanumeric string content is too long to fit in a QR code.");
                 return false;
             }
             else
@@ -186,6 +185,7 @@ public static partial class Qr
                 byte[] bytes = Encoding.UTF8.GetBytes(stringContent);
                 if ((bytes.Length == 0) || (bytes.Length > Qr.MaxDataBytes))
                 {
+                    messageLog.AddErrorMessage("String content when encoded in UTF-8 is too long to fit in a QR code.");
                     return false;
                 }
             }
@@ -200,14 +200,21 @@ public static partial class Qr
                 return false;
             }
 
-            qrContent = new QrContent() { QrString = stringContent }; 
+            qrContent = new QrContent() { QrString = stringContent };
             return true;
         }
 
         bool ValidateBytes(byte[] bytesContent)
         {
-            if ((bytesContent.Length == 0) || (bytesContent.Length > Qr.MaxDataBytes))
+            if (bytesContent.Length == 0)
             {
+                messageLog.AddErrorMessage("Binary content is empty.");
+                return false;
+            }
+
+            if ((bytesContent.Length > Qr.MaxDataBytes))
+            {
+                messageLog.AddErrorMessage("Binary content is too long to fit in a QR code.");
                 return false;
             }
 
@@ -218,10 +225,10 @@ public static partial class Qr
         {
             if (!ValidateBytes(bytesContent))
             {
-                return false ;
+                return false;
             }
 
-            qrContent = new QrContent(isBinaryData:true) { QrBytes = bytesContent};
+            qrContent = new QrContent(isBinaryData: true) { QrBytes = bytesContent };
             return true;
         }
 
@@ -231,9 +238,9 @@ public static partial class Qr
             {
                 if (ValidateBytes(qrC.QrBytes))
                 {
-                    return false; 
-                } 
-            } 
+                    return false;
+                }
+            }
             else
             {
                 if (!ValidateString(qrC.QrString))
@@ -247,10 +254,13 @@ public static partial class Qr
         }
 
         // Unsupported content type
+        messageLog.AddErrorMessage("Unsupported content type. Consider using ToString() or some serialization.");
         return false;
     }
 
-    private static bool TryDetermineEncoderOutput<T>(out EncoderOutput encoderOutput) where T : class
+    private static bool TryDetermineEncoderOutput<T>(
+        MessageLog messageLog,
+        out EncoderOutput encoderOutput) where T : class
     {
         encoderOutput = EncoderOutput.Unsupported;
         Type type = typeof(T);
@@ -278,6 +288,7 @@ public static partial class Qr
             return true;
         }
 
-        return false ; 
+        messageLog.AddErrorMessage("Encoder output is not supported.");
+        return false;
     }
 }

@@ -11,9 +11,9 @@ public sealed class EncodeParameters
     }
 
     // Vector formats 
-    public enum QrVectorFormat     
+    public enum QrVectorFormat
     {
-        Svg, 
+        Svg,
         MicrosoftXaml,
         AvaloniaAxaml,
     }
@@ -21,14 +21,14 @@ public sealed class EncodeParameters
     public EncodeParameters() { }
 
     public bool Validate()
-        =>     
-            this.Scale > 0 &&
-            this.Border >= 0 && 
+        =>
+            this.Scale > 0 &&       // at least one 
+            this.Border >= 0 &&     // can be zero 
             this.Scale <= 1024 &&
-            this.Border <= 1024;
+            this.Border <= 64;      // smaller because it is scaled 
 
     /// <summary> The desired Error Correction Level, defaults to Quartile.</summary>
-    public ErrorCorrectionLevel ErrorCorrectionLevel {  get; init ; } = ErrorCorrectionLevel.Quartile;
+    public ErrorCorrectionLevel ErrorCorrectionLevel { get; init; } = ErrorCorrectionLevel.Quartile;
 
     /// <summary> The width and height, in pixels, of each module (QR code pixel), defaults to 16. </summary>
     public int Scale { get; init; } = 16;
@@ -41,7 +41,7 @@ public sealed class EncodeParameters
     public int Foreground { get; init; } = 0;
 
     /// <summary> The background color (light modules), in RGB value, defaults to White. </summary>
-    public int Background { get; init; } = 0xFFFFFF; 
+    public int Background { get; init; } = 0xFFFFFF;
 
     /// <summary> The Image Format, when the encoding output is byte[], defaults to PNG. </summary>
     public QrImageFormat ImageFormat { get; init; } = QrImageFormat.Png;
