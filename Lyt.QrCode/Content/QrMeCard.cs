@@ -6,21 +6,16 @@
 public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
 {
     private const string protocol = "MECARD:";
-
-    private const string nameKey = "N:";
-    private const string nicknameKey = "NICKNAME:";
-    private const string orgKey = "ORG:";
-    private const string titleKey = "TITLE:";
     private const string phoneKey = "TEL:";
-    private const string addressKey = "ADR:,,";
-    private const string birthdayKey = "BDAY:";
-    private const string emailKey = "EMAIL:";
-    private const string websiteKey = "URL:";
-    private const string noteKey = "NOTE:";
+    private const string addressKey = "ADR:";
 
     public QrMeCard(string firstName, string lastName) : base(firstName, lastName) { }
 
     private QrMeCard() : base() { }
+
+    public string PoBox { get; set; } = string.Empty;
+
+    public string RoomNumber { get; set; } = string.Empty;
 
     public override string QrString
     {
@@ -31,6 +26,8 @@ public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
 
             // These may have been set to whitespace via properties after construction so we need to check
             // again and set to empty if needed. 
+            string poBoxString = !string.IsNullOrWhiteSpace(card.PoBox) ? card.PoBox : "";
+            string roomNumberString = !string.IsNullOrWhiteSpace(card.RoomNumber) ? card.RoomNumber : "";
             string streetString = !string.IsNullOrWhiteSpace(card.Street) ? card.Street : "";
             string houseNumberString = !string.IsNullOrWhiteSpace(card.HouseNumber) ? card.HouseNumber : "";
             string cityString = !string.IsNullOrWhiteSpace(card.City) ? card.City : "";
@@ -40,6 +37,8 @@ public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
 
             // No need to push an address if everything is empty 
             bool allEmpty =
+                string.IsNullOrEmpty(poBoxString) &&
+                string.IsNullOrEmpty(roomNumberString) &&
                 string.IsNullOrEmpty(streetString) &&
                 string.IsNullOrEmpty(houseNumberString) &&
                 string.IsNullOrEmpty(cityString) &&
@@ -105,7 +104,7 @@ public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
                         $"{streetString} {houseNumberString}" :
                         $"{houseNumberString} {streetString}";
                 string addressString =
-                        $"ADR:,,{streetHouse},{cityString},{stateRegionString},{zipCodeString},{countryString};";
+                        $"ADR:{poBoxString},{roomNumberString},{streetHouse},{cityString},{stateRegionString},{zipCodeString},{countryString};";
                 sb.Append(addressString);
             }
 
@@ -175,23 +174,28 @@ public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
                     continue;
                 }
 
-                //if (line.StartsWith(phoneKey))
-                //{
-                //    qrVCard.Phone = line[phoneKey.Length..];
-                //    continue;
-                //}
+                if (line.StartsWith(phoneKey) && string.IsNullOrWhiteSpace(qrMeCard.Phone))
+                {
+                    qrMeCard.Phone = line[phoneKey.Length..];
+                    continue;
+                }
 
-                //if (line.StartsWith(mobilePhoneKey))
-                //{
-                //    qrVCard.MobilePhone = line[mobilePhoneKey.Length..];
-                //    continue;
-                //}
+                if (line.StartsWith(phoneKey) && 
+                    ! string.IsNullOrWhiteSpace( qrMeCard.Phone) &&
+                    string.IsNullOrWhiteSpace(qrMeCard.MobilePhone))
+                {
+                    qrMeCard.MobilePhone = line[phoneKey.Length..];
+                    continue;
+                }
 
-                //if (line.StartsWith(workPhoneKey))
-                //{
-                //    qrVCard.WorkPhone = line[workPhoneKey.Length..];
-                //    continue;
-                //}
+                if (line.StartsWith(phoneKey) &&
+                    !string.IsNullOrWhiteSpace(qrMeCard.Phone) && 
+                    !string.IsNullOrWhiteSpace(qrMeCard.MobilePhone) &&
+                    string.IsNullOrWhiteSpace(qrMeCard.WorkPhone))
+                {
+                    qrMeCard.WorkPhone = line[phoneKey.Length..];
+                    continue;
+                }
 
                 if (line.StartsWith(birthdayKey))
                 {
@@ -227,9 +231,60 @@ public class QrMeCard : QrContactCard<QrMeCard>, IQrParsable<QrMeCard>
                     qrMeCard.Note = line[noteKey.Length..];
                     continue;
                 }
+
+                if (line.StartsWith(addressKey))
+                {
+                    string addressRaw = line[addressKey.Length..];
+
+                    // Split on ',' to get the address elements 
+                    // DO NOT: StringSplitOptions.RemoveEmptyEntries
+                    // DO NOT: StringSplitOptions.TrimEntries
+                    string[] addressTokens = addressRaw.Split(',', StringSplitOptions.None);
+                    if (addressTokens.Length < 7)
+                    {
+                        // Just skip this address item instead of failing 
+                        continue;
+                    }
+
+                    qrMeCard.PoBox = addressTokens[0];
+                    qrMeCard.RoomNumber = addressTokens[1];
+                    qrMeCard.City = addressTokens[3];
+                    qrMeCard.StateRegion = addressTokens[4];
+                    qrMeCard.ZipCode = addressTokens[5];
+                    qrMeCard.Country = addressTokens[6];
+
+                    qrMeCard.Format = ContactAddressFormat.European;
+                    string streetHouse = addressTokens[2];
+                    int firstSpace = streetHouse.IndexOf(' ');
+                    if (firstSpace == -1)
+                    {
+                        // No separator: assume Street field and no number 
+                        qrMeCard.Street = streetHouse;
+                    }
+                    else
+                    {
+                        string firstPart = streetHouse[..firstSpace];
+                        string lastPart = streetHouse[firstSpace..];
+                        if (int.TryParse(firstPart, out int _))
+                        {
+                            // first part is a number !
+                            qrMeCard.Format = ContactAddressFormat.NorthAmerica;
+                            qrMeCard.HouseNumber = firstPart;
+                            qrMeCard.Street = lastPart;
+                        }
+                        else
+                        {
+                            // Assume euro and reverse order (compared to North America) 
+                            qrMeCard.HouseNumber = lastPart;
+                            qrMeCard.Street = firstPart;
+                        }
+                    }
+
+                    continue;
+                }
             }
 
-            return false;
+            return true;
         }
         catch
         {

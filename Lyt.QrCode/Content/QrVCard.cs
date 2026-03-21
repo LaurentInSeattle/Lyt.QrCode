@@ -3,21 +3,11 @@
 /// <summary> A support class to encode VCards within a QR code  </summary>
 public class QrVCard : QrContactCard<QrVCard>, IQrParsable<QrVCard>
 {
-    // TODO: Merge some of these into the base class 
-
-    private const string nameKey = "N:";
     private const string fullnameKey = "FN:";
-    private const string nicknameKey = "NICKNAME:";
-    private const string orgKey = "ORG:";
-    private const string titleKey = "TITLE:";
     private const string phoneKey = "TEL;TYPE=home,voice;VALUE=uri:tel:";
     private const string mobilePhoneKey = "TEL;TYPE=home,cell;VALUE=uri:tel:";
     private const string workPhoneKey = "TEL;TYPE=work,voice;VALUE=uri:tel:";
     private const string addressPartialKey = "ADR;TYPE=";
-    private const string birthdayKey = "BDAY:";
-    private const string emailKey = "EMAIL:";
-    private const string websiteKey = "URL:";
-    private const string noteKey = "NOTE:";
 
     public QrVCard(string firstName, string lastName) : base(firstName, lastName) { }
 

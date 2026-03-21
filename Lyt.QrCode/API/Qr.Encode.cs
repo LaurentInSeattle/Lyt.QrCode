@@ -27,6 +27,25 @@ public static partial class Qr
     public const int MaxStringAlphanumeric = 4_296;
     public const int MaxStringKanji = 1_817;
 
+    public static EncodeResults<TResult> Encode<TContent, TResult>(
+        TContent content,
+        EncodeParameters? encodeParameters = null)
+        where TContent : class
+        where TResult : class
+    {
+        var apiResult = new EncodeResults<TResult>() { Message = "Unknown Error" } ;
+        TResult? result = null;
+        encodeParameters ??= new EncodeParameters();
+        if (!encodeParameters.Validate())
+        {
+            // Invalid parameters - use default values
+            apiResult.Message = "Invalid parameters - use default values";
+            encodeParameters = new EncodeParameters();
+        }
+
+        return apiResult;
+    }
+
     public static bool TryEncode<TContent, TResult>(
         TContent content,
         [NotNullWhen(true)] out TResult? result,

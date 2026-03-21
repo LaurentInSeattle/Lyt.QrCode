@@ -29,6 +29,15 @@ public enum ContactAddressFormat
 /// </summary>
 public class QrContactCard<T> : QrContent<T> where T : class, IQrParsable<T>
 {
+    protected const string nameKey = "N:";
+    protected const string nicknameKey = "NICKNAME:";
+    protected const string orgKey = "ORG:";
+    protected const string titleKey = "TITLE:";
+    protected const string birthdayKey = "BDAY:";
+    protected const string emailKey = "EMAIL:";
+    protected const string websiteKey = "URL:";
+    protected const string noteKey = "NOTE:";
+
     /// <summary> Constructor for use by applications  </summary>
     public QrContactCard(string firstName, string lastName) : base(isBinaryData: false)
     {

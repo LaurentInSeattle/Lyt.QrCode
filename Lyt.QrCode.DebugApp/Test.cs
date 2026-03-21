@@ -46,6 +46,7 @@ internal sealed class Test
         {
             Nickname = "Enzo",
             Format = ContactAddressFormat.NorthAmerica,
+            PoBox = "PO: 152",
             HouseNumber = "7152",
             Street = "Market St.",
             City = "San Francisco",
@@ -111,7 +112,7 @@ internal sealed class Test
         // this.Decode("Phone");
         // this.Decode("Bookmark");
         // this.Decode("VCard");
-        
+
         this.Decode("MeCard");
 
         // Decode("screen");
@@ -142,7 +143,7 @@ internal sealed class Test
 
         string imagePathLoad = filename + ".png";
         var sourceImage = this.LoadSourceImage(imagePathLoad);
-        if (Qr.TryDecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
+        if (Qr.TryDecode(sourceImage, out var result, OnDetect))
         {
             // TODO: Print out results 
             if (result.DetectorResult is DetectorResult detectorResult)
@@ -167,13 +168,17 @@ internal sealed class Test
         Console.WriteLine("Decode: " + filename);
         DateTime after;
         var before = DateTime.Now;
-        if (Qr.TryDecodeQrCodeFromImage(sourceImage, out var result, OnDetect))
+        if (Qr.TryDecode(sourceImage, out var result, OnDetect))
         {
             after = DateTime.Now;
             Console.WriteLine("Decoded, Content:  " + result.Text);
             if (result.IsParsed)
             {
                 Console.WriteLine("Parsed, Type:  " + result.ParsedType!.FullName);
+                if (result.TryGet(out QrMeCard? qrMeCard))
+                {
+                    Console.WriteLine("Decoded as a 'MeCard'");
+                }
             }
         }
         else
@@ -230,6 +235,13 @@ internal sealed class Test
         {
             string fullPath = Path.Combine(rootPath, filename + ".png");
             File.WriteAllBytes(fullPath, imagePng);
+        }
+
+        EncodeResults<byte[]> encode = Qr.Encode<string, byte[]>(text);
+        if (encode.Success)
+        {
+            string fullPath = Path.Combine(rootPath, filename + ".png");
+            File.WriteAllBytes(fullPath, encode.Result);
         }
 
         var encodeParameters = new EncodeParameters()

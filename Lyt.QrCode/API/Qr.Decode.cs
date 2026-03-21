@@ -20,7 +20,7 @@ public static partial class Qr
 
     public static bool TryAddCustomQrContentType(Type type) => decoderOutput.TryAddQrParser(type);
 
-    public static bool TryDecodeQrCodeFromImage<T>(
+    public static bool TryDecode<T>(
         SourceImage sourceImage,
         [NotNullWhen(true)] out T? decodedContent,
         DetectorCallback? detectorCallback = null,
@@ -28,7 +28,7 @@ public static partial class Qr
         where T : QrContent
     {
         decodedContent = null;
-        if (TryDecodeQrCodeFromImage(
+        if (TryDecode(
             sourceImage, out DecoderResult? decoderResult, detectorCallback, decodeParameters))
         {
             if (decoderResult.ParsedObject is object decodedObject)
@@ -45,7 +45,7 @@ public static partial class Qr
         return false;
     }
 
-    public static bool TryDecodeQrCodeFromImage(
+    public static bool TryDecode(
         SourceImage sourceImage,
         [NotNullWhen(true)] out DecoderResult? decoderResult,
         DetectorCallback? detectorCallback = null,
