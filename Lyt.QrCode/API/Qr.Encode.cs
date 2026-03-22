@@ -59,11 +59,15 @@ public static partial class Qr
 
         try
         {
+            var errorCorrectionLevel = ErrorCorrectionLevel.FromEnumeration(encodeParameters.ErrorCorrectionLevel);
+
+            // Note: Encoding will throw if any issue
             var qrCode =
                 qrContent.IsBinaryData ?
-                    QrCode.EncodeBytes(qrContent.QrBytes, encodeParameters.ErrorCorrectionLevel) :
-                    QrCode.EncodeText(qrContent.QrString, encodeParameters.ErrorCorrectionLevel);
-
+                    QrCode.EncodeBytes(qrContent.QrBytes, errorCorrectionLevel) :
+                    QrCode.EncodeText(qrContent.QrString, errorCorrectionLevel);
+            apiResult.QrCodeVersion = qrCode.Version;
+            apiResult.QrCodeDimension = qrCode.Size;
             object? rawResult;
             switch (encoderOutput)
             {
@@ -118,10 +122,6 @@ public static partial class Qr
                     bool[,] modules = qrCode.GetModules();
                     rawResult = modules;
                     break;
-
-                case EncoderOutput.QrCode:
-                    rawResult = qrCode;
-                    break;
             }
 
             // Must use exact type match (and not IsAssignableFrom) 
@@ -139,7 +139,7 @@ public static partial class Qr
             if (Debugger.IsAttached) { Debugger.Break(); }
             Debug.WriteLine(ex.ToString());
 
-            apiResult.AddErrorMessage("Exception thrown." + ex.Message);
+            apiResult.AddErrorMessage("Exception thrown when encoding: " + ex.Message);
             apiResult.AddErrorMessage(ex.ToString());
         }
 
@@ -269,12 +269,6 @@ public static partial class Qr
         if (type == typeof(string))
         {
             encoderOutput = EncoderOutput.Vectors;
-            return true;
-        }
-
-        if (type == typeof(QrCode))
-        {
-            encoderOutput = EncoderOutput.QrCode;
             return true;
         }
 

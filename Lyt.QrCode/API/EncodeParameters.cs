@@ -2,6 +2,20 @@
 
 public sealed class EncodeParameters
 {
+    //  There are four levels of error correction, with higher levels providing better durability at the expense
+    //  of higher code density: 
+    //  Level Low: ~7% of data restored (Lowest)
+    //  Level Medium: ~15% of data restored (Most common)
+    //  Level Quartile: ~25% of data restored
+    //  Level High: ~30% of data restored (Highest/best for logos)
+    public enum QrErrorCorrectionLevel
+    {
+        Low, 
+        Medium, 
+        Quartile, 
+        High,
+    }
+
     // Image formats 
     public enum QrImageFormat
     {
@@ -27,8 +41,9 @@ public sealed class EncodeParameters
             this.Scale <= 1024 &&
             this.Border <= 64;      // smaller because it is scaled 
 
-    /// <summary> The desired Error Correction Level, defaults to Quartile.</summary>
-    public ErrorCorrectionLevel ErrorCorrectionLevel { get; init; } = ErrorCorrectionLevel.Quartile;
+    /// <summary> The minimum desired Error Correction Level, defaults to Medium.</summary>
+    /// <remarks> Will be automatically increased as long as the data fits.</remarks>
+    public QrErrorCorrectionLevel ErrorCorrectionLevel { get; init; } = QrErrorCorrectionLevel.Medium;
 
     /// <summary> The width and height, in pixels, of each module (QR code pixel), defaults to 16. </summary>
     public int Scale { get; init; } = 16;

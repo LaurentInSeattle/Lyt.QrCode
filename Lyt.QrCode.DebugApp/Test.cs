@@ -228,13 +228,18 @@ internal sealed class Test
 
     private void Encode<T>(T content, string filename) where T : class
     {
+        var before = DateTime.Now;
         var encode = Qr.Encode<T, byte[]>(content);
+        DateTime after = DateTime.Now;
         if (encode.Success)
         {
             Console.WriteLine("Encoded: " + filename);
+            Console.WriteLine("Qr Code Version: " + encode.QrCodeVersion + "  -  Qr Code Dimension: " + encode.QrCodeDimension);
             string fullPath = Path.Combine(rootPath, filename + ".png");
             File.WriteAllBytes(fullPath, encode.Result);
         }
+
+        Console.WriteLine("Milleseconds to encode: " + (after - before).TotalMilliseconds.ToString("F1"));
     }
 
     private void Encode(string filename)

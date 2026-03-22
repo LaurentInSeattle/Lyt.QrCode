@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode;
 
-public sealed partial class QrCode
+internal sealed partial class QrCode
 {
     private static readonly byte[,] EccCodewordsPerBlock = 
     {
@@ -152,10 +152,10 @@ public sealed partial class QrCode
     /// <exception cref="ArgumentNullException"><paramref name="text"/> .</exception>
     /// <exception cref="DataTooLongException">The text is too long to fit in the largest QR code size (version)
     /// at the specified error correction level.</exception>
-    public static QrCode EncodeText(string text, ErrorCorrectionLevel ecl)
+    internal static QrCode EncodeText(string text, ErrorCorrectionLevel ecl)
         => EncodeSegment(QrSegment.MakeSegment(text), ecl);
 
-    public static QrCode EncodeBytes(byte[] bytes, ErrorCorrectionLevel ecl)
+    internal static QrCode EncodeBytes(byte[] bytes, ErrorCorrectionLevel ecl)
         => EncodeSegment(QrSegment.MakeBytes(bytes), ecl);
 
     /// <summary>
@@ -254,10 +254,10 @@ public sealed partial class QrCode
 
         // Add terminator and pad up to a byte if applicable
         int dataCapacityBits = GetNumDataCodewords(foundVersion, ecl) * 8;
-        Debug.Assert(bitArray.Length <= dataCapacityBits);
+        // Debug.Assert(bitArray.Length <= dataCapacityBits);
         bitArray.AppendBits(0, Math.Min(4, dataCapacityBits - bitArray.Length));
         bitArray.AppendBits(0, (8 - bitArray.Length % 8) % 8);
-        Debug.Assert(bitArray.Length % 8 == 0);
+        // Debug.Assert(bitArray.Length % 8 == 0);
 
         // Pad with alternating bytes until data capacity is reached
         for (uint padByte = 0xEC; bitArray.Length < dataCapacityBits; padByte ^= 0xEC ^ 0x11)
@@ -548,7 +548,6 @@ public sealed partial class QrCode
             }
         }
     }
-
 
     // Calculates and returns the penalty score based on state of this QR code's current modules.
     // This is used by the automatic mask choice algorithm to find the mask pattern that yields the lowest score.

@@ -34,8 +34,5 @@ public static partial class Qr
         Vectors, // string 
 
         Modules, // bool[,]
-
-        // Needed ? 
-        QrCode, // QrCode
     }
 }
