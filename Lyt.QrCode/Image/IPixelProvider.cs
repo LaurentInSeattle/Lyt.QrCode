@@ -2,7 +2,9 @@
 
 internal interface IPixelProvider
 {
-    int Width { get; }
-    int Height { get; }
-    bool GetPixel(int x, int y);
+    internal int Width { get; }
+
+    internal int Height { get; }
+    
+    internal bool GetPixel(int x, int y);
 }

@@ -18,37 +18,31 @@ public enum PixelFormat
 
     /// <summary> 4 bytes for two pixels, UYVY formatted </summary>
     UYVY,
+
     /// <summary> 4 bytes for two pixels, YUYV formatted </summary>
     YUYV
 }
 
-public static class PixelFormatExtensions
+internal static class PixelFormatExtensions
 {
-    public static int BytesPerPixel(this PixelFormat format)
-    {
-        return format switch
+    internal static int BytesPerPixel(this PixelFormat format)
+        => format switch
         {
             PixelFormat.Gray8 => 1,
             PixelFormat.Gray16 => 2,
-            PixelFormat.RGB24 => 3,
-            PixelFormat.BGR24 => 3,
-            PixelFormat.ARGB32 => 4,
-            PixelFormat.ABGR32 => 4,
-            PixelFormat.BGRA32 => 4,
-            PixelFormat.RGBA32 => 4,
-            PixelFormat.RGB565 => 2,
-            PixelFormat.UYVY => 2, // 4 bytes for two pixels
-            PixelFormat.YUYV => 2, // 4 bytes for two pixels
+            PixelFormat.RGB565 => 2,            
+            PixelFormat.UYVY or PixelFormat.YUYV => 2, // 4 bytes for two pixels            
+            PixelFormat.RGB24  or PixelFormat.BGR24 => 3,            
+            PixelFormat.ARGB32 or PixelFormat.ABGR32 => 4,
+            PixelFormat.BGRA32  or PixelFormat.RGBA32 => 4,
+
             _ => throw new ArgumentOutOfRangeException(nameof(format), "Unsupported pixel format.")
         };
-    }
 
-    public static bool IsColor (this PixelFormat format)
-    {
-        return format switch
+    internal static bool IsColor(this PixelFormat format)
+        => format switch
         {
             PixelFormat.Gray8 or PixelFormat.Gray16 => false,
-            _ => true 
+            _ => true
         };
-    }
 }
