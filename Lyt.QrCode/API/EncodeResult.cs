@@ -8,17 +8,3 @@ public class EncodeResult<T> : MessageLog where T : class
     public T? Result { get; set; }
 }
 
-public class MessageLog
-{
-    public bool Error { get; set; }
-
-    public List<string> Messages { get; set; } = [];
-
-    public void AddInfoMessage(string message) => this.Messages.Add(message);
-
-    public void AddErrorMessage(string message)
-    {
-        this.Error = true;
-        this.Messages.Add(message);
-    }
-}

@@ -1,10 +1,10 @@
-﻿namespace Lyt.QrCode.Content.Internal;
+﻿namespace Lyt.QrCode.Parser;
 
-internal class DecoderOutput : Dictionary<Type, MethodInfo>
+internal class Parsers : Dictionary<Type, MethodInfo>
 {
-    internal static DecoderOutput Create()
+    internal static Parsers Create()
     {
-        var decoderOutput = new DecoderOutput();
+        var decoderOutput = new Parsers();
 
         var supportedTypes = new List<Type>()
         {
@@ -25,7 +25,7 @@ internal class DecoderOutput : Dictionary<Type, MethodInfo>
 
         foreach (Type supportedType in supportedTypes)
         {
-            if (!decoderOutput.TryAddQrParser(supportedType))
+            if (!decoderOutput.TryAddQrContentType(supportedType))
             {
                 Debug.WriteLine("==> Parser:  Unsupported type: " + supportedType.Name);
             }
@@ -34,7 +34,7 @@ internal class DecoderOutput : Dictionary<Type, MethodInfo>
         return decoderOutput;
     }
 
-    internal bool TryAddQrParser(Type type)
+    internal bool TryAddQrContentType(Type type)
     {
         // Make sure the provide type is a QrContent<T> , T being the provided type 
         if (!type.IsSubclassOf(typeof(QrContent)))

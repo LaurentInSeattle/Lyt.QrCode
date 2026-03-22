@@ -4,6 +4,7 @@
 
 // Present in GlobalUsings.cs: BUT KEEP for avoiding ambiguous reference to System.Net
 using Lyt.QrCode.Content;
+using Lyt.QrCode.Parser;
 
 /// <summary> 
 /// Callback which is invoked when a possible significant point in the QR code image, such as a corner, is found.
@@ -14,11 +15,13 @@ public delegate void DetectorCallback(QrPoint point);
 /// Partial: Decode API 
 public static partial class Qr
 {
-    internal static DecoderOutput decoderOutput;
+    internal static Parsers decoderOutput;
 
-    static Qr() => decoderOutput = DecoderOutput.Create();
+    static Qr() => decoderOutput = Parsers.Create();
 
-    public static bool TryAddCustomQrContentType(Type type) => decoderOutput.TryAddQrParser(type);
+    /// <summary> Tries to add QR Code custom type parser to the object recognizer.</summary>
+    /// <returns> True if valid encoder and parser.</returns>
+    public static bool TryAddCustomQrContentType(Type type) => decoderOutput.TryAddQrContentType(type);
 
     public static bool TryDecode<T>(
         SourceImage sourceImage,

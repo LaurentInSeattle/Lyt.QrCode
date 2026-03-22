@@ -21,9 +21,14 @@ public sealed partial class SourceImage
             throw new ArgumentOutOfRangeException(nameof(width), "Width and Height must be positive.");
         }
 
-        if ((width > 8 * 1024) || (height > 8 * 1024))
+        if ((width > 12 * 1024) || (height > 12 * 1024))
         {
-            throw new ArgumentOutOfRangeException(nameof(width), "Width and Height are limited to 8K pixels.");
+            throw new ArgumentOutOfRangeException(nameof(width), "Width and Height are both limited to 12 K pixels.");
+        }
+
+        if ((stride * height > 32 * 1024 * 1024))
+        {
+            throw new ArgumentOutOfRangeException(nameof(width), "Pixel count is limited to 32 M pixels.");
         }
 
         if (pixels.Length != height * stride)

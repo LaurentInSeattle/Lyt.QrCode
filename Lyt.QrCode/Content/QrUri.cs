@@ -9,7 +9,7 @@ using static QrUri;
 #endregion Documentation 
 
 
-/// <summary> </summary>
+/// <summary> Incomplete ~ Maybe not needed </summary>
 /// <remarks> NOT supported in IOS :( </remarks>
 public sealed class QrUri(Uri uri, Kind kind = Kind.Absolute) : QrContent<QrUri>, IQrParsable<QrUri>
 {

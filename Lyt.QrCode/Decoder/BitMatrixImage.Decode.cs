@@ -535,7 +535,7 @@ public sealed partial class BitMatrixImage
 
         decoderResult = new DecoderResult()
         {
-            RawBytes = bytes,
+            Bytes = bytes,
             Text = result.ToString(),
             // TODO : Relocate these elements into some debug data structure 
             //ByteSegments = byteSegments,

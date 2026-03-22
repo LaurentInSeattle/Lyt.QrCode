@@ -22,7 +22,6 @@ global using SixLabors.ImageSharp;
 global using SixLabors.ImageSharp.PixelFormats;
 
 
-global using Lyt.QrCode;
 global using Lyt.QrCode.API;
 global using Lyt.QrCode.Content;
 global using Lyt.QrCode.Encoder;

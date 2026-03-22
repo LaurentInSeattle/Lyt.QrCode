@@ -7,27 +7,7 @@ public sealed class DecoderResult
     public string Text { get; internal set; } = string.Empty;
 
     /// <summary> Bytes encoded by the QR Code, if applicable, otherwise null ><summary> 
-    public byte[]? RawBytes { get; internal set; } = null;
-
-    public bool TryGet<T>([NotNullWhen(true)] out T? result) where T : QrContent
-    {
-        result = null;
-
-        if (this.ParsedType is null || this.ParsedObject is null)
-        {
-            return false;
-        }
-
-        if (typeof(T) == this.ParsedType)
-        {
-            result = (T)this.ParsedObject!;
-            return true;
-        }
-
-        return false;
-    }
-
-    public bool IsParsed => this.ParsedType is not null && this.ParsedObject is not null;
+    public byte[]? Bytes { get; internal set; } = null;
 
     public Type? ParsedType { get; internal set; } = null;
 

@@ -1,4 +1,4 @@
-﻿namespace Lyt.QrCode.Content.Internal;
+﻿namespace Lyt.QrCode.Parser;
 
 public abstract class QrContent<T>(bool isBinaryData = false)
     : QrContent(isBinaryData)

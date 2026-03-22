@@ -172,14 +172,15 @@ internal sealed class Test
         {
             after = DateTime.Now;
             Console.WriteLine("Decoded, Content:  " + result.Text);
-            if (result.IsParsed)
-            {
-                Console.WriteLine("Parsed, Type:  " + result.ParsedType!.FullName);
-                if (result.TryGet(out QrMeCard? qrMeCard))
-                {
-                    Console.WriteLine("Decoded as a 'MeCard'");
-                }
-            }
+            // TODO ! 
+            //if (result.IsParsed)
+            //{
+            //    Console.WriteLine("Parsed, Type:  " + result.ParsedType!.FullName);
+            //    if (result.TryGet(out QrMeCard? qrMeCard))
+            //    {
+            //        Console.WriteLine("Decoded as a 'MeCard'");
+            //    }
+            //}
         }
         else
         {

@@ -8,6 +8,8 @@ TODO's
 
 - Finalize Decoding API 
 
+- Encoder: Downgrade ECL to try to encode large data 
+
 - Implement non-svg paths 
 
 - Sample code in Console project 
