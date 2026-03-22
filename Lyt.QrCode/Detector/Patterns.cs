@@ -1,15 +1,15 @@
 ﻿namespace Lyt.QrCode.Detector;
 
-public sealed class Patterns(
-    Pattern bottomLeft, Pattern topLeft, Pattern topRight, AlignmentPattern? alignmentPattern)
+internal sealed class Patterns(
+    Pattern bottomLeft, Pattern topLeft, Pattern topRight)
 {
-    public Pattern TopLeft { get; } = topLeft;
+    internal Pattern TopLeft { get; } = topLeft;
 
-    public Pattern TopRight { get; } = topRight;
+    internal Pattern TopRight { get; } = topRight;
 
-    public Pattern BottomLeft { get; } = bottomLeft;
+    internal Pattern BottomLeft { get; } = bottomLeft;
 
-    public AlignmentPattern? AlignmentPattern { get; } = alignmentPattern;
+    internal AlignmentPattern? AlignmentPattern { get; private set; }
 
     internal bool TryProcess(
         BitMatrixImage image, 
@@ -122,15 +122,19 @@ public sealed class Patterns(
                 if (TryFindAlignmentInRegion(
                     moduleSize, estAlignmentX, estAlignmentY, (float)i, out alignmentPattern))
                 {
+                    this.AlignmentPattern = alignmentPattern;
                     Debug.WriteLine($"Found alignment pattern at ({alignmentPattern.X},{alignmentPattern.Y}) with estimated module size {moduleSize}");
                     break;
                 }
             }
         }
 
-        // If we didn't find alignment pattern... we'll try anyway without it
+        // If we didn't find alignment pattern...
+        // we'll try anyway to create the perspective transform without it
         var transform = PerspectiveTransform.CreateFromPatterns(
             this.TopLeft, this.TopRight, this.BottomLeft, alignmentPattern, dimension);
+
+        // Now use the perspective transform to resample the image 
         if (!image.TryResample(dimension, transform, out BitMatrixImage? resampled ))
         {
             return false;

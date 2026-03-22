@@ -5,19 +5,6 @@
 /// Factory class for creating QR code images and vector paths from various content types.
 public static partial class Qr
 {
-    internal enum EncoderOutput
-    {
-        Unsupported = 0,
-
-        Image, // byte[]
-
-        Vectors, // string 
-
-        Modules, // bool[,]
-
-        QrCode, // QrCode
-    }
-
     // Wikipedia: 
     // The maximum data a QR code can hold is 2,953 bytes of binary data when using the largest
     // possible version (Version 40) with the lowest error correction level.

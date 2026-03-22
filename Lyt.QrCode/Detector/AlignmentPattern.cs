@@ -3,7 +3,7 @@
 /// <summary> 
 /// Encapsulates an alignment pattern, which are the smaller square patterns found in all but the simplest QR Codes.
 /// </summary>
-public sealed class AlignmentPattern : QrPoint
+internal sealed class AlignmentPattern : QrPoint
 {
     private readonly float estimatedModuleSize;
 

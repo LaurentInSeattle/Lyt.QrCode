@@ -19,6 +19,7 @@ public sealed partial class BitMatrixImage
 
     /// <summary> Tries to decode the resampled image, provided by the detector </summary>
     internal bool TryDecode(
+        MessageLog messageLog,
         DecodeParameters decodeParameters,
         [NotNullWhen(true)] out DecoderResult? decoderResult)
     {

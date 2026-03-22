@@ -6,7 +6,7 @@ internal sealed class FormatInformation
     private const int FormatInformationMaskQr = 0x5412;
 
     /// <summary> See ISO 18004:2006, Annex C, Table C.1</summary>
-    private static readonly int[][] FormatInformationDecodeLookup =
+    internal static readonly int[][] FormatInformationDecodeLookup =
         [
             [0x5412, 0x00 ],
             [0x5125, 0x01 ],

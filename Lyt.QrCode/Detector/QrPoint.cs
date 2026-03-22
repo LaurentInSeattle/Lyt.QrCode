@@ -1,17 +1,22 @@
 ﻿namespace Lyt.QrCode.Detector;
 
 /// <summary> Immutable holding class for a 2D point with float coordinates X and Y. </summary>
-public class QrPoint(float x, float y)
+internal class QrPoint(float x, float y)
 {
-    public float X { get; } = x;
+    internal float X { get; } = x;
 
-    public float Y { get; } = y;
+    internal float Y { get; } = y;
 
     public override string ToString() => $"({this.X}, {this.Y})";
 
+    /// <summary> Convert to PixelPoint with rounded to integer image coordinates  </summary>
+    /// <returns> A new QrPixelPoint object</returns>
+    internal QrPixelPoint ToPixelPoint()
+        => new((int)Math.Round(this.X), (int)Math.Round(this.Y));
+
     /// <summary> Returns the distance between two points </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double Distance(QrPoint a, QrPoint b)
+    internal static double Distance(QrPoint a, QrPoint b)
     {
         double dx = a.X - b.X;
         double dy = a.Y - b.Y;
@@ -20,7 +25,7 @@ public class QrPoint(float x, float y)
 
     /// <summary> Returns the squared distance between two QrPoint a and b. </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double SquaredDistance(QrPoint a, QrPoint b)
+    internal static double SquaredDistance(QrPoint a, QrPoint b)
     {
         double dx = a.X - b.X;
         double dy = a.Y - b.Y;

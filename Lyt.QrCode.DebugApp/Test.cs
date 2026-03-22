@@ -120,9 +120,6 @@ internal sealed class Test
         // Decode("screenPortrait");
     }
 
-    private static void OnDetect(QrPoint resultPoint)
-        => Console.WriteLine("Detected: " + resultPoint.ToString());
-
     private void Detect(string filename)
     {
         // Screen 
@@ -141,51 +138,61 @@ internal sealed class Test
         //10:47:44:389    Detected: (190, 366.5)
         //10:47:44:389    patternInfo: (190, 366.5), (205, 162), (421.5, 165)
 
-        string imagePathLoad = filename + ".png";
-        var sourceImage = this.LoadSourceImage(imagePathLoad);
-        if (Qr.TryDecode(sourceImage, out var result, OnDetect))
+        //string imagePathLoad = filename + ".png";
+        //var sourceImage = this.LoadSourceImage(imagePathLoad);
+        //var result = Qr.Decode(sourceImage, OnDetect); 
+        //if ( result.Success)
+        //{
+        //    Console.WriteLine("Detected ");
+        //    var resampledImage = detectorResult.Resampled;
+        //    byte[] resImage = PngBuilder.ToImage(resampledImage);
+        //    string resPath = Path.Combine(rootPath, filename + "Resampled.png");
+        //    File.WriteAllBytes(resPath, resImage);
+        //}
+        //else
+        //{
+        //    Console.WriteLine("Failed to Detect ");
+        //}
+    }
+
+    private static void OnDetect(QrPixelPoint point)
+        => Console.WriteLine("Detected: " + point.ToString());
+
+    private void Decode(string filename)
+    {
+        var sourceImage = this.LoadSourceImage(filename + ".png");
+        Console.WriteLine("Decode: " + filename);
+        var before = DateTime.Now;
+        var result = Qr.Decode(sourceImage, OnDetect);
+        DateTime after = DateTime.Now;
+        if (result.IsDetected)
         {
-            // TODO: Print out results 
-            if (result.DetectorResult is DetectorResult detectorResult)
+            Console.WriteLine("Detected ");
+            Console.WriteLine(result.TopLeft.ToString());
+            Console.WriteLine(result.TopRight.ToString());
+            Console.WriteLine(result.BottomLeft.ToString());
+            if (result.IsAligned)
             {
-                Console.WriteLine("Detected ");
-                var resampledImage = detectorResult.Resampled;
-                byte[] resImage = PngBuilder.ToImage(resampledImage);
-                string resPath = Path.Combine(rootPath, filename + "Resampled.png");
-                File.WriteAllBytes(resPath, resImage);
+                Console.WriteLine("Aligned ");
+                Console.WriteLine(result.Alignment.ToString());
+            }
+
+            if (result.Success)
+            {
+                Console.WriteLine("Decoded, Content:  " + result.Text);
+                if (result.IsParsed)
+                {
+                    Console.WriteLine("Parsed, Type:  " + result.ParsedType.FullName);
+                    if (result.TryGet(out QrMeCard? qrMeCard))
+                    {
+                        Console.WriteLine("Parsed as a 'MeCard'");
+                    }
+                }
             }
         }
         else
         {
-            Console.WriteLine("Failed to Detect ");
-        }
-    }
-
-    private void Decode(string filename)
-    {
-        string imagePathLoad = filename + ".png";
-        var sourceImage = this.LoadSourceImage(imagePathLoad);
-        Console.WriteLine("Decode: " + filename);
-        DateTime after;
-        var before = DateTime.Now;
-        if (Qr.TryDecode(sourceImage, out var result, OnDetect))
-        {
-            after = DateTime.Now;
-            Console.WriteLine("Decoded, Content:  " + result.Text);
-            // TODO ! 
-            //if (result.IsParsed)
-            //{
-            //    Console.WriteLine("Parsed, Type:  " + result.ParsedType!.FullName);
-            //    if (result.TryGet(out QrMeCard? qrMeCard))
-            //    {
-            //        Console.WriteLine("Decoded as a 'MeCard'");
-            //    }
-            //}
-        }
-        else
-        {
-            after = DateTime.Now;
-            Console.WriteLine("Failed to Decode");
+            Console.WriteLine("Failed to Detect anything");
         }
 
         // About 60 ms for a 800x600 image 
@@ -266,7 +273,7 @@ internal sealed class Test
             Console.WriteLine("Encoded: " + encodeModules.Result.ToString());
         }
 
-        var encodeQrCode = Qr.Encode<string, QrCode>(link); 
+        var encodeQrCode = Qr.Encode<string, QrCode>(link);
         if (encodeQrCode.Success)
         {
             Console.WriteLine("Encoded: " + encodeQrCode.Result.ErrorCorrectionLevel.ToString());

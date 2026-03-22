@@ -3,6 +3,7 @@
 public sealed partial class BitMatrixImage
 {
     internal bool TryDetect(
+        MessageLog messageLog,
         DetectorCallback? detectorCallback,
         [NotNullWhen(true)] out DetectorResult? detectorResult)
     {
@@ -13,6 +14,14 @@ public sealed partial class BitMatrixImage
             {
                 return true;
             }
+            else
+            {
+                messageLog.AddErrorMessage("Failed to process the finder patterns.");
+            }
+        }
+        else
+        {
+            messageLog.AddErrorMessage("Failed to detect the finder patterns.");
         }
 
         return false;
@@ -479,7 +488,7 @@ public sealed partial class BitMatrixImage
                         possibleCenters.Add(point);
 
                         // CONSIDER: Use the pattern object in the delegate 
-                        detectorCallback?.Invoke(point);
+                        detectorCallback?.Invoke(point.ToPixelPoint());
                     }
 
                     return true;
@@ -803,7 +812,7 @@ public sealed partial class BitMatrixImage
         // Order: Pattern bottomLeft, Pattern topLeft, Pattern topRight
         QrPoint.OrderBestPatterns(patternInfo);
         Debug.WriteLine("patternInfo: " + patternInfo[0] + ", " + patternInfo[1] + ", " + patternInfo[2]);
-        patterns = new Patterns(patternInfo[0], patternInfo[1], patternInfo[2], null);
+        patterns = new Patterns(patternInfo[0], patternInfo[1], patternInfo[2]);
         return true;
     }
 
@@ -972,7 +981,7 @@ public sealed partial class BitMatrixImage
                 // Hadn't found this before; save it
                 var point = new AlignmentPattern(centerJ.Value, centerI.Value, estimatedModuleSize);
                 possibleCenters.Add(point);
-                detectorCallback?.Invoke(point);
+                detectorCallback?.Invoke(point.ToPixelPoint());
             }
 
             return null;

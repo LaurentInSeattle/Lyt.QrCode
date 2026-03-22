@@ -1,6 +1,6 @@
 ﻿namespace Lyt.QrCode.Detector;
 
-public sealed class Pattern(float x, float y, float estimatedModuleSize, int count = 1) : QrPoint(x, y)
+internal sealed class Pattern(float x, float y, float estimatedModuleSize, int count = 1) : QrPoint(x, y)
 {
     internal float EstimatedModuleSize { get; private set; } = estimatedModuleSize;
 

@@ -5,6 +5,7 @@ public class DecodeResult : MessageLog
     [MemberNotNullWhen(true, nameof(Text))]
     [MemberNotNullWhen(true, nameof(Bytes))]
     public bool Success =>
+        this.IsDetected &&
         !string.IsNullOrWhiteSpace(this.Text) &&
         this.Bytes is not null &&
         this.Bytes.Length > 0 &&
@@ -27,9 +28,15 @@ public class DecodeResult : MessageLog
     /// <summary> The actual canonical object, if successfully parsed, otherwise null.<summary> 
     public object? ParsedObject { get; internal set; } = null;
 
+    /// <summary> True when a QR code has been successfully detected but possibly not aligned, otherwise false. ><summary> 
+    public bool IsDetected => this.TopLeft.IsValid && this.TopRight.IsValid && this.BottomLeft.IsValid;
+
+    /// <summary> True when a QR code has been successfully detected AND aligned, otherwise false. ><summary> 
+    public bool IsAligned =>  this.IsDetected && this.Alignment.IsValid ;
+
     public QrPixelPoint TopLeft { get; internal set; } = new();
 
-    public QrPixelPoint RightLeft { get; internal set; } = new();
+    public QrPixelPoint TopRight { get; internal set; } = new();
 
     public QrPixelPoint BottomLeft { get; internal set; } = new();
 

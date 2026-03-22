@@ -2,14 +2,10 @@
 
 // See:  https://en.wikipedia.org/wiki/QR_code 
 
-// Present in GlobalUsings.cs: BUT KEEP for avoiding ambiguous reference to System.Net
-using Lyt.QrCode.Content;
-using Lyt.QrCode.Parser;
-
 /// <summary> 
 /// Callback which is invoked when a possible significant point in the QR code image, such as a corner, is found.
 /// </summary>
-public delegate void DetectorCallback(QrPoint point);
+public delegate void DetectorCallback(QrPixelPoint point);
 
 /// Factory class for creating QR code images and vector paths from various content types.
 /// Partial: Decode API 
@@ -23,66 +19,65 @@ public static partial class Qr
     /// <returns> True if valid encoder and parser.</returns>
     public static bool TryAddCustomQrContentType(Type type) => decoderOutput.TryAddQrContentType(type);
 
-    public static bool TryDecode<T>(
+    public static async Task<DecodeResult> DecodeAsync(
         SourceImage sourceImage,
-        [NotNullWhen(true)] out T? decodedContent,
         DetectorCallback? detectorCallback = null,
         DecodeParameters? decodeParameters = null)
-        where T : QrContent
-    {
-        decodedContent = null;
-        if (TryDecode(
-            sourceImage, out DecoderResult? decoderResult, detectorCallback, decodeParameters))
-        {
-            if (decoderResult.ParsedObject is object decodedObject)
-            {
-                if (decoderResult.ParsedObject.GetType() == typeof(T))
-                {
-                    // safe to cast
-                    decodedContent = (T)decodedObject;
-                    return true;
-                }
-            }
-        }
+        => await Task.Run(() => { return Qr.Decode(sourceImage, detectorCallback, decodeParameters); });
 
-        return false;
-    }
-
-    public static bool TryDecode(
+    public static DecodeResult Decode(
         SourceImage sourceImage,
-        [NotNullWhen(true)] out DecoderResult? decoderResult,
         DetectorCallback? detectorCallback = null,
         DecodeParameters? decodeParameters = null)
     {
-        decoderResult = null;
+        var apiResult = new DecodeResult();
         decodeParameters ??= new DecodeParameters();
         if (!decodeParameters.Validate())
         {
             // Invalid parameters - use default values
-            Debug.WriteLine("Invalid parameters - use default values");
-            if (Debugger.IsAttached) { Debugger.Break(); }
+            apiResult.AddInfoMessage("Invalid parameters: using default values");
             decodeParameters = new DecodeParameters();
         }
 
-        if (sourceImage.TryDecode(decodeParameters, detectorCallback, out decoderResult))
+        if (sourceImage.TryDecode(apiResult, decodeParameters, detectorCallback, out DecoderResult? decoderResult))
         {
-            if (!decodeParameters.SkipParsing)
+            if ((decoderResult.DetectorResult is DetectorResult detectorResult) &&
+                    (detectorResult.Patterns is Patterns patterns))
+            {
+                apiResult.TopLeft = patterns.TopLeft is null ? new() : patterns.TopLeft.ToPixelPoint();
+                apiResult.TopRight = patterns.TopRight is null ? new() : patterns.TopRight.ToPixelPoint();
+                apiResult.BottomLeft = patterns.BottomLeft is null ? new() : patterns.BottomLeft.ToPixelPoint();
+                apiResult.Alignment = patterns.AlignmentPattern is null ? new() : patterns.AlignmentPattern.ToPixelPoint();
+            }
+
+            if (decodeParameters.SkipParsing)
+            {
+                apiResult.AddInfoMessage("Skipping Parsing: No supported content.");
+            }
+            else
             {
                 bool parsed = TryParse(decoderResult);
-                if (!parsed)
+                if (parsed)
                 {
+                    apiResult.ParsedType = decoderResult.ParsedType;
+                    apiResult.ParsedObject = decoderResult.ParsedObject;
+                }
+                else
+                {
+                    apiResult.AddInfoMessage("Could not identify any supported content");
                     Debug.WriteLine("Could not identify any supported content");
                 }
 
-                // Decoding if successful, even we have failed to parse any content 
-                return true;
+                // Decoding if successful, even we have failed to parse any content
+                apiResult.Text = decoderResult.Text;
+                apiResult.Bytes = decoderResult.Bytes;
             }
         }
 
-        return false;
+        return apiResult;
     }
 
-    public static bool TryParse(DecoderResult decoderResult)
+    private static bool TryParse(DecoderResult decoderResult)
     {
         string source = decoderResult.Text;
         if (!string.IsNullOrWhiteSpace(source))

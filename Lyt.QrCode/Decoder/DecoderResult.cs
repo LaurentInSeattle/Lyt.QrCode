@@ -1,20 +1,20 @@
 ﻿namespace Lyt.QrCode.Decoder;
 
 /// <summary> Encapsulates the result of decoding a QrCode within an image. </summary>
-public sealed class DecoderResult
+internal sealed class DecoderResult
 {
     /// <summary> Text encoded by the QR Code, if applicable, otherwise empty<summary> 
-    public string Text { get; internal set; } = string.Empty;
+    internal string Text { get; set; } = string.Empty;
 
     /// <summary> Bytes encoded by the QR Code, if applicable, otherwise null ><summary> 
-    public byte[]? Bytes { get; internal set; } = null;
+    internal byte[]? Bytes { get; set; } = null;
 
-    public Type? ParsedType { get; internal set; } = null;
+    internal Type? ParsedType { get; set; } = null;
 
-    public object? ParsedObject { get; internal set; } = null;
+    internal object? ParsedObject { get; set; } = null;
 
     /// <summary>  The points identifying finder patterns of the corners of the QrCode.  <summary> 
-    public DetectorResult? DetectorResult { get; internal set; } // Can be null 
+    internal DetectorResult? DetectorResult { get; set; } // Can be null 
 
     #region TODO : Relocate these elements into some debug data structure 
 
