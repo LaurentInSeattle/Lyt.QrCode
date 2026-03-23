@@ -4,11 +4,36 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Title>Lyt QrCode Library</Title>
+    <Company>Laurent Testud</Company>
+    <PackageProjectUrl>https://github.com/LaurentInSeattle/Lyt.QrCode</PackageProjectUrl>
+    <Copyright>Apache License</Copyright>
+    <PackageIcon>Link.png</PackageIcon>
+    <RepositoryUrl>https://github.com/LaurentInSeattle/Lyt.QrCode</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Lyt.QrCode.DebugApp" />
     <InternalsVisibleTo Include="Lyt.QrCode.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Link.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Link.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -2,14 +2,20 @@
 
 QrCode Library, Encode and Decode, zero dependencies, all written in C#.
 
-# Works, but still a work in progress...
+Nuget: https://www.nuget.org/packages/Lyt.QrCode  
 
-- Encoding works, and is now almost complete...
+# Works ! 
 
-- Decoding works, but... not tested yet on various samples.
+- Encoding now works.
+
+- Decoding now works.
+
+- Now Available on Nuget.Org
+
+- Finalized API's, no breaking changes expected.
+
+# ... but still a work in progress ...
 
 - No documentation, automated tests, or examples yet.
 
-- No finalized API's, so expect breaking changes.
-
-- Still needs a lot of modernisation work.
+- Still needs some work...
