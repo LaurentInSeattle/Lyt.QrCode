@@ -88,3 +88,27 @@ All these QR Content classes support **both** encoding and parsing.
 - **Text Message**: Supports either 'sms:' , 'mms:' or 'mmsto:' protocols plus WhatsApp links. See: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Lyt.QrCode/Content/QrTextMessage.cs
 
 - **Wifi**: Supports all variants of network authentication. See: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Lyt.QrCode/Content/QrWifi.cs
+
+# Asynchrony 
+
+TODO: Document how to 
+
+# QR Code Modules
+
+TODO: Document how to access the module data 
+
+# Adding your own Content Classes
+
+TODO: Document how to 
+
+# Debugging and Troubleshooting 
+
+TODO: Document how the Result classes.
+
+# Contributing
+
+Contributions are always welcome! Please feel free to submit a Pull Request. 
+
+# License and Credits 
+
+Zebra Crossing - Apache 2.0
