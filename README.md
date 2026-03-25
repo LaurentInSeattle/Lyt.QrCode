@@ -47,7 +47,12 @@ using Lyt.QrCode;
         string fullPath = < .... >
         File.WriteAllBytes(fullPath, encodeImage.Result);
     }
+```
 
+See the Lyt.QrCode.**Encode**.Demo console application for more code examples. 
+
+
+```csharp
 // Decoding 
 
         var sourceImage = this.LoadSourceImage(filename + ".png");
@@ -67,6 +72,36 @@ using Lyt.QrCode;
         }
 ```
 
+See the Lyt.QrCode.**Decode**.Demo console application for more code examples. 
+
+# Encoding API  
+
+- EncodeParameters class
+
+- Encode Static Method 
+
+- Encode Result class 
+ 
+# Decoding API  
+
+- DecodeParameters class
+
+- QrPixelPoint class
+
+A simple class holding pixel coordinates on an image, with the origin located at the top left corner.
+
+- DetectorCallback delegate 
+
+A Callback delegate which is invoked when a possible significant point in the QR code image, such as a corner, is found.
+
+```csharp
+public delegate void DetectorCallback(QrPixelPoint point);
+```
+
+- Decode Static Method 
+
+- Encode Result 
+ 
 # Supported Content 
 
 All these QR Content classes support **both** encoding and parsing. 
