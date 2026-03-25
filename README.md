@@ -18,7 +18,7 @@ Nuget: https://www.nuget.org/packages/Lyt.QrCode
 
 - **Fast**: Real time encoding and decoding, with multithreaded async/await support.
 
-- **Modern***: .Net 10, taking advantage of all latest performance improvements of the recent .Net releases.
+- **Modern**: Coded with .Net 10, taking advantage of all latest performance improvements of the recent .Net releases.
 
 - **Simple, configurable and streamlined** API. 
  
@@ -58,7 +58,7 @@ using Lyt.QrCode;
             if (result.IsParsed)
             {
                 Console.WriteLine("Parsed, Type:  " + result.ParsedType.FullName);
-                if (result.TryGet(out QrMeCard? qrVCard))
+                if (result.TryGet(out QrVCard? qrCard))
                 {
                     Console.WriteLine("Parsed as a 'VCard'");
                     Console.WriteLine($"{qrCard.FirstName} {qrCard.LastName}");
@@ -67,3 +67,24 @@ using Lyt.QrCode;
         }
 ```
 
+# Supported Content 
+
+All these QR Content classes support **both** encoding and parsing. 
+
+- **Bookmark** : Uses the 'MEBKM' protocol. See: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Lyt.QrCode/Content/QrBookmark.cs 
+
+- **Calendar Event** : Uses the iCal protocol. See: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Lyt.QrCode/Content/QrCalendarEvent.cs
+
+- **GeoLocation** : Uses the 'geo:' uri scheme. See: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Lyt.QrCode/Content/QrGeoLocation.cs
+
+- **Email**: Supports either 'mailto:' , 'SMTP:' or 'MatMsg' protocols. See: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Lyt.QrCode/Content/QrMail.cs
+
+- **V Card**: Uses the VCard 4.0 protocol. See: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Lyt.QrCode/Content/QrVCard.cs
+
+- **Me Card**: The more compact Japanese version of VCard. See: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Lyt.QrCode/Content/QrMeCard.cs
+
+- **Phone Number**: Uses the 'tel:' uri scheme. See: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Lyt.QrCode/Content/QrPhoneNumber.cs
+
+- **Text Message**: Supports either 'sms:' , 'mms:' or 'mmsto:' protocols plus WhatsApp links. See: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Lyt.QrCode/Content/QrTextMessage.cs
+
+- **Wifi**: Supports all variants of network authentication. See: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Lyt.QrCode/Content/QrWifi.cs

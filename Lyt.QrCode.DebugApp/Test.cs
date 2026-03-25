@@ -186,8 +186,7 @@ internal sealed class Test
                     if (result.TryGet(out QrMeCard? qrMeCard))
                     {
                         Console.WriteLine("Parsed as a 'MeCard'");
-                        Console.WriteLine($"{qrMeCard.FirstName}");
-                    }
+-                    }
                 }
             }
         }
