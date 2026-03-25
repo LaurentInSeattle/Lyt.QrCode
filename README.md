@@ -27,7 +27,7 @@ Nuget: https://www.nuget.org/packages/Lyt.QrCode
 Install "Lyt.QrCode" via NuGet Package Manager or use "Manage Nuget Packages" in Visual Studio
 
 ```bash
-PS C:....> Install-Package QRCoder
+PS C:....> Install-Package Lyt.QrCode
 ```
 
 # Quick Start 
@@ -35,6 +35,8 @@ PS C:....> Install-Package QRCoder
 ```csharp
 
 using Lyt.QrCode;
+
+// Encoding 
 
     private const string link = "https://github.com/LaurentInSeattle/Lyt.QrCode";
 
@@ -45,5 +47,23 @@ using Lyt.QrCode;
         string fullPath = < .... >
         File.WriteAllBytes(fullPath, encodeImage.Result);
     }
+
+// Decoding 
+
+        var sourceImage = this.LoadSourceImage(filename + ".png");
+        var result = Qr.Decode(sourceImage, OnDetect);
+        if (result.Success)
+        {
+            Console.WriteLine("Decoded, Content:  " + result.Text);
+            if (result.IsParsed)
+            {
+                Console.WriteLine("Parsed, Type:  " + result.ParsedType.FullName);
+                if (result.TryGet(out QrMeCard? qrVCard))
+                {
+                    Console.WriteLine("Parsed as a 'VCard'");
+                    Console.WriteLine($"{qrCard.FirstName} {qrCard.LastName}");
+                }
+            }
+        }
 ```
 
