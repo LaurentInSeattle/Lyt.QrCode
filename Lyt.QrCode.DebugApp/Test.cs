@@ -10,37 +10,37 @@ internal sealed class Test
     {
         rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Encode";
 
-        //this.Encode("This a test plain text string.", "Text");
-        //this.Decode("Text");
+        this.Encode("This a test plain text string.", "Text");
+        this.Decode("Text");
 
-        //string text = "012345RSTUVWXYZ $%*+-./:";
-        //byte[] bytes = Encoding.UTF8.GetBytes(text);
-        //this.Encode(bytes, "Bytes");
-        //this.Decode("Bytes");
+        string text = "012345RSTUVWXYZ $%*+-./:";
+        byte[] bytes = Encoding.UTF8.GetBytes(text);
+        this.Encode(bytes, "Bytes");
+        this.Decode("Bytes");
 
-        //this.Encode(link, "Link");
-        //this.Encode(new QrUri(new(link)), "Url");
-        //this.Encode(new QrBookmark(link, "QrCode Library"), "Bookmark");
+        this.Encode(link, "Link");
+        this.Encode(new QrUri(new(link)), "Url");
+        this.Encode(new QrBookmark(link, "QrCode Library"), "Bookmark");
 
-        //this.Encode(
-        //    new QrCalendarEvent(
-        //        "Birthday Party",
-        //        DateTime.Parse("05/12/2026 20:00"),
-        //        DateTime.Parse("05/12/2026 23:00"),
-        //        isAllDay: false,
-        //        "Mario's Home", 
-        //        "Celebrate Luigi's birthday",
-        //        includeVcalendarTags: true), 
-        //    "Event");
+        this.Encode(
+            new QrCalendarEvent(
+                "Birthday Party",
+                DateTime.Parse("05/12/2026 20:00"),
+                DateTime.Parse("05/12/2026 23:00"),
+                isAllDay: false,
+                "Mario's Home",
+                "Celebrate Luigi's birthday",
+                includeVcalendarTags: true),
+            "Event");
 
-        //this.Encode(new QrGeoLocation(37.810729, -122.476552), "Presidio");
+        this.Encode(new QrGeoLocation(37.810729, -122.476552), "Presidio");
 
-        //this.Encode(
-        //    new QrMail(                
-        //        "ly.testud@outlook.com",
-        //        "Hello Laurent!",
-        //        "I hope all is well in California"),
-        //    "Mail");
+        this.Encode(
+            new QrMail(
+                "ly.testud@outlook.com",
+                "Hello Laurent!",
+                "I hope all is well in California"),
+            "Mail");
 
         var mecard = new QrMeCard("Laurent", "Testud")
         {

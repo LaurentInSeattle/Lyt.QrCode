@@ -4,18 +4,46 @@ QrCode Library, Encode and Decode, zero dependencies, all written in C#.
 
 Nuget: https://www.nuget.org/packages/Lyt.QrCode  
 
-# Works ! 
+# Features
 
-- Encoding now works.
+- Supports **Both** Encode and Decode.
 
-- Decoding now works.
+- **Zero dependencies** for both encoding and decoding. Use **everywhere**: Absolutely no OS dependencies, no UI framework dependencies, just C#!
 
-- Now Available on Nuget.Org
+- **Many output formats**: PNG, BMP, SVG, XAML, aXAML, Raw data... With no dependeincies, and with more to come...
 
-- Finalized API's, no breaking changes expected.
+- Built-in support for **both** encoding and decoding of **canonical content** such as: Links, GeoLocation, Wifi, VCard, Email, and more...
 
-# ... but still a work in progress ...
+- **Nuget** ow Available on Nuget.Org.
 
-- No documentation, automated tests, or examples yet.
+- **Fast**: Real time encoding and decoding, with multithreaded async/await support.
 
-- Still needs some work...
+- **Modern***: .Net 10, taking advantage of all latest performance improvements of the recent .Net releases.
+
+- **Simple, configurable and streamlined** API. 
+ 
+ ## Installation
+
+Install "Lyt.QrCode" via NuGet Package Manager or use "Manage Nuget Packages" in Visual Studio
+
+```bash
+PS C:....> Install-Package QRCoder
+```
+
+# Quick Start 
+
+```csharp
+
+using Lyt.QrCode;
+
+    private const string link = "https://github.com/LaurentInSeattle/Lyt.QrCode";
+
+    // Encode provided link as a PNG image using default parameters 
+    var encodeImage = Qr.Encode<string, byte[]>(link);
+    if (encodeImage.Success)
+    {
+        string fullPath = < .... >
+        File.WriteAllBytes(fullPath, encodeImage.Result);
+    }
+```
+
