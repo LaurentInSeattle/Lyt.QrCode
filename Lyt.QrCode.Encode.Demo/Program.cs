@@ -2,7 +2,11 @@
 
 internal class Program
 {
-    /// <summary> This app' uses the QR code library as a downloaded Nuget package  </summary>
+    /// <summary> 
+    /// This app' uses the QR code library as a downloaded Nuget package
+    /// 
+    /// No dependencies required for generating SVG, PNG and BMP images.
+    /// </summary>
     static void Main(string[] _)
     {
         Console.WriteLine("Hello, QrCode Encode Demo!");

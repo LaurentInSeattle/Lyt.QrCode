@@ -1,5 +1,7 @@
 ﻿namespace Lyt.QrCode.Encode.Demo;
 
+// See: GlobalUsings.cs for required 'usings' 
+
 internal sealed class Demo
 {
     private const string link = "https://github.com/LaurentInSeattle/Lyt.QrCode";
@@ -118,7 +120,8 @@ internal sealed class Demo
         Console.WriteLine(" ");
         var before = DateTime.Now;
 
-        // Encode with all defaults: PNG image  
+        // Encode with all defaults:
+        // Black and White PNG image, with Border == 2 and Scale == 16
         var encodePng = Qr.Encode<T, byte[]>(content);
 
         DateTime after = DateTime.Now;
@@ -138,7 +141,7 @@ internal sealed class Demo
             ImageFormat = EncodeParameters.QrImageFormat.Bmp,
             Border = 4,
             Scale = 22,
-            Background = 0x00_FF_F8_F8, // Slightly pink
+            Background = 0x00_FF_FA_F9, // Slightly pink
             Foreground = 0x00_00_00_40, // Very dark blue
         };
         var encodeBitmap = Qr.Encode<T, byte[]>(content, encodeParameters);

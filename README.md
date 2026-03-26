@@ -10,11 +10,11 @@ Nuget: https://www.nuget.org/packages/Lyt.QrCode
 
 - **Zero dependencies** for both encoding and decoding. Use **everywhere**: Absolutely no OS dependencies, no UI framework dependencies, just C#!
 
-- **Many output formats**: PNG, BMP, SVG, XAML, aXAML, Raw data... With no dependeincies, and with more to come...
+- **Many output formats**: PNG, BMP, SVG, XAML, aXAML, Raw data... With no dependencies, and with more to come...
 
 - Built-in support for **both** encoding and decoding of **canonical content** such as: Links, GeoLocation, Wifi, VCard, Email, and more...
 
-- **Nuget** ow Available on Nuget.Org.
+- **Nuget** now Available on Nuget.Org.
 
 - **Fast**: Real time encoding and decoding, with multithreaded async/await support.
 
@@ -34,7 +34,8 @@ PS C:....> Install-Package Lyt.QrCode
 
 ```csharp
 
-using Lyt.QrCode;
+using Lyt.QrCode.API;
+using Lyt.QrCode.Content;
 
 // Encoding 
 
