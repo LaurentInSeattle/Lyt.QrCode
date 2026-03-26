@@ -3,14 +3,42 @@
 internal sealed class Test
 {
     private const string link = "https://github.com/LaurentInSeattle/Lyt.QrCode";
+    private const string email = "Someone@SomeDomain.it";
+    private const string phone = "+1 (206) 659 3868";
 
-    private string rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests";
+    private string rootPath = string.Empty;
+
+    internal void Initialize()
+    {
+        string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        string path = Path.Combine(desktop, "Lyt_Qr_Code_Demo_Encode");
+        if (Directory.Exists(path))
+        {
+            Directory.Delete(path, true);
+        }
+
+        Directory.CreateDirectory(path);
+        this.rootPath = path;
+    }
 
     internal void Run()
     {
-        rootPath = "C:\\Users\\Laurent\\Desktop\\QrTests\\Encode";
+        string simpleText = "This a test plain text string."; 
+        this.Encode(simpleText, "Text");
 
-        this.Encode("This a test plain text string.", "Text");
+        // Encode same content as a SVG vector image  
+        var encodeSvgParameters = new EncodeParameters()
+        {
+            VectorFormat = EncodeParameters.QrVectorFormat.Svg,
+        };
+        var encodeSvg = Qr.Encode<string, string>(simpleText, encodeSvgParameters);
+        if (encodeSvg.Success)
+        {
+            string fullPath = Path.Combine(rootPath, "Text" + ".svg");
+            File.WriteAllText(fullPath, encodeSvg.Result);
+        }
+
+
         this.Decode("Text");
 
         string text = "012345RSTUVWXYZ $%*+-./:";

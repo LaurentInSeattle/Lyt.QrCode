@@ -2,13 +2,16 @@
 
 internal class Program
 {
+    /// <summary> This app' uses the QR code library from source. </summary>
     static void Main(string[] _)
     {
         Console.WriteLine("Hello, QrCode.DebugApp!");
 
         try
         {
-            new Test().Run();
+            var test = new Test();
+            test.Initialize();
+            test.Run();
         }
         catch (Exception ex)
         {
