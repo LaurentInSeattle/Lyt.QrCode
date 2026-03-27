@@ -26,7 +26,6 @@ using Lyt.QrCode.Content;
 
 See the Lyt.QrCode.**Encode**.Demo console application for more code examples. 
 
-
 ```csharp
 // Decoding 
 
@@ -53,29 +52,120 @@ See the Lyt.QrCode.**Decode**.Demo console application for more code examples.
 
 - EncodeParameters class
 
+Holds the following properties to configure encoding: 
+```csharp
+    /// <summary> The minimum desired Error Correction Level, defaults to Medium.</summary>
+    /// <remarks> Will be automatically increased as long as the data fits.</remarks>
+    public QrErrorCorrectionLevel ErrorCorrectionLevel { get; init; } = QrErrorCorrectionLevel.Medium;
+
+    /// <summary> The width and height, in pixels, of each module (QR code pixel), defaults to 16. </summary>
+    public int Scale { get; init; } = 16;
+
+    /// <summary> The border width, as a factor of the module size, defaults to 2. </summary>
+    /// <remarks> Expressed in count of modules, actual border size in pixels will be: Border * Scale</remarks>
+    public int Border { get; init; } = 2;
+
+    /// <summary> The foreground color (dark modules), in RGB value, defaults to Black. </summary>
+    public int Foreground { get; init; } = 0;
+
+    /// <summary> The background color (light modules), in RGB value, defaults to White. </summary>
+    public int Background { get; init; } = 0xFFFFFF;
+
+    /// <summary> The Image Format, when the encoding output is byte[], defaults to PNG. </summary>
+    public QrImageFormat ImageFormat { get; init; } = QrImageFormat.Png;
+
+    /// <summary> The Vector Format, when the encoding output is string, defaults to SVG. </summary>
+    public QrVectorFormat VectorFormat { get; init; } = QrVectorFormat.Svg;
+```
+
 - Encode Static Method 
 
+Creates a QR Code: 
+
+```csharp
+    /// <summary> Creates a QR Code in TResult format type from provided content as TContent type. </summary>
+    /// <typeparam name="TContent">string, byte array or any QrContent derived class.</typeparam>
+    /// <typeparam name="TResult">byte array for immages, string for vectors, or bool[,] for modules data.</typeparam>
+    /// <param name="content">The data to encoded.</param>
+    /// <param name="encodeParameters">The encoding parameters, mostly used for the final steps of rendering.</param>
+    /// <returns>An Encode Result instance.</returns>
+    public static EncodeResult<TResult> Encode<TContent, TResult>(
+        TContent content,
+        EncodeParameters? encodeParameters = null)
+        where TContent : class
+        where TResult : class
+    {
+        ....
+    }
+```
+
 - Encode Result class 
+
+Holds the results of the encoding process.
+
+```csharp
+    /// <summary> True if encoding was succesful, otherwise false. </summary>
+    public bool Success => ....
+
+    /// <summary> The result object of type TResult of the encoding process. Not null if Success if true. </summary>
+    public TResult? Result { get; set; }
+
+    /// <summary> The version (size) of this QR code (between 1 for the smallest and 40 for the biggest). </summary>
+    /// <remarks> Valid if and only if Success is true </remarks>
+    public int QrCodeVersion { get; internal set; } = -1;
+
+    /// <summary> The width and height of this QR code, in modules (pixels). The size is a value between 21 and 177.  </summary>
+    /// <remarks> Valid if and only if Success is true </remarks>
+    public int QrCodeDimension { get; internal set; } = -1;
+
+```
  
+- Message Log class 
+
+The EncodeResult class inherits from MessageLog which contains a list of informational or error messages, and 
+exception traces if any exception was thrown during the encooding process. 
+A new list instance is created for each Encode invocation.
+
+```csharp
+    public List<string> Messages { get; set; } = [];
+```
+
 # Decoding API  
 
+- The Source Image class
+ 
 - DecodeParameters class
+
+```csharp
+```
 
 - QrPixelPoint class
 
-A simple class holding pixel coordinates on an image, with the origin located at the top left corner.
+An immutable class holding a 2D point integer pixel coordinates X and Y on an image, with the origin located at the top left corner.
+
+```csharp
+    public int X { get; } 
+
+    public int Y { get; } 
+```
 
 - DetectorCallback delegate 
 
 A Callback delegate which is invoked when a possible significant point in the QR code image, such as a corner, is found.
+Designed to provide a hint on when taking a picture, this delegate is invoked on the current running thread, 
+which is possibly NOT the UI thread. 
 
 ```csharp
 public delegate void DetectorCallback(QrPixelPoint point);
 ```
 
 - Decode Static Method 
+```csharp
+```
 
-- Encode Result 
+- Decode Result 
+```csharp
+```
  
 # Supported Content 
 

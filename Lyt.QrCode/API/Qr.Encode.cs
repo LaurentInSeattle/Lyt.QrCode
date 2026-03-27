@@ -30,6 +30,12 @@ public static partial class Qr
         where TResult : class
         => await Task.Run(() => { return Qr.Encode<TContent, TResult>(content, encodeParameters); });
 
+    /// <summary> Creates a QR Code in TResult format type from provided content as TContent type. </summary>
+    /// <typeparam name="TContent">string, byte array or any QrContent derived class.</typeparam>
+    /// <typeparam name="TResult">byte array for immages, string for vectors, or bool[,] for modules data.</typeparam>
+    /// <param name="content">The data to encoded.</param>
+    /// <param name="encodeParameters">The encoding parameters, mostly used for the final steps of rendering.</param>
+    /// <returns>An Encode Result instance.</returns>
     public static EncodeResult<TResult> Encode<TContent, TResult>(
         TContent content,
         EncodeParameters? encodeParameters = null)

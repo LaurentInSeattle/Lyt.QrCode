@@ -4,7 +4,7 @@ QrCode Library, Encode and Decode, zero dependencies, all written in C#.
 
 Nuget: https://www.nuget.org/packages/Lyt.QrCode  
 
-Documentation: 
+Complete Documentation: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Documentation.md
 
 # Features
 
@@ -76,6 +76,8 @@ See the Lyt.QrCode.**Encode**.Demo console application for more code examples.
 ```
 
 See the Lyt.QrCode.**Decode**.Demo console application for more code examples. 
+
+Complete Documentation: https://github.com/LaurentInSeattle/Lyt.QrCode/blob/main/Documentation.md
 
 # Contributing
 
