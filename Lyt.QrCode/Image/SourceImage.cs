@@ -14,6 +14,15 @@ public sealed partial class SourceImage
 
     public bool IsLocked { get; }
 
+    /// <summary> Creates a SourceImage instance from the provided information</summary>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <param name="stride"></param>
+    /// <param name="format"></param>
+    /// <param name="pixels"></param>
+    /// <param name="isLocked"></param>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="ArgumentNullException"></exception>
     public SourceImage(int width, int height, int stride, PixelFormat format, byte[] pixels, bool isLocked = true)
     {
         if ((width <= 0) || (height <= 0))

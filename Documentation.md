@@ -123,7 +123,7 @@ Holds the results of the encoding process.
 - Message Log class 
 
 The EncodeResult class inherits from MessageLog which contains a list of informational or error messages, and 
-exception traces if any exception was thrown during the encooding process. 
+exception traces if any exception was thrown during the encoding process. 
 A new list instance is created for each Encode invocation.
 
 ```csharp
@@ -132,8 +132,76 @@ A new list instance is created for each Encode invocation.
 
 # Decoding API  
 
+- The PngLoader class
+
+Not implemented yet. 
+
+Will **soon** load PNG images without any external dependencies. For now use SourceImage, documented below.
+
+
 - The Source Image class
+
+The Lyt.QrCode library runs without UI framework or imaging library dependencies, and therefore needs an internal represention for images to be decoded.
+This is 'SourceImage' in the 'Lyt.QrCode.Image' namespace. Create a SourceImage by providing the canonical parameters of an 'in memory bitmap'.
  
+```csharp
+
+using Lyt.QrCode.Image;
+
+public enum PixelFormat
+{
+    Gray8,
+    Gray16,
+
+    RGB24,
+    BGR24,
+
+    ARGB32,
+    ABGR32,
+    BGRA32,
+    RGBA32,
+
+    /// <summary> 2 bytes per pixel, 5 bit red, 6 bits green and 5 bits blue </summary>
+    RGB565,
+
+    /// <summary> 4 bytes for two pixels, UYVY formatted </summary>
+    UYVY,
+
+    /// <summary> 4 bytes for two pixels, YUYV formatted </summary>
+    YUYV
+}
+
+    /// <summary> Creates a SourceImage instance from the provided information</summary>
+    public SourceImage(int width, int height, int stride, PixelFormat format, byte[] pixels, bool isLocked = true)
+    {
+    } 
+
+```
+Sample code to create a SourceImage object using the ImageSharp library from SixLabors: 
+
+```csharp
+
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
+    public  SourceImage LoadSourceImage(string imagePath)
+    {
+        string fullPath = Path.Combine(rootPath, imagePath);
+        using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(fullPath);
+        byte[] pixels = new byte[image.Width * image.Height * 4];
+        image.CopyPixelDataTo(pixels);
+        return 
+            new SourceImage(
+                image.Width, image.Height, image.Width * 4, PixelFormat.RGBA32, pixels);
+    }
+```
+
+Sample code to create a SourceImage object using Skia and Avalonia: 
+
+```csharp
+    // TODO 
+```
+
 - DecodeParameters class
 
 ```csharp
@@ -165,6 +233,16 @@ public delegate void DetectorCallback(QrPixelPoint point);
 
 - Decode Result 
 ```csharp
+```
+
+- Message Log class 
+
+The DecodeResult class also inherits from MessageLog which contains a list of informational or error messages, and 
+exception traces if any exception was thrown during the decoding process. 
+A new list instance is created for each Decode invocation.
+
+```csharp
+    public List<string> Messages { get; set; } = [];
 ```
  
 # Supported Content 
