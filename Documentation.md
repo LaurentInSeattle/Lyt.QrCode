@@ -82,6 +82,8 @@ Holds the following properties to configure encoding:
 
 Creates a QR Code: 
 
+Ommiting or passing null for the parameters argument will actually use default parameters, listed above.
+
 ```csharp
     /// <summary> Creates a QR Code in TResult format type from provided content as TContent type. </summary>
     /// <typeparam name="TContent">string, byte array or any QrContent derived class.</typeparam>
@@ -204,17 +206,26 @@ Sample code to create a SourceImage object using Skia and Avalonia:
 
 - DecodeParameters class
 
+Contains a single boolean property allowing to skip parsing text content, trying to parse any canonical content.
+
 ```csharp
+    /// <summary> True when it is not necessary to parse the Text result of the QR code.</summary>
+    public bool SkipParsing { get; set; } = false;
+
 ```
 
 - QrPixelPoint class
 
 An immutable class holding a 2D point integer pixel coordinates X and Y on an image, with the origin located at the top left corner.
 
+A QrPixelPoint may be invalid, for example if not correctly detected: client code should check the IsValid property. 
+
 ```csharp
     public int X { get; } 
 
     public int Y { get; } 
+
+    public bool IsValid => ... ; 
 ```
 
 - DetectorCallback delegate 
@@ -227,18 +238,73 @@ which is possibly NOT the UI thread.
 public delegate void DetectorCallback(QrPixelPoint point);
 ```
 
+The delegate is invoked if only if the detected QR Pixel Point is valid.
+
 - Decode Static Method 
+
+Ommiting or passing null for the delegate argument is the default option.
+Ommiting or passing null for the parameters argument will actually use default parameters, listed above.
+
 ```csharp
+
+    /// <summary> Tries to decode the provided SourceImage using the optional DetectorCallback and the optional DecodeParameters. </summary>
+    /// <returns> A DecodeResult instance </returns>
+    public static DecodeResult Decode(
+        SourceImage sourceImage,
+        DetectorCallback? detectorCallback = null,
+        DecodeParameters? decodeParameters = null)
+    {
+        ....
+    } 
+
 ```
 
 - Decode Result 
+
+Immutable class holding the results of the decoding process: 
+
 ```csharp
+    /// <summary> True if decoding was succesful, otherwise false. </summary>
+    public bool Success => ....
+
+    /// <summary> Text encoded by the QR Code, if applicable, otherwise empty<summary> 
+    public string? Text { get; internal set; } = string.Empty;
+
+    /// <summary> Bytes encoded by the QR Code, if applicable, otherwise null ><summary> 
+    public byte[]? Bytes { get; internal set; } = null;
+
+    /// <summary> True when a canonical object has been successfully parsed, otherwise false. ><summary> 
+    public bool IsParsed => .... 
+
+    /// <summary></summary> The type of the canonical object,if successfully parsed, otherwise null.<summary> 
+    public Type? ParsedType { get; internal set; } = null;
+
+    /// <summary> The actual canonical object, if successfully parsed, otherwise null.<summary> 
+    public object? ParsedObject { get; internal set; } = null;
+
+    /// <summary> True when a QR code has been successfully detected but possibly not aligned, otherwise false. ><summary> 
+    public bool IsDetected => ....
+
+    /// <summary> True when a QR code has been successfully detected AND aligned, otherwise false. ><summary> 
+    public bool IsAligned =>  ....
+
+    /// <summary> The finder pattern Top Left pixel point. Valid only if properly detected  </summary>
+    public QrPixelPoint TopLeft { get; internal set; } 
+
+    /// <summary> The finder pattern Top Right pixel point. Valid only if properly detected  </summary>
+    public QrPixelPoint TopRight { get; internal set; } 
+
+    /// <summary> The finder pattern Bottom Left pixel point. Valid only if properly detected  </summary>
+    public QrPixelPoint BottomLeft { get; internal set; } 
+
+    /// <summary> The best alignment pattern pixel point. Valid only if properly detected  </summary>
+    public QrPixelPoint Alignment { get; internal set; } 
 ```
 
 - Message Log class 
 
 The DecodeResult class also inherits from MessageLog which contains a list of informational or error messages, and 
-exception traces if any exception was thrown during the decoding process. 
+exception traces if any was thrown during the decoding process. 
 A new list instance is created for each Decode invocation.
 
 ```csharp
@@ -269,8 +335,30 @@ All these QR Content classes support **both** encoding and parsing.
 
 # Asynchrony 
 
-TODO: Document how to 
+Both Encode and Decode API's have an asynchronous version: EncodeAsync and DecodeAsync,
+taking the same arguments and returning the same data.
 
+```csharp
+
+    public static async Task<EncodeResult<TResult>> EncodeAsync<TContent, TResult>(
+        TContent content,
+        EncodeParameters? encodeParameters = null)
+        where TContent : class
+        where TResult : class
+        {
+            ....
+        }
+
+    public static async Task<DecodeResult> DecodeAsync(
+        SourceImage sourceImage,
+        DetectorCallback? detectorCallback = null,
+        DecodeParameters? decodeParameters = null)
+        {
+            ....
+        }
+
+```
+ 
 # QR Code Modules
 
 TODO: Document how to access the module data 
@@ -281,7 +369,14 @@ TODO: Document how to
 
 # Debugging and Troubleshooting 
 
-TODO: Document how the Result classes.
+Both EncodeResult and DecodeResult classes inherit from MessageLog which contains a list of informational or error messages, and 
+exception traces, if any was thrown during the encoding or decoding process. 
+A new list instance is created for each Encode or Decode invocation.
+
+```csharp
+    public List<string> Messages { get; set; } = [];
+```
+
 
 # Contributing
 

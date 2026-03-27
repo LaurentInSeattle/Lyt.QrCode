@@ -4,18 +4,12 @@ public sealed class DecodeParameters
 {
     public DecodeParameters() { }
 
-    public bool Validate()
-    {
-        this.CharacterSet ??= string.Empty;
-
-        return true; 
-    }
+    public bool Validate() => true;
+    //{
+    //    // this.CharacterSet ??= string.Empty;
+    //    return true; 
+    //}
 
     /// <summary> True when it is not necessary to parse the Text result of the QR code.</summary>
     public bool SkipParsing { get; set; } = false;
-
-    /// <summary> True when the source image is known to be a QrCode, this will skip the detection step.</summary>
-    public bool SkipDetector { get; set; } = false;
-
-    public string CharacterSet { get; set; } = string.Empty;
 }

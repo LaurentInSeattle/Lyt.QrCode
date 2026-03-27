@@ -1,7 +1,9 @@
 ﻿namespace Lyt.QrCode.API;
 
+/// <summary> Holds the results of the decoding process</summary>
 public class DecodeResult : MessageLog
 {
+    /// <summary> True if decoding was succesful, otherwise false. </summary>
     [MemberNotNullWhen(true, nameof(Text))]
     [MemberNotNullWhen(true, nameof(Bytes))]
     public bool Success =>
@@ -34,12 +36,16 @@ public class DecodeResult : MessageLog
     /// <summary> True when a QR code has been successfully detected AND aligned, otherwise false. ><summary> 
     public bool IsAligned =>  this.IsDetected && this.Alignment.IsValid ;
 
+    /// <summary> The finder pattern Top Left pixel point. Valid only if properly detected  </summary>
     public QrPixelPoint TopLeft { get; internal set; } = new();
 
+    /// <summary> The finder pattern Top Right pixel point. Valid only if properly detected  </summary>
     public QrPixelPoint TopRight { get; internal set; } = new();
 
+    /// <summary> The finder pattern Bottom Left pixel point. Valid only if properly detected  </summary>
     public QrPixelPoint BottomLeft { get; internal set; } = new();
 
+    /// <summary> The best alignment pattern pixel point. Valid only if properly detected  </summary>
     public QrPixelPoint Alignment { get; internal set; } = new();
 
     /// <summary> Tries to get the parsed object, if successfully parsed and of matching type, otherwise null.<summary> 

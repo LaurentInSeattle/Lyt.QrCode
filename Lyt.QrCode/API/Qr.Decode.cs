@@ -25,6 +25,8 @@ public static partial class Qr
         DecodeParameters? decodeParameters = null)
         => await Task.Run(() => { return Qr.Decode(sourceImage, detectorCallback, decodeParameters); });
 
+    /// <summary> Tries to decode the provided SourceImage using the optional DetectorCallback and the optional DecodeParameters. </summary>
+    /// <returns> A DecodeResult instance </returns>
     public static DecodeResult Decode(
         SourceImage sourceImage,
         DetectorCallback? detectorCallback = null,

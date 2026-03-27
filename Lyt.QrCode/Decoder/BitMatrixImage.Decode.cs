@@ -81,7 +81,11 @@ public sealed partial class BitMatrixImage
         }
 
         // Decode the contents of that array of bytes
-        if (TryDecodeBytes(resultBytes, qrVersion, decodeParameters.CharacterSet, out decoderResult))
+        if (TryDecodeBytes(
+            resultBytes, 
+            qrVersion, 
+            string.Empty, // decodeParameters.CharacterSet, 
+            out decoderResult))
         {
             // success !
             //decoderResult.ErrorsCorrected = errorsCorrected;
