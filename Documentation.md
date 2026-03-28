@@ -419,13 +419,87 @@ Provided convenience methods:
 - EncodeToModules
 - EncodeToModulesAsync
 
-# QR Code Modules
+# Access to the QR Code Modules
 
-TODO: Document how to access the module data 
+To access the module data you need to create the QR Code using the EncodeToModules variant or use the generic Encode witha bool[,] 
+result parameter.
+Then, if the encoding process is successful, the EncodeResult contains a 2D array of boolean values, one for each module, 
+indexed from top left to bottom right. 
 
-# Adding your own Content Classes
+```csharp
 
-TODO: Document how to 
+        // content may be of type string, byte[] or any QrContent class
+        var encodeModules = Qr.EncodeToModules(content);
+        // or: var encodeModules = Qr.Encode<T, bool[,]>(content);
+
+        if (encodeModules.Success)
+        {
+            // Access the modules as 2D array of booleans 
+            bool[,] modules = encodeModules.Result;
+            if (encodeModules.QrCodeDimension != modules.GetLength(0))
+            {
+                throw new Exception("Encoding problem with dimensions"); 
+            }
+
+            // Module at top left corner should be black since it is part of a 'finder' pattern
+            bool corner = modules[0,0];
+            if (!corner)
+            {
+                throw new Exception("Encoding problem with module value");
+            }
+        }
+
+```
+
+# Adding your own QR Content Classes
+
+Any client code class, say of type 'TContent',  can become a data source for creating QrCode. 
+
+You simply need to: 
+
+- Make your class 'TContent' derive from QrContent<TContent>
+- Declare your class 'TContent' as compliant to the IQrParsable<TContent>
+- Override the QrString property get method that will provide the source data for the Qr Code.
+- Implement the TryParse method that decodes a QrCode.
+- In order to register and later execute your custom parser, you need to invoke: 
+
+See the QrBookmark class in the source code repository.  
+
+```csharp
+
+    public interface IQrParsable<TSelf> where TSelf : IQrParsable<TSelf>
+    {
+        static abstract bool TryParse(string source, [NotNullWhen(true)] out TSelf? tself); 
+    }
+
+    // Example: Internal declaration of QrBookmark
+    public class QrBookmark : QrContent<QrBookmark>, IQrParsable<QrBookmark>
+    
+    // Example: Internal implementation for QrBookmark
+    public override string QrString => $"MEBKM:TITLE:{this.Title};URL:{this.Url};;";
+
+    // Example: Internal implementation for QrBookmark
+    public static bool TryParse(string source, [NotNullWhen(true)] out QrBookmark? qrBookmark)
+    {
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            throw new ArgumentException("Source string cannot be null, empty or white space", nameof(source));
+        }
+
+        // Do more parsing stuff and return a typed object 
+
+        ....
+
+        return new QrBookmark ( .... ) ; 
+    } 
+
+    // Example: Registration of custom type TContent
+     if ( ! Qr.TryAddCustomQrContentType(typeof(TContent)) 
+     { 
+        Console.WriteLine("Invalid QrCode Parser");
+     } 
+
+```
 
 # Debugging and Troubleshooting 
 
@@ -436,4 +510,3 @@ A new list instance is created for each Encode or Decode invocation.
 ```csharp
     public List<string> Messages { get; set; } = [];
 ```
-
