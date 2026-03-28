@@ -23,6 +23,65 @@ public static partial class Qr
     public const int MaxStringAlphanumeric = 4_296;
     public const int MaxStringKanji = 1_817;
 
+    #region Convenience API 
+
+    /// <summary> Creates a QR Code in a Image from provided content as TContent type. </summary>
+    /// <typeparam name="TContent">string, byte array or any QrContent derived class.</typeparam>
+    /// <param name="content">The data to encoded.</param>
+    /// <param name="encodeParameters">The encoding parameters, mostly used for the final steps of rendering.</param>
+    /// <returns>An Encode Result instance.</returns>
+    public static EncodeResult<byte[]> EncodeToImage<TContent>(
+        TContent content,
+        EncodeParameters? encodeParameters = null)
+        where TContent : class
+        => Qr.Encode<TContent, byte[]>(content, encodeParameters);
+
+    /// <summary> Asynchronously creates a QR Code in a Image from provided content as TContent type. </summary>
+    public static async Task<EncodeResult<byte[]>> EncodeToImageAsync<TContent>(
+        TContent content,
+        EncodeParameters? encodeParameters = null)
+        where TContent : class
+        => await Task.Run(() => { return Qr.Encode<TContent, byte[]>(content, encodeParameters); });
+
+    /// <summary> Creates a QR Code in a Vector path from provided content as TContent type. </summary>
+    /// <typeparam name="TContent">string, byte array or any QrContent derived class.</typeparam>
+    /// <param name="content">The data to encoded.</param>
+    /// <param name="encodeParameters">The encoding parameters, mostly used for the final steps of rendering.</param>
+    /// <returns>An Encode Result instance.</returns>
+    public static EncodeResult<string> EncodeToVectors<TContent>(
+        TContent content,
+        EncodeParameters? encodeParameters = null)
+        where TContent : class
+        => Qr.Encode<TContent, string>(content, encodeParameters);
+
+    /// <summary> Asynchronously creates a QR Code in a Vector path from provided content as TContent type. </summary>
+    public static async Task<EncodeResult<string>> EncodeToVectorsAsync<TContent>(
+        TContent content,
+        EncodeParameters? encodeParameters = null)
+        where TContent : class
+        => await Task.Run(() => { return Qr.Encode<TContent, string>(content, encodeParameters); });
+
+    /// <summary> Creates a QR Code from provided content as TContent type returning module data. </summary>
+    /// <typeparam name="TContent">string, byte array or any QrContent derived class.</typeparam>
+    /// <param name="content">The data to encoded.</param>
+    /// <param name="encodeParameters">The encoding parameters, mostly used for the final steps of rendering.</param>
+    /// <returns>An Encode Result instance.</returns>
+    public static EncodeResult<bool[,]> EncodeToModules<TContent>(
+        TContent content,
+        EncodeParameters? encodeParameters = null)
+        where TContent : class
+        => Qr.Encode<TContent, bool[,]>(content, encodeParameters);
+
+    /// <summary> Asynchronously creates a QR Code from provided content as TContent type returning module data. </summary>
+    public static async Task<EncodeResult<bool[,]>> EncodeToModulesAsync<TContent>(
+        TContent content,
+        EncodeParameters? encodeParameters = null)
+        where TContent : class
+        => await Task.Run(() => { return Qr.Encode<TContent, bool[,]>(content, encodeParameters); });
+
+    #endregion Convenience API 
+
+    /// <summary> Creates a QR Code asynchronously in TResult format type from provided content as TContent type. </summary>
     public static async Task<EncodeResult<TResult>> EncodeAsync<TContent, TResult>(
         TContent content,
         EncodeParameters? encodeParameters = null)

@@ -2,6 +2,10 @@
 
 internal sealed partial class QrCode
 {
+    internal static bool IsInitialized { get; private set; }    
+
+    internal static void Initialize () => IsInitialized = true;
+
     private static readonly byte[,] EccCodewordsPerBlock = 
     {
         // Version: (note that index 0 is for padding, and is set to an illegal value)

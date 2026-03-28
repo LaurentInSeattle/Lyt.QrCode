@@ -23,74 +23,76 @@ internal sealed class Test
 
     internal void Run()
     {
-        string simpleText = "This a test plain text string."; 
+        string simpleText = "This a test plain text string.";
         this.Encode(simpleText, "Text");
 
-        // Encode same content as a SVG vector image  
-        var encodeSvgParameters = new EncodeParameters()
-        {
-            VectorFormat = EncodeParameters.QrVectorFormat.Svg,
-        };
-        var encodeSvg = Qr.Encode<string, string>(simpleText, encodeSvgParameters);
-        if (encodeSvg.Success)
-        {
-            string fullPath = Path.Combine(rootPath, "Text" + ".svg");
-            File.WriteAllText(fullPath, encodeSvg.Result);
-        }
+        //this.Encode(simpleText, "Text");
+
+        //// Encode same content as a SVG vector image  
+        //var encodeSvgParameters = new EncodeParameters()
+        //{
+        //    VectorFormat = EncodeParameters.QrVectorFormat.Svg,
+        //};
+        //var encodeSvg = Qr.Encode<string, string>(simpleText, encodeSvgParameters);
+        //if (encodeSvg.Success)
+        //{
+        //    string fullPath = Path.Combine(rootPath, "Text" + ".svg");
+        //    File.WriteAllText(fullPath, encodeSvg.Result);
+        //}
 
 
-        this.Decode("Text");
+        //this.Decode("Text");
 
-        string text = "012345RSTUVWXYZ $%*+-./:";
-        byte[] bytes = Encoding.UTF8.GetBytes(text);
-        this.Encode(bytes, "Bytes");
-        this.Decode("Bytes");
+        //string text = "012345RSTUVWXYZ $%*+-./:";
+        //byte[] bytes = Encoding.UTF8.GetBytes(text);
+        //this.Encode(bytes, "Bytes");
+        //this.Decode("Bytes");
 
-        this.Encode(link, "Link");
-        this.Encode(new QrUri(new(link)), "Url");
-        this.Encode(new QrBookmark(link, "QrCode Library"), "Bookmark");
+        //this.Encode(link, "Link");
+        //this.Encode(new QrUri(new(link)), "Url");
+        //this.Encode(new QrBookmark(link, "QrCode Library"), "Bookmark");
 
-        this.Encode(
-            new QrCalendarEvent(
-                "Birthday Party",
-                DateTime.Parse("05/12/2026 20:00"),
-                DateTime.Parse("05/12/2026 23:00"),
-                isAllDay: false,
-                "Mario's Home",
-                "Celebrate Luigi's birthday",
-                includeVcalendarTags: true),
-            "Event");
+        //this.Encode(
+        //    new QrCalendarEvent(
+        //        "Birthday Party",
+        //        DateTime.Parse("05/12/2026 20:00"),
+        //        DateTime.Parse("05/12/2026 23:00"),
+        //        isAllDay: false,
+        //        "Mario's Home",
+        //        "Celebrate Luigi's birthday",
+        //        includeVcalendarTags: true),
+        //    "Event");
 
-        this.Encode(new QrGeoLocation(37.810729, -122.476552), "Presidio");
+        //this.Encode(new QrGeoLocation(37.810729, -122.476552), "Presidio");
 
-        this.Encode(
-            new QrMail(
-                "ly.testud@outlook.com",
-                "Hello Laurent!",
-                "I hope all is well in California"),
-            "Mail");
+        //this.Encode(
+        //    new QrMail(
+        //        "ly.testud@outlook.com",
+        //        "Hello Laurent!",
+        //        "I hope all is well in California"),
+        //    "Mail");
 
-        var mecard = new QrMeCard("Laurent", "Testud")
-        {
-            Nickname = "Enzo",
-            Format = ContactAddressFormat.NorthAmerica,
-            PoBox = "PO: 152",
-            HouseNumber = "7152",
-            Street = "Market St.",
-            City = "San Francisco",
-            StateRegion = "CA",
-            ZipCode = "94578",
-            Email = "ly.testud@outlook.com",
-            Website = link,
-            Country = "USA",
-            MobilePhone = "+1 (206) 619 3868",
-            Note = "Hello World!",
-            BirthdayString = "05/12/1968",
-            Organization = "Home",
-            Title = "Mr.",
-        };
+        //var mecard = new QrMeCard("Laurent", "Testud")
+        //{
+        //    Nickname = "Enzo",
+        //    Format = ContactAddressFormat.NorthAmerica,
+        //    PoBox = "PO: 152",
+        //    HouseNumber = "7152",
+        //    Street = "Market St.",
+        //    City = "San Francisco",
+        //    StateRegion = "CA",
+        //    ZipCode = "94578",
+        //    Email = "ly.testud@outlook.com",
+        //    Website = link,
+        //    Country = "USA",
+        //    MobilePhone = "+1 (206) 619 3868",
+        //    Note = "Hello World!",
+        //    BirthdayString = "05/12/1968",
+        //    Organization = "Home",
+        //    Title = "Mr.",
+        //};
 
-        this.Encode(mecard, "MeCard");
+        //this.Encode(mecard, "MeCard");
 
         //var vcard = new QrVCard("Laurent", "Testud")
         //{
@@ -141,7 +143,7 @@ internal sealed class Test
         // this.Decode("Bookmark");
         // this.Decode("VCard");
 
-        this.Decode("MeCard");
+        // this.Decode("MeCard");
 
         // Decode("screen");
         // Decode("screenRotated");
@@ -257,7 +259,7 @@ internal sealed class Test
     private void Encode<T>(T content, string filename) where T : class
     {
         var before = DateTime.Now;
-        var encode = Qr.Encode<T, byte[]>(content);
+        var encode = Qr.EncodeToImage(content);
         DateTime after = DateTime.Now;
         if (encode.Success)
         {
@@ -293,23 +295,17 @@ internal sealed class Test
             File.WriteAllBytes(fullPath, encodeImage.Result);
         }
 
-        var encodeVectors = Qr.Encode<string, string>(link, encodeParameters);
+        var encodeVectors = Qr.EncodeToVectors(link, encodeParameters);
         if (encodeVectors.Success)
         {
             string fullPath = Path.Combine(rootPath, filename + ".svg");
             File.WriteAllText(fullPath, encodeVectors.Result);
         }
 
-        var encodeModules = Qr.Encode<string, bool[,]>(link);
+        var encodeModules = Qr.EncodeToModules(link);
         if (encodeModules.Success)
         {
             Console.WriteLine("Encoded: " + encodeModules.Result.ToString());
-        }
-
-        var encodeQrCode = Qr.Encode<string, QrCode>(link);
-        if (encodeQrCode.Success)
-        {
-            Console.WriteLine("Encoded: " + encodeQrCode.Result.ErrorCorrectionLevel.ToString());
         }
     }
 

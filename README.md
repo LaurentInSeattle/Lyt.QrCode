@@ -85,4 +85,14 @@ Contributions are always welcome! Please feel free to submit a Pull Request.
 
 # License and Credits 
 
-Zebra Crossing - Apache 2.0
+- Encoding: 
+
+    Derivative work from QrCodeGenerator by Manuel Bleichenbacher - MIT License
+
+- Decoding:
+
+    Derivative work from Zebra Crossing by the Zebra Crossing Team and al. - Apache 2.0 License
+
+- QR Content classes, asynchrony, performance improvements, modernization: 
+ 
+    Original code and refactoring by Laurent Y. Testud 

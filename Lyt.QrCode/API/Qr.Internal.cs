@@ -11,6 +11,11 @@ public static partial class Qr
         try
         {
             // Force some static initializations up front 
+            if ( !QrCode.IsInitialized)
+            {
+                QrCode.Initialize();
+            }
+
             var _1 = QrVersion.FromDimension(45);
             bool _2 = EncodingUtilities.EucJpIsSupported;
             var _3 = ErrorCorrectionLevel.AllEclFromLowToHigh;

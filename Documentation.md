@@ -359,6 +359,38 @@ taking the same arguments and returning the same data.
 
 ```
  
+# Convenience Encoding API  
+
+Embedding the result type in the Encoding method name allows simplifications on the client code side because 
+the content type can now be inferred by the C# compiler. 
+Therefore it becomes possible to write: 
+
+```csharp
+using Lyt.QrCode.API;
+using Lyt.QrCode.Content;
+
+// Encoding 
+
+    private const string link = "https://github.com/LaurentInSeattle/Lyt.QrCode";
+
+    // Encode provided link as a PNG image using default parameters 
+    var encodeImage = await Qr.EncodeToImageAsync(link);
+    if (encodeImage.Success)
+    {
+        string fullPath = < .... >
+        File.WriteAllBytes(fullPath, encodeImage.Result);
+    }
+
+```
+
+Provided convenience methods: 
+- EncodeToImage
+- EncodeToImageAsync
+- EncodeToVectors
+- EncodeToVectorsAsync
+- EncodeToModules
+- EncodeToModulesAsync
+
 # QR Code Modules
 
 TODO: Document how to access the module data 
