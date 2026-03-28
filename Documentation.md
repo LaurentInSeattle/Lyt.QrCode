@@ -201,7 +201,35 @@ using SixLabors.ImageSharp.PixelFormats;
 Sample code to create a SourceImage object using Skia and Avalonia: 
 
 ```csharp
-    // TODO 
+
+            ==> Unfinished !! <== 
+
+            byte[] imageBytes = File.ReadAllBytes(path);
+            if ((imageBytes is null) || (imageBytes.Length < 256))
+            {
+                throw new Exception("Failed to read image from disk: " + path);
+            }
+
+            var bitmap = WriteableBitmap.Decode(new MemoryStream(imageBytes));
+            if (bitmap is not null)
+            {
+                using ( var frameBuffer = bitmap.Lock() ) 
+                {
+                     
+                    int height = frameBuffer.Size.Height; 
+                    int width = frameBuffer.Size.Width; 
+                    int stride = frameBuffer.RowBytes; 
+
+                    // NOT always 4 => Pixel Size 
+                    PixelFormat pixelFormat = PixelFormat.????
+                    int pixelSize = 4 ; 
+                    byte[] pixels = new byte[height * stride * pixelSize];
+                    bitmap.CopyPixels( frameBuffer.Address, ... TODO ... ) ; 
+                    return new SourceImage (width, height, stride, pixelFormat, pixels) ;
+                }
+
+                throw new Exception("Failed to initialize puzzle with image: " + path);
+            }
 ```
 
 - DecodeParameters class
