@@ -14,7 +14,7 @@ public class DecodeResult : MessageLog
         !this.Error;
 
     /// <summary> Text encoded by the QR Code, if applicable, otherwise empty<summary> 
-    public string? Text { get; internal set; } = string.Empty;
+    public string Text { get; internal set; } = string.Empty;
 
     /// <summary> Bytes encoded by the QR Code, if applicable, otherwise null ><summary> 
     public byte[]? Bytes { get; internal set; } = null;

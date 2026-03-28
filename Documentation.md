@@ -296,7 +296,7 @@ Immutable class holding the results of the decoding process:
     public bool Success => ....
 
     /// <summary> Text encoded by the QR Code, if applicable, otherwise empty<summary> 
-    public string? Text { get; internal set; } = string.Empty;
+    public string Text { get; internal set; } = string.Empty;
 
     /// <summary> Bytes encoded by the QR Code, if applicable, otherwise null ><summary> 
     public byte[]? Bytes { get; internal set; } = null;
@@ -437,11 +437,3 @@ A new list instance is created for each Encode or Decode invocation.
     public List<string> Messages { get; set; } = [];
 ```
 
-
-# Contributing
-
-Contributions are always welcome! Please feel free to submit a Pull Request. 
-
-# License and Credits 
-
-Zebra Crossing - Apache 2.0
