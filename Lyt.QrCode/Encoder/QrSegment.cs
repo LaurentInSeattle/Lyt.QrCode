@@ -2,9 +2,6 @@
 
 internal class QrSegment
 {
-    // The data bits of this segment. Accessed through GetData().
-    private readonly BitArray data;
-
     /// <summary>
     /// Initializes a QR code segment with the specified attributes and data.
     /// The character count <paramref name="characterCount"/> must agree with the mode and the bit array length,
@@ -23,9 +20,7 @@ internal class QrSegment
 
         this.EncodingMode = mode;
         this.CharacterCount = characterCount;
-
-        // WHY ?? Make defensive copy
-        this.data = (BitArray)data.Clone();  
+        this.Data = data;
     }
 
     /// <summary>The encoding mode of this segment.</summary>
@@ -37,8 +32,8 @@ internal class QrSegment
     /// </summary>
     internal int CharacterCount { get; }
 
-    /// <summary> Returns a copy of this segment's data bits. </summary>
-    public BitArray GetData() => (BitArray) this.data.Clone();  // Make defensive copy => WHY ??? NeCESSARY ? 
+    /// <summary> This segment's data bits. </summary>
+    internal BitArray Data { get; }  
     
     /// <summary>
     /// Creates a segment representing the specified text string.
@@ -122,6 +117,7 @@ internal class QrSegment
             temp += text[i + 1].IndexOfAlphanumeric();
             bitArray.AppendBits(temp, 11);
         }
+
         if (i < text.Length)  // 1 character remaining
         {
             bitArray.AppendBits(text[i].IndexOfAlphanumeric(), 6);
@@ -147,7 +143,7 @@ internal class QrSegment
             return -1;  // The segment's length doesn't fit the field's bit width
         }
 
-        result += 4L + ccBits + segment.data.Length;
+        result += 4L + ccBits + segment.Data.Length;
         if (result > int.MaxValue)
         {
             return -1;  // The sum will overflow an int type

@@ -252,7 +252,7 @@ internal sealed partial class QrCode
         var bitArray = new BitArray(0);
         bitArray.AppendBits((uint)segment.EncodingMode.Bits, 4);
         bitArray.AppendBits((uint)segment.CharacterCount, segment.EncodingMode.NumCharCountBits(foundVersion));
-        bitArray.AppendData(segment.GetData());
+        bitArray.AppendData(segment.Data);
 
         Debug.Assert(bitArray.Length == dataUsedBits);
 
