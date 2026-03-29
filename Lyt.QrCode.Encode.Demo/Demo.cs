@@ -138,6 +138,8 @@ internal sealed class Demo
         // Encode same content as a MUCH bigger BMP image  
         var encodeParameters = new EncodeParameters()
         {
+            // Use 'High' as we may wish to add a logo inside the image 
+            ErrorCorrectionLevel = EncodeParameters.QrErrorCorrectionLevel.High,
             ImageFormat = EncodeParameters.QrImageFormat.Bmp,
             Border = 4,
             Scale = 22,

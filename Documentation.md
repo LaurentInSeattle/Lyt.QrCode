@@ -487,6 +487,34 @@ See the QrBookmark class in the source code repository.
      } 
 ```
 
+# Your logo (or picture, or any image) inside the QR Code ? 
+
+Like your profile picture inside your VCard ? 
+
+- Generate an image for you QR Code at the best encoding level using the highest 'ErrorCorrectionLevel' 
+in the EncodeParameters parameter. This will create some redundancy in the resulting image, allowing for some 
+'deliberate destruction' of some of the actual QR Code modules.
+- Use your favourite image processor (Paint.Net, Gimp, Photoshop, etc..) to create a blank space in the middle 
+of the image and paste your (small!) image there. 
+- By doing so, do NOT 'remove' more than 25% of the original QR Code image. And yes, just 20% will be actually better.
+- Use the decoder application to make sure that your edits are still allowing proper decoding of 
+the 'fancy' image, even in low lighting or special conditions.
+
+```csharp
+        var encodeParameters = new EncodeParameters()
+        {
+            // Use 'High' as we may wish to add a logo inside the image 
+            ErrorCorrectionLevel = EncodeParameters.QrErrorCorrectionLevel.High,
+            ImageFormat = EncodeParameters.QrImageFormat.Bmp,
+            Border = 4,
+            Scale = 22,
+            Background = 0x00_FF_FA_F9, // Slightly pink
+            Foreground = 0x00_00_00_40, // Very dark blue
+        };
+        var encodeBitmap = Qr.Encode<T, byte[]>(content, encodeParameters);
+```
+
+
 # Debugging and Troubleshooting 
 
 Both EncodeResult and DecodeResult classes inherit from MessageLog which contains a list of informational or error messages, and 
