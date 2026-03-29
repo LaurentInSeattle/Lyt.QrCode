@@ -14,4 +14,25 @@ public class MessageLog
         this.Error = true;
         this.Messages.Add(message);
     }
+
+    [Conditional("DEBUG")]
+    public void DebugShowErrors()
+    {
+        if (this.Error)
+        {
+            Debug.WriteLine("Error encoding and decoding QR codes");
+            Debug.Indent();
+            foreach (string message in this.Messages)
+            {
+                Debug.WriteLine(message);
+            }
+
+            Debug.Unindent();
+
+            if ( Debugger.IsAttached )
+            {
+                Debugger.Break();   
+            }
+        }
+    }
 }

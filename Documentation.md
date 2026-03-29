@@ -7,7 +7,6 @@ Nuget: https://www.nuget.org/packages/Lyt.QrCode
 # Quick Start 
 
 ```csharp
-
 using Lyt.QrCode.API;
 using Lyt.QrCode.Content;
 
@@ -119,7 +118,6 @@ Holds the results of the encoding process.
     /// <summary> The width and height of this QR code, in modules (pixels). The size is a value between 21 and 177.  </summary>
     /// <remarks> Valid if and only if Success is true </remarks>
     public int QrCodeDimension { get; internal set; } = -1;
-
 ```
  
 - Message Log class 
@@ -147,42 +145,39 @@ The Lyt.QrCode library runs without UI framework or imaging library dependencies
 This is 'SourceImage' in the 'Lyt.QrCode.Image' namespace. Create a SourceImage by providing the canonical parameters of an 'in memory bitmap'.
  
 ```csharp
-
 using Lyt.QrCode.Image;
 
-public enum PixelFormat
-{
-    Gray8,
-    Gray16,
+    public enum PixelFormat
+    {
+        Gray8,
+        Gray16,
 
-    RGB24,
-    BGR24,
+        RGB24,
+        BGR24,
 
-    ARGB32,
-    ABGR32,
-    BGRA32,
-    RGBA32,
+        ARGB32,
+        ABGR32,
+        BGRA32,
+        RGBA32,
 
-    /// <summary> 2 bytes per pixel, 5 bit red, 6 bits green and 5 bits blue </summary>
-    RGB565,
+        /// <summary> 2 bytes per pixel, 5 bit red, 6 bits green and 5 bits blue </summary>
+        RGB565,
 
-    /// <summary> 4 bytes for two pixels, UYVY formatted </summary>
-    UYVY,
+        /// <summary> 4 bytes for two pixels, UYVY formatted </summary>
+        UYVY,
 
-    /// <summary> 4 bytes for two pixels, YUYV formatted </summary>
-    YUYV
-}
+        /// <summary> 4 bytes for two pixels, YUYV formatted </summary>
+        YUYV
+    }
 
     /// <summary> Creates a SourceImage instance from the provided information</summary>
     public SourceImage(int width, int height, int stride, PixelFormat format, byte[] pixels, bool isLocked = true)
     {
     } 
-
 ```
 Sample code to create a SourceImage object using the ImageSharp library from SixLabors: 
 
 ```csharp
-
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -239,7 +234,6 @@ Contains a single boolean property allowing to skip parsing text content, trying
 ```csharp
     /// <summary> True when it is not necessary to parse the Text result of the QR code.</summary>
     public bool SkipParsing { get; set; } = false;
-
 ```
 
 - QrPixelPoint class
@@ -274,7 +268,6 @@ Ommiting or passing null for the delegate argument is the default option.
 Ommiting or passing null for the parameters argument will actually use default parameters, listed above.
 
 ```csharp
-
     /// <summary> Tries to decode the provided SourceImage using the optional DetectorCallback and the optional DecodeParameters. </summary>
     /// <returns> A DecodeResult instance </returns>
     public static DecodeResult Decode(
@@ -284,7 +277,6 @@ Ommiting or passing null for the parameters argument will actually use default p
     {
         ....
     } 
-
 ```
 
 - Decode Result 
@@ -384,7 +376,6 @@ taking the same arguments and returning the same data.
         {
             ....
         }
-
 ```
  
 # Convenience Encoding API  
@@ -408,7 +399,6 @@ using Lyt.QrCode.Content;
         string fullPath = < .... >
         File.WriteAllBytes(fullPath, encodeImage.Result);
     }
-
 ```
 
 Provided convenience methods: 
@@ -427,7 +417,6 @@ Then, if the encoding process is successful, the EncodeResult contains a 2D arra
 indexed from top left to bottom right. 
 
 ```csharp
-
         // content may be of type string, byte[] or any QrContent class
         var encodeModules = Qr.EncodeToModules(content);
         // or: var encodeModules = Qr.Encode<T, bool[,]>(content);
@@ -448,7 +437,6 @@ indexed from top left to bottom right.
                 throw new Exception("Encoding problem with module value");
             }
         }
-
 ```
 
 # Adding your own QR Content Classes
@@ -466,7 +454,6 @@ You simply need to:
 See the QrBookmark class in the source code repository.  
 
 ```csharp
-
     public interface IQrParsable<TSelf> where TSelf : IQrParsable<TSelf>
     {
         static abstract bool TryParse(string source, [NotNullWhen(true)] out TSelf? tself); 
@@ -498,7 +485,6 @@ See the QrBookmark class in the source code repository.
      { 
         Console.WriteLine("Invalid QrCode Parser");
      } 
-
 ```
 
 # Debugging and Troubleshooting 
@@ -509,4 +495,36 @@ A new list instance is created for each Encode or Decode invocation.
 
 ```csharp
     public List<string> Messages { get; set; } = [];
+```
+
+The MessageLog has a helper method (shown below) to list errors and break in such case. It has been attributed 'Conditional("DEBUG")' 
+so that it has zero impact on shipping code.
+
+```csharp
+    // Usage 
+        var result = Qr.Decode(sourceImage, OnDetect);
+        result.DebugShowErrors();
+
+    // Member of MessageLog class
+
+    [Conditional("DEBUG")]
+    public void DebugShowErrors()
+    {
+        if (this.Error)
+        {
+            Debug.WriteLine("Error encoding and decoding QR codes");
+            Debug.Indent();
+            foreach (string message in this.Messages)
+            {
+                Debug.WriteLine(message);
+            }
+
+            Debug.Unindent();
+
+            if ( Debugger.IsAttached )
+            {
+                Debugger.Break();   
+            }
+        }
+    }
 ```

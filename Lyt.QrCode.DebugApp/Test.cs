@@ -195,6 +195,8 @@ internal sealed class Test
         var before = DateTime.Now;
         var result = Qr.Decode(sourceImage, OnDetect);
         DateTime after = DateTime.Now;
+        result.DebugShowErrors();
+
         if (result.IsDetected)
         {
             Console.WriteLine("Detected ");
