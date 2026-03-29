@@ -21,69 +21,95 @@ internal sealed class Demo
 
     internal void Run()
     {
-        // TODO
+        // Load embedded resource image 
+        string[] resourceNames = 
+            [
+                "screen-qr.jpg", // Valid VCard
+                "bus-qr.jpg",    // Valid, Binary: 4uJ3qQiKu6TbLwKVrTTvdk25xxCyEfxK/DRfKM/cUwQG9oYKam8zXrac+sjZzuDl 
+                "review-qr.jpg", // Valid web page 
+                "retail-qr.jpg", // Should detect 3 finder points, but is NOT a QR Code
+            ];
+        foreach (string resourceName in resourceNames)
+        {
+            Console.WriteLine("");
+            Console.WriteLine("Decoding: " + resourceName);
+
+            byte[] imageBytes = this.LoadEmbeddedResourceImage(resourceName);
+            SourceImage sourceImage = Demo.LoadSourceImageWithSixLaborsFromBytes(imageBytes);
+            this.Decode(sourceImage);
+        }
     }
 
-    private SourceImage LoadSourceImageWithSixLabors(string imagePath)
+    private static void OnDetect(QrPixelPoint point)
+        => Console.WriteLine("Detected: " + point.ToString());
+
+    private void Decode(SourceImage sourceImage)
+    {
+        var before = DateTime.Now;
+        var result = Qr.Decode(sourceImage, OnDetect);
+        DateTime after = DateTime.Now;
+        // result.DebugShowErrors();
+
+        if (result.IsDetected)
+        {
+            Console.WriteLine("Detected ");
+            Console.WriteLine(result.TopLeft.ToString());
+            Console.WriteLine(result.TopRight.ToString());
+            Console.WriteLine(result.BottomLeft.ToString());
+            if (result.IsAligned)
+            {
+                Console.WriteLine("Aligned ");
+                Console.WriteLine(result.Alignment.ToString());
+            }
+
+            if (result.Success)
+            {
+                Console.WriteLine("Decoded, Content:  " + result.Text);
+                if (result.IsParsed)
+                {
+                    Console.WriteLine("Parsed, Type:  " + result.ParsedType.FullName);
+                    if (result.ParsedObject is QrVCard qrVCard)
+                    {
+                        Console.WriteLine("Decoded, Content is a VCard from:  " + qrVCard.FirstName);
+                    }
+                }
+            }
+        }
+        else
+        {
+            Console.WriteLine("Failed to Detect anything... Not a Qr Code image ?");
+        }
+
+        // About 60 ms for a 800x600 image 
+        Console.WriteLine("Milleseconds to decode: " + (after - before).TotalMilliseconds.ToString("F1"));
+    }
+    private static SourceImage LoadSourceImageWithSixLaborsFromBytes(byte[] imageBytes)
+    {
+        using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(imageBytes);
+        byte[] pixels = new byte[image.Width * image.Height * 4];
+        image.CopyPixelDataTo(pixels);
+        return
+            new SourceImage( image.Width, image.Height, image.Width * 4, PixelFormat.RGBA32, pixels);
+    }
+
+    private SourceImage LoadSourceImageWithSixLaborsFromFile(string imagePath)
     {
         string fullPath = Path.Combine(this.rootPath, imagePath);
         using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(fullPath);
         byte[] pixels = new byte[image.Width * image.Height * 4];
         image.CopyPixelDataTo(pixels);
         Console.WriteLine($"Loaded image: {fullPath}, Size: {image.Width}x{image.Height}");
-        var sourceImage =
+        return 
             new SourceImage(
                 image.Width, image.Height, image.Width * 4, PixelFormat.RGBA32, pixels);
-        return sourceImage;
     }
 
-    /* 
-
-    WinForms / GDI+ 
-
-        using System.Drawing;
-    using System.IO;
-
-    public static Image LoadImageInMemory(string filePath)
+    private byte[] LoadEmbeddedResourceImage(string resourceName)
     {
-        // Use File.ReadAllBytes to load the file's data into a byte array
-        byte[] imageBytes = File.ReadAllBytes(filePath);
-
-        // Create a MemoryStream from the byte array
-        MemoryStream ms = new MemoryStream(imageBytes);
-
-        // Create the Image from the MemoryStream
-        Image image = Image.FromStream(ms);
-
-        // Note: The MemoryStream 'ms' must remain open for the lifetime of the 'image' object
-        // if using GDI+. To dispose of the stream immediately, you must make a copy of the 
-        // image, for example, into a new Bitmap.
-        // Bitmap bitmapCopy = new Bitmap(image); 
-        // ms.Dispose(); // You can then dispose of the stream
-
-        return image;
-    }
+        ResourcesUtilities.SetResourcesPath("Lyt.QrCode.Decode.Demo.Resources");
+        ResourcesUtilities.SetExecutingAssembly(Assembly.GetExecutingAssembly());
+        return ResourcesUtilities.LoadEmbeddedBinaryResource(resourceName, out string? _);
+    } 
 
 
-    WPF / WIC 
-
-    using System.Windows.Media.Imaging;
-
-    public static BitmapImage LoadImageToMemory(string path)
-    {
-        BitmapImage image = new BitmapImage();
-        using (FileStream stream = File.Open(path, FileMode.Open))
-        {
-            image.BeginInit();
-            image.CacheOption = BitmapCacheOption.OnLoad;
-            image.StreamSource = new MemoryStream();
-            stream.CopyTo(image.StreamSource);
-            image.EndInit();
-        }
-        // The FileStream is closed here by the 'using' block, and because of 
-        // CacheOption.OnLoad, the image data is already in memory.
-        return image;
-    }
-
-    */
 }

@@ -9,12 +9,11 @@ internal class Program
     /// </summary>
     static void Main(string[] _)
     {
-        Console.WriteLine("Hello, QrCode Encode Demo!");
+        Console.WriteLine("Hello, QrCode Decode Demo!");
         Console.WriteLine("");
-        Console.WriteLine("This demo will create a new folder on the 'Desktop' containing new files for generated QR codes.");
-        Console.WriteLine("Press 'Enter' to continue");
-        Console.ReadLine();
-        Console.WriteLine("");
+        //Console.WriteLine("Press 'Enter' to continue");
+        //Console.ReadLine();
+        //Console.WriteLine("");
 
         try
         {
