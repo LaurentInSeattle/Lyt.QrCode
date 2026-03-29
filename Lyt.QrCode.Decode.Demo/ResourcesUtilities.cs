@@ -2,20 +2,15 @@
 
 public static class ResourcesUtilities
 {
-    private static string ResourcesPath = "Lyt.QrCode.Resources";
+    private static string ResourcesPath = "Lyt.QrCode.Decode.Demo.Resources";
     private static Assembly ExecutingAssembly;
-
-    public const string ResourcesExtension = ".json";
 
     static ResourcesUtilities() => ExecutingAssembly = Assembly.GetExecutingAssembly();
 
     public static void SetResourcesPath(string resourcePath) => ResourcesUtilities.ResourcesPath = resourcePath;
 
-    public static void SetExecutingAssembly(Assembly executingAssembly)
-    {
-        ResourcesUtilities.ExecutingAssembly = executingAssembly;
-        DumpEmbeddedResourceNames();
-    }
+    public static void SetExecutingAssembly(Assembly executingAssembly) 
+        => ResourcesUtilities.ExecutingAssembly = executingAssembly;
 
     public static List<string> EnumerateEmbeddedResourceNames(string filter)
     {
@@ -94,22 +89,5 @@ public static class ResourcesUtilities
         }
 
         throw new Exception("Failed to load resource: " + name);
-    }
-
-    [Conditional("DEBUG")]
-    public static void DumpEmbeddedResourceNames()
-    {
-        List<string> resourceNames = [];
-        var list = ExecutingAssembly.GetManifestResourceNames().ToList();
-        foreach (string name in list)
-        {
-            Debug.WriteLine(name);
-
-            if (name.Contains(ResourcesPath))
-            {
-                Debug.WriteLine(name);
-                resourceNames.Add(name);
-            }
-        }
     }
 }

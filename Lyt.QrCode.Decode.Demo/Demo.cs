@@ -6,17 +6,12 @@ internal sealed class Demo
 {
     private string rootPath = string.Empty;
 
-    internal void Initialize()
+    internal void Initialize ()
     {
-        string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        string path = Path.Combine(desktop, "Lyt_Qr_Code_Demo_Encode");
-        if (Directory.Exists(path))
-        {
-            Directory.Delete(path, true);
-        }
+        this.rootPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
-        Directory.CreateDirectory(path);
-        this.rootPath = path;
+        ResourcesUtilities.SetResourcesPath("Lyt.QrCode.Decode.Demo.Resources");
+        ResourcesUtilities.SetExecutingAssembly(Assembly.GetExecutingAssembly());
     }
 
     internal void Run()
@@ -34,16 +29,16 @@ internal sealed class Demo
             Console.WriteLine("");
             Console.WriteLine("Decoding: " + resourceName);
 
-            byte[] imageBytes = this.LoadEmbeddedResourceImage(resourceName);
+            byte[] imageBytes = Demo.LoadEmbeddedResourceImage(resourceName);
             SourceImage sourceImage = Demo.LoadSourceImageWithSixLaborsFromBytes(imageBytes);
-            this.Decode(sourceImage);
+            Demo.Decode(sourceImage);
         }
     }
 
     private static void OnDetect(QrPixelPoint point)
         => Console.WriteLine("Detected: " + point.ToString());
 
-    private void Decode(SourceImage sourceImage)
+    private static void Decode(SourceImage sourceImage)
     {
         var before = DateTime.Now;
         var result = Qr.Decode(sourceImage, OnDetect);
@@ -104,12 +99,6 @@ internal sealed class Demo
                 image.Width, image.Height, image.Width * 4, PixelFormat.RGBA32, pixels);
     }
 
-    private byte[] LoadEmbeddedResourceImage(string resourceName)
-    {
-        ResourcesUtilities.SetResourcesPath("Lyt.QrCode.Decode.Demo.Resources");
-        ResourcesUtilities.SetExecutingAssembly(Assembly.GetExecutingAssembly());
-        return ResourcesUtilities.LoadEmbeddedBinaryResource(resourceName, out string? _);
-    } 
-
-
+    private static byte[] LoadEmbeddedResourceImage(string resourceName)
+        => ResourcesUtilities.LoadEmbeddedBinaryResource(resourceName, out string? _);
 }
