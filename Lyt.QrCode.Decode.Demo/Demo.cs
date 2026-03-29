@@ -43,7 +43,7 @@ internal sealed class Demo
         var before = DateTime.Now;
         var result = Qr.Decode(sourceImage, OnDetect);
         DateTime after = DateTime.Now;
-        // result.DebugShowErrors();
+        result.DebugShowErrors();
 
         if (result.IsDetected)
         {
