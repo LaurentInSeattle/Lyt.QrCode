@@ -56,7 +56,7 @@ internal static class Decoder
                             int rowStartByte = i;
                             for (int j = 0; j < numberOfPixelsPerScanline; j++)
                             {
-                                var pixelIndex = Adam7.GetPixelIndexForScanlineInPass(header, pass, scanlineIndex, j);
+                                var (x, y) = Adam7.GetPixelIndexForScanlineInPass(pass, scanlineIndex, j);
                                 for (int k = 0; k < bytesPerPixel; k++)
                                 {
                                     int byteLineNumber = (j * bytesPerPixel) + k;
@@ -64,7 +64,7 @@ internal static class Decoder
                                     i++;
                                 }
 
-                                int start = pixelsPerRow * pixelIndex.y + pixelIndex.x * bytesPerPixel;
+                                int start = pixelsPerRow * y + x * bytesPerPixel;
                                 Array.ConstrainedCopy(decompressedData, rowStartByte + j * bytesPerPixel, newBytes, start, bytesPerPixel);
                             }
 

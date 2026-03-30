@@ -1,4 +1,6 @@
-﻿namespace Lyt.Png; 
+﻿namespace Lyt.Png;
+
+// See: https://github.com/EliotJones/BigGustave
 
 /// <summary> Represents a PNG image.</summary>
 public class PngImage

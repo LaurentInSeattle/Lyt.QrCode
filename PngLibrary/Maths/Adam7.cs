@@ -88,7 +88,7 @@ internal static class Adam7
         return (indices.Length * (header.Width / 8)) + additionalColumns;
     }
 
-    internal static (int x, int y) GetPixelIndexForScanlineInPass(ImageHeader header, int pass, int scanlineIndex, int indexInScanline)
+    internal static (int x, int y) GetPixelIndexForScanlineInPass(int pass, int scanlineIndex, int indexInScanline)
     {
         int[] columnIndices = PassToScanlineColumnIndex[pass + 1];
         int[] rows = PassToScanlineGridIndex[pass + 1];
