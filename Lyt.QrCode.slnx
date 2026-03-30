@@ -9,4 +9,5 @@
   <Project Path="Lyt.QrCode.Encode.Demo/Lyt.QrCode.Encode.Demo.csproj" Id="8300ee63-a617-4b00-a573-4c8ef6bf3fe4" />
   <Project Path="Lyt.QrCode.Tests/Lyt.QrCode.Tests.csproj" Id="5c5a37a2-7022-4f52-8777-1cb2368e8aac" />
   <Project Path="Lyt.QrCode/Lyt.QrCode.csproj" Id="27f847e5-5342-4a3f-9ebd-232a96e1d03a" />
+  <Project Path="PngLibrary/Lyt.Png.csproj" Id="e57d156f-d72d-4824-b6a3-ebf7f835bc40" />
 </Solution>

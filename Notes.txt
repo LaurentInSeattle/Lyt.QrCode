@@ -2,25 +2,13 @@
 
 TODO's 
 
-- Finalize Support for QrUri 
-
-- Finalize Encoding API: passing message log down to generator 
-
-- Finalize Decoding API 
-
-- Encoder: Downgrade ECL to try to encode large data 
+- Implement a PNG loader 
 
 - Implement non-svg paths 
 
-- Sample code in Console project 
-
-- Sample code in Avalonia project
 
 MAYBE's 
 
-- Support for JSon data, allowing users to encode structured data into QR codes.
-
-- Support for Compressed JSON 
 
 CONSIDER
 
