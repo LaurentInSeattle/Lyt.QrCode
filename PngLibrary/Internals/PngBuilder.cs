@@ -1,7 +1,7 @@
 ﻿namespace Lyt.Png.Internals; 
 
 /// <summary> Used to construct PNG images. Call <see cref="Create"/> to make a new builder. </summary>
-public class PngBuilder
+internal class PngBuilder
 {
     private const byte Deflate32KbWindow = 120;
     private const byte ChecksumBits = 1;
@@ -11,23 +11,17 @@ public class PngBuilder
     private readonly int width;
     private readonly int height;
     private readonly int bytesPerPixel;
+    private readonly int backgroundColorInt;
+    private readonly Dictionary<int, int> colorCounts;
+    private readonly List<(string keyword, byte[] data)> storedStrings = [];
 
     private bool hasTooManyColorsForPalette;
 
-    private readonly int backgroundColorInt;
-    private readonly Dictionary<int, int> colorCounts;
-
-    private readonly List<(string keyword, byte[] data)> storedStrings = new List<(string keyword, byte[] data)>();
-
-    /// <summary>
-    /// Create a builder for a PNG with the given width and size.
-    /// </summary>
+    /// <summary> Create a builder for a PNG with the given width and size. </summary>
     public static PngBuilder Create(int width, int height, bool hasAlphaChannel)
     {
         var bpp = hasAlphaChannel ? 4 : 3;
-
         var length = (height * width * bpp) + height;
-
         return new PngBuilder(new byte[length], hasAlphaChannel, width, height, bpp);
     }
 
@@ -35,7 +29,6 @@ public class PngBuilder
     public static PngBuilder FromPng(PngImage png)
     {
         var result = Create(png.Width, png.Height, png.HasAlphaChannel);
-
         for (int y = 0; y < png.Height; y++)
         {
             for (int x = 0; x < png.Width; x++)
@@ -334,7 +327,7 @@ public class PngBuilder
             AttemptCompressionOfRawData(rawData);
         }
 
-        outputStream.Write(HeaderValidationResult.ExpectedHeader, 0, HeaderValidationResult.ExpectedHeader.Length);
+        outputStream.Write(ImageHeader.ExpectedHeader, 0, ImageHeader.ExpectedHeader.Length);
 
         var stream = new PngStreamWriteHelper(outputStream);
 

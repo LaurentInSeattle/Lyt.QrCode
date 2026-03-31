@@ -1,5 +1,7 @@
 ﻿namespace Lyt.QrCode.DebugApp;
 
+using Lyt.Png;
+
 internal sealed class Test
 {
     private const string link = "https://github.com/LaurentInSeattle/Lyt.QrCode";
@@ -23,6 +25,41 @@ internal sealed class Test
 
     internal void Run()
     {
+        string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        string path = Path.Combine(desktop, "Screen-Qr.png");
+        byte[] bytes = File.ReadAllBytes(path);
+        var image = PngImage.Open(bytes);
+        long val = 0;
+        for (int i = 0; i < image.Width; i++)
+        {
+            for (int j = 0; j < image.Height; j++)
+            {
+                var pixel = image.GetPixel(i, j);
+                val += pixel.R;
+            }
+        }
+
+        Debug.WriteLine("Sum: " + val);
+
+        byte[] pixels = new byte[image.Width * image.Height * 4]; 
+        for (int i = 0; i < image.Width; i++)
+        {
+            for (int j = 0; j < image.Height; j++)
+            {
+                var pixel = image.GetPixel(i, j);
+                int index = (j * image.Width + i) * 4;
+                pixels[index] = pixel.R;
+                pixels[index + 1] = pixel.G;
+                pixels[index + 2] = pixel.B;
+                pixels[index + 3] = pixel.A;
+            }
+        }
+
+        var sourceImage = 
+            new SourceImage(image.Width, image.Height, image.Width * 4, PixelFormat.RGBA32, pixels);
+        Decode(sourceImage);
+
+
         string simpleText = "This a test plain text string.";
         this.Encode(simpleText, "Text");
 
@@ -190,8 +227,15 @@ internal sealed class Test
 
     private void Decode(string filename)
     {
+        Console.WriteLine(" ");
         var sourceImage = this.LoadSourceImage(filename + ".png");
-        Console.WriteLine("Decode: " + filename);
+        Decode(sourceImage); 
+    }
+
+    private void Decode(SourceImage sourceImage)
+    {
+        Console.WriteLine(" ");
+        Console.WriteLine("Decode: sourceImage");
         var before = DateTime.Now;
         var result = Qr.Decode(sourceImage, OnDetect);
         DateTime after = DateTime.Now;
@@ -260,6 +304,7 @@ internal sealed class Test
 
     private void Encode<T>(T content, string filename) where T : class
     {
+        Console.WriteLine(" ");
         var before = DateTime.Now;
         var encode = Qr.EncodeToImage(content);
         DateTime after = DateTime.Now;
@@ -276,6 +321,7 @@ internal sealed class Test
 
     private void Encode(string filename)
     {
+        Console.WriteLine(" ");
         var encodeImage = Qr.Encode<string, byte[]>(link);
         if (encodeImage.Success)
         {

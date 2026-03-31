@@ -20,5 +20,6 @@ global using System.Text.Json.Serialization;
 global using System.Text.RegularExpressions;
 global using System.Threading.Tasks;
 
+global using Lyt.Png;
 global using Lyt.Png.Internals;
 global using Lyt.Png.Maths;

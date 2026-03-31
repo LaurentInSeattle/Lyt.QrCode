@@ -1,8 +1,8 @@
-﻿namespace Lyt.Png;
+﻿namespace Lyt.Png.Internals;
 
 /// <summary> Describes the interpretation of the image data. </summary>
 [Flags]
-public enum ColorType : byte
+internal enum ColorType : byte
 {
     /// <summary> Grayscale. </summary>
     None = 0,

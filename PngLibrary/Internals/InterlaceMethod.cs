@@ -1,4 +1,4 @@
-﻿namespace Lyt.Png;
+﻿namespace Lyt.Png.Internals;
 
 /// <summary> Indicates the transmission order of the image data. </summary>
 public enum InterlaceMethod : byte

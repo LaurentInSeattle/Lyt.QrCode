@@ -3,6 +3,8 @@
 /// <summary> The high level information about the image. </summary>
 public readonly struct ImageHeader
 {
+    internal static readonly byte[] ExpectedHeader = [137, 80, 78, 71, 13, 10, 26, 10];
+
     internal static readonly byte[] HeaderBytes = [73, 72, 68, 82];
 
     private static readonly Dictionary<ColorType, HashSet<byte>> PermittedBitDepths = new()
@@ -14,29 +16,8 @@ public readonly struct ImageHeader
         {ColorType.AlphaChannelUsed | ColorType.ColorUsed, new HashSet<byte> {8, 16}},
     };
 
-    /// <summary> The width of the image in pixels. </summary>
-    public int Width { get; }
-
-    /// <summary> The height of the image in pixels. </summary>
-    public int Height { get; }
-
-    /// <summary> The bit depth of the image. </summary>
-    public byte BitDepth { get; }
-
-    /// <summary> The color type of the image. </summary>
-    public ColorType ColorType { get; }
-
-    /// <summary> The compression method used for the image. </summary>
-    public CompressionMethod CompressionMethod { get; }
-
-    /// <summary> The filter method used for the image. </summary>
-    public FilterMethod FilterMethod { get; }
-
-    /// <summary> The interlace method used by the image. </summary>
-    public InterlaceMethod InterlaceMethod { get; }
-
     /// <summary> Create a new <see cref="ImageHeader"/>. </summary>
-    public ImageHeader(int width, int height, byte bitDepth, ColorType colorType, CompressionMethod compressionMethod, FilterMethod filterMethod, InterlaceMethod interlaceMethod)
+    internal ImageHeader(int width, int height, byte bitDepth, ColorType colorType, CompressionMethod compressionMethod, FilterMethod filterMethod, InterlaceMethod interlaceMethod)
     {
         if (width == 0)
         {
@@ -61,6 +42,58 @@ public readonly struct ImageHeader
         this.CompressionMethod = compressionMethod;
         this.FilterMethod = filterMethod;
         this.InterlaceMethod = interlaceMethod;
+    }
+
+    /// <summary> The width of the image in pixels. </summary>
+    public int Width { get; }
+
+    /// <summary> The height of the image in pixels. </summary>
+    public int Height { get; }
+
+    /// <summary> The bit depth of the image. </summary>
+    public byte BitDepth { get; }
+
+    /// <summary> The color type of the image. </summary>
+    internal ColorType ColorType { get; }
+
+    /// <summary> The compression method used for the image. </summary>
+    internal CompressionMethod CompressionMethod { get; }
+
+    /// <summary> The filter method used for the image. </summary>
+    internal FilterMethod FilterMethod { get; }
+
+    /// <summary> The interlace method used by the image. </summary>
+    internal InterlaceMethod InterlaceMethod { get; }
+
+    internal (byte bytesPerPixel, byte samplesPerPixel) GetBytesAndSamplesPerPixel()
+    {
+        int bitDepthCorrected = (this.BitDepth + 7) / 8;
+        byte samplesPerPixel = this.SamplesPerPixel;
+        return ((byte)(samplesPerPixel * bitDepthCorrected), samplesPerPixel);
+    }
+
+    internal byte SamplesPerPixel
+        => this.ColorType switch
+        {
+            ColorType.None => 1,
+            ColorType.PaletteUsed => 1,
+            ColorType.ColorUsed => 3,
+            ColorType.AlphaChannelUsed => 2,
+            ColorType.ColorUsed | ColorType.AlphaChannelUsed => 4,
+            _ => 0,
+        };
+
+    internal int BytesPerScanline(byte samplesPerPixel)
+    {
+        int width = this.Width;
+        return this.BitDepth switch
+        {
+            1 => (width + 7) / 8,
+            2 => (width + 3) / 4,
+            4 => (width + 1) / 2,
+            8 or 16 => width * samplesPerPixel * (this.BitDepth / 8),
+            _ => 0,
+        };
     }
 
     /// <inheritdoc />
