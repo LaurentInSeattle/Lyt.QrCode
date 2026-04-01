@@ -106,4 +106,16 @@ public readonly struct Pixel
 
     /// <inheritdoc />
     public override string ToString() => $"(RGBA: {this.R}, {this.G}, {this.B}, {this.A})";
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int ToColorInt(Pixel p)
+        => ToColorInt(p.R, p.G, p.B, p.A);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int ToColorInt(byte r, byte g, byte b, byte a = 255)
+        => (a << 24) + (r << 16) + (g << 8) + b;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static (byte r, byte g, byte b, byte a) FromColorInt(int i)
+        => ((byte)(i >> 16), (byte)(i >> 8), (byte)i, (byte)(i >> 24));
 }

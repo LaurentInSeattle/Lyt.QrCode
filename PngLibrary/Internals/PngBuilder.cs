@@ -114,7 +114,7 @@ internal class PngBuilder
         this.height = height;
         this.bytesPerPixel = bytesPerPixel;
 
-        backgroundColorInt = PixelToColorInt(0, 0, 0, hasAlphaChannel ? (byte)0 : byte.MaxValue);
+        backgroundColorInt = Pixel.ToColorInt(0, 0, 0, hasAlphaChannel ? (byte)0 : byte.MaxValue);
 
         colorCounts = new Dictionary<int, int>()
         {
@@ -134,7 +134,7 @@ internal class PngBuilder
     {
         if (!hasTooManyColorsForPalette)
         {
-            var val = PixelToColorInt(pixel);
+            var val = Pixel.ToColorInt(pixel);
             if (val != backgroundColorInt)
             {
                 if (!colorCounts.ContainsKey(val))
@@ -261,7 +261,7 @@ internal class PngBuilder
 
             for (int i = 0; i < paletteColors.Count; i++)
             {
-                var (r, g, b, a) = ColorIntToPixel(paletteColors[i]);
+                var (r, g, b, a) = Pixel.FromColorInt(paletteColors[i]);
                 int startIndex = i * 3;
                 palette[startIndex++] = r;
                 palette[startIndex++] = g;
@@ -283,7 +283,7 @@ internal class PngBuilder
                     byte g = rawData[index++];
                     byte b = rawData[index];
 
-                    int colorInt = PixelToColorInt(r, g, b);
+                    int colorInt = Pixel.ToColorInt(r, g, b);
                     byte value = (byte)paletteColors.IndexOf(colorInt);
 
                     if (applyShift)
@@ -450,16 +450,4 @@ internal class PngBuilder
              //     smallest sum of absolute values per row. 
         }
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int PixelToColorInt(Pixel p) 
-        => PixelToColorInt(p.R, p.G, p.B, p.A);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int PixelToColorInt(byte r, byte g, byte b, byte a = 255) 
-        => (a << 24) + (r << 16) + (g << 8) + b;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static (byte r, byte g, byte b, byte a) ColorIntToPixel(int i) 
-        => ((byte)(i >> 16), (byte)(i >> 8), (byte)i, (byte)(i >> 24));
 }

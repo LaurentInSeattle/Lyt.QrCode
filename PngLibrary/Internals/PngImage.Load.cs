@@ -7,11 +7,18 @@ public partial class PngImage
     private readonly Palette? palette;
     private readonly bool hasTransparencyChunk;
 
-    // These fields are cached from the header for faster access when getting pixels.
+    // These fields are cached from the header for faster access when manipulating pixels.
+    private readonly int height;
     private readonly int width;
     private readonly ColorType colorType;
     private readonly int rowOffset;
     private readonly int bitDepth;
+
+    // These fields are used when saving the image
+    // AI Generated : 
+    // ??? - to determine whether we can use a palette and if so, how many colors it should contain.
+    private bool hasTooManyColorsForPalette;
+    private bool hasAlphaChannel;
 
     internal PngImage(
         ImageHeader imageHeader, byte[] data, int bytesPerPixel, Palette? palette, bool hasTransparencyChunk)
@@ -22,7 +29,8 @@ public partial class PngImage
         this.palette = palette;
         this.hasTransparencyChunk = hasTransparencyChunk;
 
-        // These fields are cached from the header for faster access when getting pixels.
+        // These fields are cached from the header for faster access when manipulating pixels.
+        this.height = imageHeader.Height;
         this.width = imageHeader.Width;
         this.colorType = imageHeader.ColorType;
         this.rowOffset = imageHeader.InterlaceMethod == InterlaceMethod.Adam7 ? 0 : 1;
@@ -298,6 +306,7 @@ public partial class PngImage
                     default:
                         return new Pixel(first, data[pixelStartIndex + 1], data[pixelStartIndex + 2], data[pixelStartIndex + 3], false);
                 }
+
             case 6:
                 return new Pixel(first, data[pixelStartIndex + 2], data[pixelStartIndex + 4], 255, false);
 
