@@ -3,14 +3,12 @@
 /// <summary> Used to construct PNG images. Call <see cref="Create"/> to make a new builder. </summary>
 internal class PngBuilder
 {
-    private const byte Deflate32KbWindow = 120;
-    private const byte ChecksumBits = 1;
-
     private readonly byte[] rawData;
     private readonly bool hasAlphaChannel;
     private readonly int width;
     private readonly int height;
     private readonly int bytesPerPixel;
+
     private readonly int backgroundColorInt;
     private readonly Dictionary<int, int> colorCounts;
     private readonly List<(string keyword, byte[] data)> storedStrings = [];
@@ -20,8 +18,8 @@ internal class PngBuilder
     /// <summary> Create a builder for a PNG with the given width and size. </summary>
     public static PngBuilder Create(int width, int height, bool hasAlphaChannel)
     {
-        var bpp = hasAlphaChannel ? 4 : 3;
-        var length = (height * width * bpp) + height;
+        int bpp = hasAlphaChannel ? 4 : 3;
+        int length = (height * width * bpp) + height;
         return new PngBuilder(new byte[length], hasAlphaChannel, width, height, bpp);
     }
 
@@ -59,12 +57,10 @@ internal class PngBuilder
     /// <param name="useAlphaChannel">Whether to include an alpha channel in the output.</param>
     public static PngBuilder FromBgra32Pixels(byte[] data, int width, int height, bool useAlphaChannel = true)
     {
-        using (var memoryStream = new MemoryStream(data))
-        {
-            var builder = FromBgra32Pixels(memoryStream, width, height, useAlphaChannel);
+        using var memoryStream = new MemoryStream(data);
+        var builder = FromBgra32Pixels(memoryStream, width, height, useAlphaChannel);
 
-            return builder;
-        }
+        return builder;
     }
 
     /// <summary>
@@ -129,7 +125,7 @@ internal class PngBuilder
     /// <summary>
     /// Sets the RGB pixel value for the given column (x) and row (y).
     /// </summary>
-    public PngBuilder SetPixel(byte r, byte g, byte b, int x, int y) => SetPixel(new Pixel(r, g, b), x, y);
+    public PngBuilder SetPixel(byte r, byte g, byte b, int x, int y) => this.SetPixel(new Pixel(r, g, b), x, y);
 
     /// <summary>
     /// Set the pixel value for the given column (x) and row (y).
@@ -191,50 +187,46 @@ internal class PngBuilder
     /// </param>
     public PngBuilder StoreText(string keyword, string text)
     {
-        if (keyword == null)
-        {
-            throw new ArgumentNullException(nameof(keyword), "Keyword may not be null.");
-        }
-
-        if (text == null)
-        {
-            throw new ArgumentNullException(nameof(text), "Text may not be null.");
-        }
-
         if (keyword == string.Empty)
         {
             throw new ArgumentException("Keyword may not be empty.", nameof(keyword));
         }
 
+        // trailing, leading and consecutive whitespaces are prohibited : Removing them
+        keyword = keyword.Trim();
+        keyword = keyword.Replace("  ", " ");
         if (keyword.Length > 79)
         {
-            throw new ArgumentException($"Keyword must be between 1 - 79 characters, provided keyword '{keyword}' has length of {keyword.Length} characters.",
+            throw new ArgumentException(
+                $"Keyword must be between 1 - 79 characters, provided keyword '{keyword}' has length of {keyword.Length} characters.",
                 nameof(keyword));
         }
 
-        for (var i = 0; i < keyword.Length; i++)
+        for (int i = 0; i < keyword.Length; i++)
         {
-            var c = keyword[i];
-            var isValid = (c >= 32 && c <= 126) || (c >= 161 && c <= 255);
+            char c = keyword[i];
+            bool isValid = (c >= 32 && c <= 126) || (c >= 161 && c <= 255);
             if (!isValid)
             {
-                throw new ArgumentException("The keyword can only contain printable Latin 1 characters and spaces in the ranges 32 - 126 or 161 -255. " +
-                                            $"The provided keyword '{keyword}' contained an invalid character ({c}) at index {i}.", nameof(keyword));
+                throw new ArgumentException(
+                    "The keyword can only contain printable Latin 1 characters and spaces in the ranges 32 - 126 or 161 -255. " +
+                    $"The provided keyword '{keyword}' contained an invalid character ({c}) at index {i}.", 
+                    nameof(keyword));
             }
 
-            // TODO: trailing, leading and consecutive whitespaces are also prohibited.
+
         }
 
-        var bytes = Encoding.UTF8.GetBytes(text);
-
-        for (var i = 0; i < bytes.Length; i++)
+        byte[] bytes = Encoding.UTF8.GetBytes(text);
+        for (int i = 0; i < bytes.Length; i++)
         {
-            var b = bytes[i];
-
+            byte b = bytes[i];
             if (b == 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(text), "The provided text contained a null (0) byte when converted to UTF-8. Null bytes are not permitted. " +
-                                                                    $"Text was: '{text}'");
+                throw new ArgumentOutOfRangeException(
+                    nameof(text), 
+                    "The provided text contained a null (0) byte when converted to UTF-8. Null bytes are not permitted. " +
+                    $"Text was: '{text}'");
             }
         }
 
@@ -246,61 +238,58 @@ internal class PngBuilder
     /// <summary> Get the bytes of the PNG file for this builder. </summary>
     public byte[] Save()
     {
-        using (var memoryStream = new MemoryStream())
-        {
-            Save(memoryStream);
-            return memoryStream.ToArray();
-        }
+        using var memoryStream = new MemoryStream();
+        Save(memoryStream);
+        return memoryStream.ToArray();
     }
 
     /// <summary> Write the PNG file bytes to the provided stream. </summary>
     public void Save(Stream outputStream)
     {
         byte[]? palette = null;
-        var dataLength = rawData.Length;
-        var bitDepth = 8;
+        int dataLength = rawData.Length;
+        int bitDepth = 8;
 
         if (!hasTooManyColorsForPalette && !hasAlphaChannel)
         {
             var paletteColors = colorCounts.OrderByDescending(x => x.Value).Select(x => x.Key).ToList();
             bitDepth = paletteColors.Count > 16 ? 8 : 4;
-            var samplesPerByte = bitDepth == 8 ? 1 : 2;
-            var applyShift = samplesPerByte == 2;
+            int samplesPerByte = bitDepth == 8 ? 1 : 2;
+            bool applyShift = samplesPerByte == 2;
 
             palette = new byte[3 * paletteColors.Count];
 
-            for (var i = 0; i < paletteColors.Count; i++)
+            for (int i = 0; i < paletteColors.Count; i++)
             {
-                var color = ColorIntToPixel(paletteColors[i]);
-                var startIndex = i * 3;
-                palette[startIndex++] = color.r;
-                palette[startIndex++] = color.g;
-                palette[startIndex] = color.b;
+                var (r, g, b, a) = ColorIntToPixel(paletteColors[i]);
+                int startIndex = i * 3;
+                palette[startIndex++] = r;
+                palette[startIndex++] = g;
+                palette[startIndex] = b;
             }
 
-            var rawDataIndex = 0;
+            int rawDataIndex = 0;
 
-            for (var y = 0; y < height; y++)
+            for (int y = 0; y < height; y++)
             {
                 // None filter - we don't use filtering for palette images.
                 rawData[rawDataIndex++] = 0;
 
-                for (var x = 0; x < width; x++)
+                for (int x = 0; x < width; x++)
                 {
-                    var index = ((y * width * bytesPerPixel) + y + 1) + (x * bytesPerPixel);
+                    int index = ((y * width * bytesPerPixel) + y + 1) + (x * bytesPerPixel);
 
-                    var r = rawData[index++];
-                    var g = rawData[index++];
-                    var b = rawData[index];
+                    byte r = rawData[index++];
+                    byte g = rawData[index++];
+                    byte b = rawData[index];
 
-                    var colorInt = PixelToColorInt(r, g, b);
-
-                    var value = (byte)paletteColors.IndexOf(colorInt);
+                    int colorInt = PixelToColorInt(r, g, b);
+                    byte value = (byte)paletteColors.IndexOf(colorInt);
 
                     if (applyShift)
                     {
                         // apply mask and shift
-                        var withinByteIndex = x % 2;
+                        int withinByteIndex = x % 2;
 
                         if (withinByteIndex == 1)
                         {
@@ -316,7 +305,6 @@ internal class PngBuilder
                     {
                         rawData[rawDataIndex++] = value;
                     }
-
                 }
             }
 
@@ -328,12 +316,9 @@ internal class PngBuilder
         }
 
         outputStream.Write(ImageHeader.ExpectedHeader, 0, ImageHeader.ExpectedHeader.Length);
-
         var stream = new PngStreamWriteHelper(outputStream);
-
         stream.WriteChunkLength(13);
         stream.WriteChunkHeader(ImageHeader.HeaderBytes);
-
         StreamHelper.WriteBigEndianInt32(stream, width);
         StreamHelper.WriteBigEndianInt32(stream, height);
         stream.WriteByte((byte)bitDepth);
@@ -353,7 +338,6 @@ internal class PngBuilder
         stream.WriteByte((byte)CompressionMethod.DeflateWithSlidingWindow);
         stream.WriteByte((byte)FilterMethod.AdaptiveFiltering);
         stream.WriteByte((byte)InterlaceMethod.None);
-
         stream.WriteCrc();
 
         if (palette != null)
@@ -364,7 +348,7 @@ internal class PngBuilder
             stream.WriteCrc();
         }
 
-        var imageData = Compress(rawData, dataLength);
+        byte[] imageData = Compress(rawData, dataLength);
         stream.WriteChunkLength(imageData.Length);
         stream.WriteChunkHeader(Encoding.ASCII.GetBytes("IDAT"));
         stream.Write(imageData, 0, imageData.Length);
@@ -372,8 +356,8 @@ internal class PngBuilder
 
         foreach (var storedString in storedStrings)
         {
-            var keyword = Encoding.GetEncoding("iso-8859-1").GetBytes(storedString.keyword);
-            var length = keyword.Length
+            byte[] keyword = Encoding.GetEncoding("iso-8859-1").GetBytes(storedString.keyword);
+            int length = keyword.Length
                          + 1 // Null separator
                          + 1 // Compression flag
                          + 1 // Compression method
@@ -383,14 +367,12 @@ internal class PngBuilder
 
             stream.WriteChunkLength(length);
             stream.WriteChunkHeader(Encoding.ASCII.GetBytes("iTXt"));
-            stream.Write(keyword, 0, keyword.Length);
-            
+            stream.Write(keyword, 0, keyword.Length);            
             stream.WriteByte(0); // Null separator
             stream.WriteByte(0); // Compression flag (0 for uncompressed)
             stream.WriteByte(0); // Compression method (0, ignored since flag is zero)
             stream.WriteByte(0); // Null separator
             stream.WriteByte(0); // Null separator
-
             stream.Write(storedString.data, 0, storedString.data.Length);
             stream.WriteCrc();
         }
@@ -402,67 +384,61 @@ internal class PngBuilder
 
     private static byte[] Compress(byte[] data, int dataLength)
     {
-        const int headerLength = 2;
-        const int checksumLength = 4;
+        const byte Deflate32KbWindow = 120;
+        const byte ChecksumBits = 1;
+        const int HeaderLength = 2;
+        const int ChecksumLength = 4;
 
-        var compressionLevel = CompressionLevel.Optimal;
+        using var compressStream = new MemoryStream();
+        using var compressor = new DeflateStream(compressStream, CompressionLevel.Optimal, true);
+        compressor.Write(data, 0, dataLength);
+        compressor.Close();
+        compressStream.Seek(0, SeekOrigin.Begin);
+        byte[] result = new byte[HeaderLength + compressStream.Length + ChecksumLength];
 
-        using (var compressStream = new MemoryStream())
-        using (var compressor = new DeflateStream(compressStream, compressionLevel, true))
+        // Write the ZLib header.
+        result[0] = Deflate32KbWindow;
+        result[1] = ChecksumBits;
+
+        // Write the compressed data.
+        int streamValue;
+        int i = 0;
+        while ((streamValue = compressStream.ReadByte()) != -1)
         {
-            compressor.Write(data, 0, dataLength);
-            compressor.Close();
-
-            compressStream.Seek(0, SeekOrigin.Begin);
-
-            var result = new byte[headerLength + compressStream.Length + checksumLength];
-
-            // Write the ZLib header.
-            result[0] = Deflate32KbWindow;
-            result[1] = ChecksumBits;
-
-            // Write the compressed data.
-            int streamValue;
-            var i = 0;
-            while ((streamValue = compressStream.ReadByte()) != -1)
-            {
-                result[headerLength + i] = (byte)streamValue;
-                i++;
-            }
-
-            // Write Checksum of raw data.
-            var checksum = Adler32Checksum.Calculate(data, dataLength);
-
-            var offset = headerLength + compressStream.Length;
-
-            result[offset++] = (byte)(checksum >> 24);
-            result[offset++] = (byte)(checksum >> 16);
-            result[offset++] = (byte)(checksum >> 8);
-            result[offset] = (byte)(checksum >> 0);
-
-            return result;
+            result[HeaderLength + i] = (byte)streamValue;
+            i++;
         }
+
+        // Write Checksum of raw data.
+        int checksum = Adler32Checksum.Calculate(data, dataLength);
+        long offset = HeaderLength + compressStream.Length;
+        result[offset++] = (byte)(checksum >> 24);
+        result[offset++] = (byte)(checksum >> 16);
+        result[offset++] = (byte)(checksum >> 8);
+        result[offset] = (byte)(checksum >> 0);
+
+        return result;
     }
 
     // WTH ? Should delete ? 
     /// <summary> Attempt to improve compressability of the raw data by using adaptive filtering. </summary>
     private void AttemptCompressionOfRawData(byte[] rawData)
     {
-        var bytesPerScanline = 1 + (bytesPerPixel * width);
-        var scanlineCount = rawData.Length / bytesPerScanline;
-        var scanData = new byte[bytesPerScanline - 1];
+        int bytesPerScanline = 1 + (bytesPerPixel * width);
+        int scanlineCount = rawData.Length / bytesPerScanline;
+        byte[] scanData = new byte[bytesPerScanline - 1];
 
-        for (var scanlineRowIndex = 0; scanlineRowIndex < scanlineCount; scanlineRowIndex++)
+        for (int scanlineRowIndex = 0; scanlineRowIndex < scanlineCount; scanlineRowIndex++)
         {
-            var sourceIndex = (scanlineRowIndex * bytesPerScanline) + 1;
+            int sourceIndex = (scanlineRowIndex * bytesPerScanline) + 1;
             Array.Copy(rawData, sourceIndex, scanData, 0, bytesPerScanline - 1);
-            var noneFilterSum = 0;
+            int noneFilterSum = 0;
             for (int i = 0; i < scanData.Length; i++)
             {
                 noneFilterSum += scanData[i];
             }
 
-            var leftFilterSum = 0;
+            int leftFilterSum = 0;
             for (int i = 0; i < scanData.Length; i++)
             {
                 // WTH ? 

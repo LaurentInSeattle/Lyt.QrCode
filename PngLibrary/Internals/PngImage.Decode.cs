@@ -1,6 +1,6 @@
-﻿namespace Lyt.Png.Internals; 
+﻿namespace Lyt.Png; 
 
-internal static class PngDecoder
+public partial class PngImage
 {
     internal static byte[] Decode(byte[] decompressedData, ImageHeader header, byte bytesPerPixel, byte samplesPerPixel)
     {

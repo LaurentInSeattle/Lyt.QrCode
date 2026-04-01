@@ -2,20 +2,20 @@
 
 public partial class PngImage
 {
-    /// <summary> Reads a PNG image from an array of bytes. </summary>
-    /// <remarks> Usually result of File.ReadAllBytes() on a PNG file on disk. </remarks>
-    /// <param name="bytes"> The bytes of the PNG data to be read.</param>
-    /// <returns>A new <see cref="PngImage"/>.</returns>
-    public static PngImage Open(byte[] bytes)
+    private readonly RawPngData data;
+    private readonly bool hasTransparencyChunk;
+
+    internal PngImage(ImageHeader header, RawPngData data, bool hasTransparencyChunk)
     {
-        using var memoryStream = new MemoryStream(bytes);
-        return PngImage.Open(memoryStream);
+        this.Header = header;
+        this.data = data ?? throw new ArgumentNullException(nameof(data));
+        this.hasTransparencyChunk = hasTransparencyChunk;
     }
 
-    /// <summary> Reads a PNG image from a stream. </summary>
-    /// <param name="stream">The stream containing PNG data to be read.</param>
-    /// <returns>A new <see cref="PngImage"/>.</returns>
-    public static PngImage Open(Stream stream)
+    /// <summary> The header data from the PNG image. </summary>
+    internal ImageHeader Header { get; }
+
+    internal static PngImage OpenInternal(Stream stream)
     {
         if (!stream.CanRead)
         {
@@ -195,7 +195,7 @@ public partial class PngImage
 
         byte[] bytesOut = output.ToArray();
         var (bytesPerPixel, samplesPerPixel) = imageHeader.GetBytesAndSamplesPerPixel();
-        bytesOut = PngDecoder.Decode(bytesOut, imageHeader, bytesPerPixel, samplesPerPixel);
+        bytesOut = PngImage.Decode(bytesOut, imageHeader, bytesPerPixel, samplesPerPixel);
 
         return
             new PngImage(

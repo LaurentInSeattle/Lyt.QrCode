@@ -1,7 +1,6 @@
-﻿namespace Lyt.Png;
-
+﻿namespace Lyt.Png.Internals;
 /// <summary> The high level information about the image. </summary>
-public readonly struct ImageHeader
+internal readonly struct ImageHeader
 {
     internal static readonly byte[] ExpectedHeader = [137, 80, 78, 71, 13, 10, 26, 10];
 
@@ -45,13 +44,13 @@ public readonly struct ImageHeader
     }
 
     /// <summary> The width of the image in pixels. </summary>
-    public int Width { get; }
+    internal int Width { get; }
 
     /// <summary> The height of the image in pixels. </summary>
-    public int Height { get; }
+    internal int Height { get; }
 
     /// <summary> The bit depth of the image. </summary>
-    public byte BitDepth { get; }
+    internal byte BitDepth { get; }
 
     /// <summary> The color type of the image. </summary>
     internal ColorType ColorType { get; }
