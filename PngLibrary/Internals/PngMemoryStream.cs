@@ -15,7 +15,7 @@ internal class PngMemoryStream : MemoryStream
         this.Write(header, 0, header.Length);
     }
 
-    public void WriteChunkLength(int length) => StreamHelper.WriteBigEndianInt32(this, length);
+    public void WriteChunkLength(int length) => this.WriteBigEndianInt32(length);
 
     public override void Write(byte[] buffer, int offset, int count)
     {
@@ -23,5 +23,5 @@ internal class PngMemoryStream : MemoryStream
         base.Write(buffer, offset, count);
     }
 
-    public void WriteCrc() => StreamHelper.WriteBigEndianInt32(this, (int)Crc32.Calculate(written));
+    public void WriteCrc() => this.WriteBigEndianInt32((int)Crc32.Calculate(written));
 }

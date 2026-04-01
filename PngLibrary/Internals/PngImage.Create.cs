@@ -6,6 +6,29 @@ public partial class PngImage
     private readonly Dictionary<int, int> colorCounts = [];
     private readonly List<(string keyword, byte[] data)> storedStrings = [];
 
+    /*
+        Text data encoded in PNG files typically exists as metadata within tEXt, zTXt, or iTXt chunks to 
+        describe image properties, authorship, and usage rights. 
+        Common examples include image titles, creator names, copyright notices, creation times, software used, 
+        and comments. These text chunks use keywords (e.g., "Description," "Author") and are often stored 
+        in ISO 8859-1 (Latin-1) or UTF-8. 
+
+        Examples of Text Data Metadata in PNG Chunks
+
+            Title: A short description of the image.
+            Author: The name of the creator.
+            Description: A detailed explanation of the image content.
+            Copyright: Legal notice regarding ownership.
+            Creation Time: The date and time the image was created.
+            Software: The software used to create or edit the image (e.g., "Adobe Photoshop").
+            Comment: General user-supplied notes.
+            Disclaimer: Legal warnings or disclaimers.
+            Source: The device or source used to produce the image.
+            Warning: Warnings regarding the nature of the content.
+            URL: A link to the author or source.
+    
+     */
+
     /// <summary> Allows you to store arbitrary text data in the "iTXt" international textual data chunks of the generated PNG image. </summary>
     /// <param name="keyword">
     /// A keyword identifying the text data between 1-79 characters in length. Must not start with, end with or contain 

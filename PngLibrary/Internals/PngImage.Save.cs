@@ -85,8 +85,8 @@ public partial class PngImage
         stream.Write(ImageHeader.ExpectedHeader, 0, ImageHeader.ExpectedHeader.Length);
         stream.WriteChunkLength(13);
         stream.WriteChunkHeader(ImageHeader.HeaderBytes);
-        StreamHelper.WriteBigEndianInt32((Stream)stream, this.width);
-        StreamHelper.WriteBigEndianInt32((Stream)stream, this.height);
+        stream.WriteBigEndianInt32(this.width);
+        stream.WriteBigEndianInt32(this.height);
         stream.WriteByte((byte)bitDepth);
 
         var colorType = ColorType.ColorUsed;

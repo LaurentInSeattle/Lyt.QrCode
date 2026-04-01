@@ -69,12 +69,12 @@ public partial class PngImage
         {
             chunkHeader = null;
             long position = stream.Position;
-            if (!StreamHelper.TryReadHeaderBytes(stream, out var headerBytes))
+            if (!stream.TryReadHeaderBytes(out byte[] headerBytes))
             {
                 return false;
             }
 
-            int length = StreamHelper.ReadBigEndianInt32(headerBytes, 0);
+            int length = headerBytes.ReadBigEndianInt32(0);
             string name = Encoding.ASCII.GetString(headerBytes, 4, 4);
             chunkHeader = new ChunkHeader(position, length, name);
             return true;
@@ -110,8 +110,8 @@ public partial class PngImage
                 throw new InvalidOperationException($"Did not read 4 bytes for the CRC, only found: {read}.");
             }
 
-            int width = StreamHelper.ReadBigEndianInt32(ihdrBytes, 0);
-            int height = StreamHelper.ReadBigEndianInt32(ihdrBytes, 4);
+            int width = ihdrBytes.ReadBigEndianInt32(0);
+            int height = ihdrBytes.ReadBigEndianInt32(4);
             byte bitDepth = ihdrBytes[8];
             byte colorType = ihdrBytes[9];
             byte compressionMethod = ihdrBytes[10];
