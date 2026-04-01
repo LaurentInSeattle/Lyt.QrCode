@@ -235,152 +235,152 @@ internal class PngBuilder
         return this;
     }
 
-    /// <summary> Get the bytes of the PNG file for this builder. </summary>
-    public byte[] Save()
-    {
-        using var memoryStream = new MemoryStream();
-        Save(memoryStream);
-        return memoryStream.ToArray();
-    }
+    ///// <summary> Get the bytes of the PNG file for this builder. </summary>
+    //public byte[] Save()
+    //{
+    //    using var memoryStream = new MemoryStream();
+    //    Save(memoryStream);
+    //    return memoryStream.ToArray();
+    //}
 
-    /// <summary> Write the PNG file bytes to the provided stream. </summary>
-    public void Save(Stream outputStream)
-    {
-        byte[]? palette = null;
-        int dataLength = rawData.Length;
-        int bitDepth = 8;
+    ///// <summary> Write the PNG file bytes to the provided stream. </summary>
+    //public void Save(Stream outputStream)
+    //{
+    //    byte[]? palette = null;
+    //    int dataLength = rawData.Length;
+    //    int bitDepth = 8;
 
-        if (!hasTooManyColorsForPalette && !hasAlphaChannel)
-        {
-            var paletteColors = colorCounts.OrderByDescending(x => x.Value).Select(x => x.Key).ToList();
-            bitDepth = paletteColors.Count > 16 ? 8 : 4;
-            int samplesPerByte = bitDepth == 8 ? 1 : 2;
-            bool applyShift = samplesPerByte == 2;
+    //    if (!hasTooManyColorsForPalette && !hasAlphaChannel)
+    //    {
+    //        var paletteColors = colorCounts.OrderByDescending(x => x.Value).Select(x => x.Key).ToList();
+    //        bitDepth = paletteColors.Count > 16 ? 8 : 4;
+    //        int samplesPerByte = bitDepth == 8 ? 1 : 2;
+    //        bool applyShift = samplesPerByte == 2;
 
-            palette = new byte[3 * paletteColors.Count];
+    //        palette = new byte[3 * paletteColors.Count];
 
-            for (int i = 0; i < paletteColors.Count; i++)
-            {
-                var (r, g, b, a) = Pixel.FromColorInt(paletteColors[i]);
-                int startIndex = i * 3;
-                palette[startIndex++] = r;
-                palette[startIndex++] = g;
-                palette[startIndex] = b;
-            }
+    //        for (int i = 0; i < paletteColors.Count; i++)
+    //        {
+    //            var (r, g, b, a) = Pixel.FromColorInt(paletteColors[i]);
+    //            int startIndex = i * 3;
+    //            palette[startIndex++] = r;
+    //            palette[startIndex++] = g;
+    //            palette[startIndex] = b;
+    //        }
 
-            int rawDataIndex = 0;
+    //        int rawDataIndex = 0;
 
-            for (int y = 0; y < height; y++)
-            {
-                // None filter - we don't use filtering for palette images.
-                rawData[rawDataIndex++] = 0;
+    //        for (int y = 0; y < height; y++)
+    //        {
+    //            // None filter - we don't use filtering for palette images.
+    //            rawData[rawDataIndex++] = 0;
 
-                for (int x = 0; x < width; x++)
-                {
-                    int index = ((y * width * bytesPerPixel) + y + 1) + (x * bytesPerPixel);
+    //            for (int x = 0; x < width; x++)
+    //            {
+    //                int index = ((y * width * bytesPerPixel) + y + 1) + (x * bytesPerPixel);
 
-                    byte r = rawData[index++];
-                    byte g = rawData[index++];
-                    byte b = rawData[index];
+    //                byte r = rawData[index++];
+    //                byte g = rawData[index++];
+    //                byte b = rawData[index];
 
-                    int colorInt = Pixel.ToColorInt(r, g, b);
-                    byte value = (byte)paletteColors.IndexOf(colorInt);
+    //                int colorInt = Pixel.ToColorInt(r, g, b);
+    //                byte value = (byte)paletteColors.IndexOf(colorInt);
 
-                    if (applyShift)
-                    {
-                        // apply mask and shift
-                        int withinByteIndex = x % 2;
+    //                if (applyShift)
+    //                {
+    //                    // apply mask and shift
+    //                    int withinByteIndex = x % 2;
 
-                        if (withinByteIndex == 1)
-                        {
-                            rawData[rawDataIndex] = (byte)(rawData[rawDataIndex] + value);
-                            rawDataIndex++;
-                        }
-                        else
-                        {
-                            rawData[rawDataIndex] = (byte)(value << 4);
-                        }
-                    }
-                    else
-                    {
-                        rawData[rawDataIndex++] = value;
-                    }
-                }
-            }
+    //                    if (withinByteIndex == 1)
+    //                    {
+    //                        rawData[rawDataIndex] = (byte)(rawData[rawDataIndex] + value);
+    //                        rawDataIndex++;
+    //                    }
+    //                    else
+    //                    {
+    //                        rawData[rawDataIndex] = (byte)(value << 4);
+    //                    }
+    //                }
+    //                else
+    //                {
+    //                    rawData[rawDataIndex++] = value;
+    //                }
+    //            }
+    //        }
 
-            dataLength = rawDataIndex;
-        }
-        else
-        {
-            AttemptCompressionOfRawData(rawData);
-        }
+    //        dataLength = rawDataIndex;
+    //    }
+    //    else
+    //    {
+    //        AttemptCompressionOfRawData(rawData);
+    //    }
 
-        outputStream.Write(ImageHeader.ExpectedHeader, 0, ImageHeader.ExpectedHeader.Length);
-        var stream = new PngStreamWriteHelper(outputStream);
-        stream.WriteChunkLength(13);
-        stream.WriteChunkHeader(ImageHeader.HeaderBytes);
-        StreamHelper.WriteBigEndianInt32(stream, width);
-        StreamHelper.WriteBigEndianInt32(stream, height);
-        stream.WriteByte((byte)bitDepth);
+    //    outputStream.Write(ImageHeader.ExpectedHeader, 0, ImageHeader.ExpectedHeader.Length);
+    //    var stream = outputStream;
+    //    stream.WriteChunkLength(13);
+    //    stream.WriteChunkHeader(ImageHeader.HeaderBytes);
+    //    StreamHelper.WriteBigEndianInt32(stream, width);
+    //    StreamHelper.WriteBigEndianInt32(stream, height);
+    //    stream.WriteByte((byte)bitDepth);
 
-        var colorType = ColorType.ColorUsed;
-        if (hasAlphaChannel)
-        {
-            colorType |= ColorType.AlphaChannelUsed;
-        }
+    //    var colorType = ColorType.ColorUsed;
+    //    if (hasAlphaChannel)
+    //    {
+    //        colorType |= ColorType.AlphaChannelUsed;
+    //    }
 
-        if (palette != null)
-        {
-            colorType |= ColorType.PaletteUsed;
-        }
+    //    if (palette != null)
+    //    {
+    //        colorType |= ColorType.PaletteUsed;
+    //    }
 
-        stream.WriteByte((byte)colorType);
-        stream.WriteByte((byte)CompressionMethod.DeflateWithSlidingWindow);
-        stream.WriteByte((byte)FilterMethod.AdaptiveFiltering);
-        stream.WriteByte((byte)InterlaceMethod.None);
-        stream.WriteCrc();
+    //    stream.WriteByte((byte)colorType);
+    //    stream.WriteByte((byte)CompressionMethod.DeflateWithSlidingWindow);
+    //    stream.WriteByte((byte)FilterMethod.AdaptiveFiltering);
+    //    stream.WriteByte((byte)InterlaceMethod.None);
+    //    stream.WriteCrc();
 
-        if (palette != null)
-        {
-            stream.WriteChunkLength(palette.Length);
-            stream.WriteChunkHeader(Encoding.ASCII.GetBytes("PLTE"));
-            stream.Write(palette, 0, palette.Length);
-            stream.WriteCrc();
-        }
+    //    if (palette != null)
+    //    {
+    //        stream.WriteChunkLength(palette.Length);
+    //        stream.WriteChunkHeader(Encoding.ASCII.GetBytes("PLTE"));
+    //        stream.Write(palette, 0, palette.Length);
+    //        stream.WriteCrc();
+    //    }
 
-        byte[] imageData = Compress(rawData, dataLength);
-        stream.WriteChunkLength(imageData.Length);
-        stream.WriteChunkHeader(Encoding.ASCII.GetBytes("IDAT"));
-        stream.Write(imageData, 0, imageData.Length);
-        stream.WriteCrc();
+    //    byte[] imageData = Compress(rawData, dataLength);
+    //    stream.WriteChunkLength(imageData.Length);
+    //    stream.WriteChunkHeader(Encoding.ASCII.GetBytes("IDAT"));
+    //    stream.Write(imageData, 0, imageData.Length);
+    //    stream.WriteCrc();
 
-        foreach (var storedString in storedStrings)
-        {
-            byte[] keyword = Encoding.GetEncoding("iso-8859-1").GetBytes(storedString.keyword);
-            int length = keyword.Length
-                         + 1 // Null separator
-                         + 1 // Compression flag
-                         + 1 // Compression method
-                         + 1 // Null separator
-                         + 1 // Null separator
-                         + storedString.data.Length;
+    //    foreach (var storedString in storedStrings)
+    //    {
+    //        byte[] keyword = Encoding.GetEncoding("iso-8859-1").GetBytes(storedString.keyword);
+    //        int length = keyword.Length
+    //                     + 1 // Null separator
+    //                     + 1 // Compression flag
+    //                     + 1 // Compression method
+    //                     + 1 // Null separator
+    //                     + 1 // Null separator
+    //                     + storedString.data.Length;
 
-            stream.WriteChunkLength(length);
-            stream.WriteChunkHeader(Encoding.ASCII.GetBytes("iTXt"));
-            stream.Write(keyword, 0, keyword.Length);            
-            stream.WriteByte(0); // Null separator
-            stream.WriteByte(0); // Compression flag (0 for uncompressed)
-            stream.WriteByte(0); // Compression method (0, ignored since flag is zero)
-            stream.WriteByte(0); // Null separator
-            stream.WriteByte(0); // Null separator
-            stream.Write(storedString.data, 0, storedString.data.Length);
-            stream.WriteCrc();
-        }
+    //        stream.WriteChunkLength(length);
+    //        stream.WriteChunkHeader(Encoding.ASCII.GetBytes("iTXt"));
+    //        stream.Write(keyword, 0, keyword.Length);            
+    //        stream.WriteByte(0); // Null separator
+    //        stream.WriteByte(0); // Compression flag (0 for uncompressed)
+    //        stream.WriteByte(0); // Compression method (0, ignored since flag is zero)
+    //        stream.WriteByte(0); // Null separator
+    //        stream.WriteByte(0); // Null separator
+    //        stream.Write(storedString.data, 0, storedString.data.Length);
+    //        stream.WriteCrc();
+    //    }
 
-        stream.WriteChunkLength(0);
-        stream.WriteChunkHeader(Encoding.ASCII.GetBytes("IEND"));
-        stream.WriteCrc();
-    }
+    //    stream.WriteChunkLength(0);
+    //    stream.WriteChunkHeader(Encoding.ASCII.GetBytes("IEND"));
+    //    stream.WriteCrc();
+    //}
 
     private static byte[] Compress(byte[] data, int dataLength)
     {

@@ -5,19 +5,19 @@ public partial class PngImage
     /// <summary> Write the PNG file data bytes to a new byte array. </summary>
     public byte[] Save()
     {
-        using var memoryStream = new MemoryStream();
-        Save(memoryStream);
-        return memoryStream.ToArray();
+        using var pngMemoryStream = new PngMemoryStream();
+        this.Save(pngMemoryStream);
+        return pngMemoryStream.ToArray();
     }
 
     /// <summary> Write the PNG file bytes to the provided stream. </summary>
-    public void Save(Stream outputStream)
+    internal void Save(PngMemoryStream stream)
     {
         byte[]? palette = null;
         int dataLength = this.data.Length;
         int bitDepth = 8;
 
-        if (!hasTooManyColorsForPalette && !hasAlphaChannel)
+        if (!this.hasTooManyColorsForPalette && !this.hasAlphaChannel)
         {
             var paletteColors = colorCounts.OrderByDescending(x => x.Value).Select(x => x.Key).ToList();
             bitDepth = paletteColors.Count > 16 ? 8 : 4;
@@ -82,12 +82,11 @@ public partial class PngImage
             // AttemptCompressionOfthis.data(this.data);
         }
 
-        outputStream.Write(ImageHeader.ExpectedHeader, 0, ImageHeader.ExpectedHeader.Length);
-        var stream = new PngStreamWriteHelper(outputStream);
+        stream.Write(ImageHeader.ExpectedHeader, 0, ImageHeader.ExpectedHeader.Length);
         stream.WriteChunkLength(13);
         stream.WriteChunkHeader(ImageHeader.HeaderBytes);
-        StreamHelper.WriteBigEndianInt32(stream, width);
-        StreamHelper.WriteBigEndianInt32(stream, height);
+        StreamHelper.WriteBigEndianInt32((Stream)stream, this.width);
+        StreamHelper.WriteBigEndianInt32((Stream)stream, this.height);
         stream.WriteByte((byte)bitDepth);
 
         var colorType = ColorType.ColorUsed;
@@ -186,5 +185,4 @@ public partial class PngImage
 
         return result;
     }
-
 }
