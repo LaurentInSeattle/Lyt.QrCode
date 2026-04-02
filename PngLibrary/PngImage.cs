@@ -60,27 +60,48 @@ public partial class PngImage
 
     public static PngImage CreateBlank(int width, int height, bool hasAlphaChannel)
     {
-        int bpp = hasAlphaChannel ? 4 : 3;
-        int length = (height * width * bpp) + height;
+        int bytesPerPixel = hasAlphaChannel ? 4 : 3;
+        int length = height * width * bytesPerPixel;
         return PngImage.FromPixels(new byte[length], width, height, hasAlphaChannel);
     }
 
     public static PngImage FromPixels(byte[] pixels, int width, int height, bool hasAlphaChannel)
         => PngImage.FromPixelsInternal(pixels, width, height, hasAlphaChannel);
 
-    internal static PngImage FromPixelsInternal(byte[] pixels, int width, int height, bool hasAlphaChannel)
+    internal static PngImage FromPixelsInternal(byte[] sourcePixels, int width, int height, bool hasAlphaChannel)
     {
         const int bitDepthPerChannel = 8;
         int bytesPerPixel = hasAlphaChannel ? 4 : 3;
         var header = new ImageHeader(
-            width, height, 
+            width, height,
             bitDepthPerChannel,
             hasAlphaChannel ? ColorType.ColorUsed | ColorType.AlphaChannelUsed : ColorType.ColorUsed,
-            CompressionMethod.DeflateWithSlidingWindow, 
-            FilterMethod.AdaptiveFiltering, 
+            CompressionMethod.DeflateWithSlidingWindow,
+            FilterMethod.AdaptiveFiltering,
             InterlaceMethod.None);
-        var image = new PngImage(header, pixels, bytesPerPixel, null, hasTransparencyChunk: false);
-        return image;
+        int length = height * width * bytesPerPixel + height;
+        byte[] imagePixels = new byte[length];
+        var newImage = new PngImage(header, imagePixels, bytesPerPixel, null, hasTransparencyChunk: false);
+
+        // CONSIDER: Speed up by using unsafe code and pointers to copy the pixel data
+        int offset = 0;
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                byte r = sourcePixels[offset];
+                byte g = sourcePixels[offset + 1];
+                byte b = sourcePixels[offset + 2];
+                Pixel pixel =
+                    hasAlphaChannel ?
+                        new Pixel(r, g, b, sourcePixels[offset + 3], false) :
+                        new Pixel(r, g, b);
+                newImage.SetPixel(pixel, x, y);
+                offset += bytesPerPixel;
+            }
+        }
+
+        return newImage;
     }
 
     /// <summary> The width of the image in pixels. </summary>

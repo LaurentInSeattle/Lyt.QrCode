@@ -18,7 +18,10 @@ public partial class PngImage
     // AI Generated : 
     // ??? - to determine whether we can use a palette and if so, how many colors it should contain.
     private bool hasTooManyColorsForPalette;
-    private bool hasAlphaChannel;
+
+    private readonly int backgroundColorInt;
+    private readonly Dictionary<int, int> colorCounts = [];
+    private readonly List<(string keyword, byte[] data)> textualMetadata = [];
 
     internal PngImage(
         ImageHeader imageHeader, byte[] data, int bytesPerPixel, Palette? palette, bool hasTransparencyChunk)
@@ -35,6 +38,16 @@ public partial class PngImage
         this.colorType = imageHeader.ColorType;
         this.rowOffset = imageHeader.InterlaceMethod == InterlaceMethod.Adam7 ? 0 : 1;
         this.bitDepth = imageHeader.BitDepth;
+
+        // Initialize palette related fields
+        this.backgroundColorInt = Pixel.ToColorInt(0, 0, 0, this.HasAlphaChannel ? (byte)0 : byte.MaxValue);
+        if (this.colorCounts.Count == 0)
+        {
+            this.colorCounts = new Dictionary<int, int>()
+            {
+                { this.backgroundColorInt, this.width * this.height }
+            };
+        } 
     }
 
     /// <summary> The header data from the PNG image. </summary>

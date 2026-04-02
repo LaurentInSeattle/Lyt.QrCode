@@ -2,16 +2,24 @@
 
 public partial class PngImage
 {
-    private readonly int backgroundColorInt;
-    private readonly Dictionary<int, int> colorCounts = [];
-    private readonly List<(string keyword, byte[] data)> textualMetadata = [];
-
     internal (int Width, int Height, int Channels, byte[] Pixels) ToRgba32Bitmap()
     {
         byte[] pixels = new byte[this.Width * this.Height * 4];
         if (this.Header.IsRgba32)
         {
-            Array.Copy(this.data, pixels, pixels.Length);
+            int offset = 0;
+            for (int y = 0; y < this.Height; y++)
+            {
+                for (int x = 0; x < this.Width; x++)
+                {
+                    Pixel pixel = this.GetPixel(x, y);
+                    pixels[offset++] = pixel.R;
+                    pixels[offset++] = pixel.G;
+                    pixels[offset++] = pixel.B;
+                    pixels[offset++] = pixel.A;
+                }
+            }
+
             return (this.Width, this.Height, 4, pixels);
         }
 
@@ -23,7 +31,18 @@ public partial class PngImage
         byte[] pixels = new byte[this.Width * this.Height * 3];
         if (this.Header.IsRgb24)
         {
-            Array.Copy(this.data, pixels, pixels.Length);
+            int offset = 0;
+            for (int y = 0; y < this.Height; y++)
+            {
+                for (int x = 0; x < this.Width; x++)
+                {
+                    Pixel pixel = this.GetPixel(x, y);
+                    pixels[offset++] = pixel.R;
+                    pixels[offset++] = pixel.G;
+                    pixels[offset++] = pixel.B;
+                }
+            }
+
             return (this.Width, this.Height, 3, pixels);
         }
 
@@ -146,7 +165,7 @@ public partial class PngImage
         this.data[start++] = pixel.G;
         this.data[start++] = pixel.B;
 
-        if (this.hasAlphaChannel)
+        if (this.HasAlphaChannel)
         {
             this.data[start] = pixel.A;
         }

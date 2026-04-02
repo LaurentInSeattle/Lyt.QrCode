@@ -17,7 +17,7 @@ public partial class PngImage
         int dataLength = this.data.Length;
         int bitDepth = 8;
 
-        if (!this.hasTooManyColorsForPalette && !this.hasAlphaChannel)
+        if (!this.hasTooManyColorsForPalette && !this.HasAlphaChannel)
         {
             var paletteColors = colorCounts.OrderByDescending(x => x.Value).Select(x => x.Key).ToList();
             bitDepth = paletteColors.Count > 16 ? 8 : 4;
@@ -90,7 +90,7 @@ public partial class PngImage
         stream.WriteByte((byte)bitDepth);
 
         var colorType = ColorType.ColorUsed;
-        if (hasAlphaChannel)
+        if (this.HasAlphaChannel)
         {
             colorType |= ColorType.AlphaChannelUsed;
         }

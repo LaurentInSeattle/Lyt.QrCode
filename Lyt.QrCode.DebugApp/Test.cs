@@ -39,13 +39,18 @@ internal sealed class Test
                 bitmap.Pixels);
         Decode(sourceImage);
 
+        var clone = image.Clone();
+        byte[] imageBytes = clone.Save();
+        path = Path.Combine(desktop, "Screen-Qr-Clone.png");
+        File.WriteAllBytes(path, imageBytes);
+
         var save = PngImage.FromPixels(
             sourceImage.Pixels, 
             sourceImage.Width, 
             sourceImage.Height, 
             sourceImage.Format == PixelFormat.RGBA32);
-        byte[] imageBytes = save.Save();
-        path = Path.Combine(rootPath, "Screen-Qr-Saved.png"); 
+        imageBytes = save.Save();
+        path = Path.Combine(desktop, "Screen-Qr-Saved.png"); 
         File.WriteAllBytes(path, imageBytes);
 
         string simpleText = "This a test plain text string.";
