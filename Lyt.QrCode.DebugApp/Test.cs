@@ -29,36 +29,24 @@ internal sealed class Test
         string path = Path.Combine(desktop, "Screen-Qr.png");
         byte[] bytes = File.ReadAllBytes(path);
         var image = PngImage.Open(bytes);
-        long val = 0;
-        for (int i = 0; i < image.Width; i++)
-        {
-            for (int j = 0; j < image.Height; j++)
-            {
-                var pixel = image.GetPixel(i, j);
-                val += pixel.R;
-            }
-        }
-
-        Debug.WriteLine("Sum: " + val);
-
-        byte[] pixels = new byte[image.Width * image.Height * 4]; 
-        for (int i = 0; i < image.Width; i++)
-        {
-            for (int j = 0; j < image.Height; j++)
-            {
-                var pixel = image.GetPixel(i, j);
-                int index = (j * image.Width + i) * 4;
-                pixels[index] = pixel.R;
-                pixels[index + 1] = pixel.G;
-                pixels[index + 2] = pixel.B;
-                pixels[index + 3] = pixel.A;
-            }
-        }
-
+        var bitmap = image.ToBitmap();
         var sourceImage = 
-            new SourceImage(image.Width, image.Height, image.Width * 4, PixelFormat.RGBA32, pixels);
+            new SourceImage(
+                image.Width, 
+                image.Height, 
+                image.Width * bitmap.Channels, 
+                bitmap.Channels == 4 ? PixelFormat.RGBA32 : PixelFormat.RGB24, 
+                bitmap.Pixels);
         Decode(sourceImage);
 
+        var save = PngImage.FromPixels(
+            sourceImage.Pixels, 
+            sourceImage.Width, 
+            sourceImage.Height, 
+            sourceImage.Format == PixelFormat.RGBA32);
+        byte[] imageBytes = save.Save();
+        path = Path.Combine(rootPath, "Screen-Qr-Saved.png"); 
+        File.WriteAllBytes(path, imageBytes);
 
         string simpleText = "This a test plain text string.";
         this.Encode(simpleText, "Text");

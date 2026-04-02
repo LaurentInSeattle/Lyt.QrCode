@@ -6,6 +6,30 @@ public partial class PngImage
     private readonly Dictionary<int, int> colorCounts = [];
     private readonly List<(string keyword, byte[] data)> textualMetadata = [];
 
+    internal (int Width, int Height, int Channels, byte[] Pixels) ToRgba32Bitmap()
+    {
+        byte[] pixels = new byte[this.Width * this.Height * 4];
+        if (this.Header.IsRgba32)
+        {
+            Array.Copy(this.data, pixels, pixels.Length);
+            return (this.Width, this.Height, 4, pixels);
+        }
+
+        throw new Exception("Not a RGBA 32 image ");
+    }
+
+    internal (int Width, int Height, int Channels, byte[] Pixels) ToRgb24Bitmap()
+    {
+        byte[] pixels = new byte[this.Width * this.Height * 3];
+        if (this.Header.IsRgb24)
+        {
+            Array.Copy(this.data, pixels, pixels.Length);
+            return (this.Width, this.Height, 3, pixels);
+        }
+
+        throw new Exception("Not a RGB 24 image ");
+    }
+
     /*
         Text data encoded in PNG files typically exists as metadata within tEXt, zTXt, or iTXt chunks to 
         describe image properties, authorship, and usage rights. 

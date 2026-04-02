@@ -1,7 +1,5 @@
 ﻿namespace Lyt.Png;
 
-using System.Net.NetworkInformation;
-
 // See: https://github.com/EliotJones/BigGustave
 
 /// <summary> Represents a PNG image.</summary>
@@ -36,13 +34,30 @@ public partial class PngImage
         return newImage;
     }
 
-    public (int Width, int Height, byte[] Pixels) ToBgraBitmap  ()
+    public (int Width, int Height, int Channels, byte[] Pixels) ToBitmap()
     {
-        byte[] pixels = new byte[this.Width * this.Height * 4];
-        // TODO !
-        return (this.Width, this.Height, pixels);
+        if (this.Header.IsRgba32)
+        {
+            return this.ToRgba32Bitmap();
+        }
+        else if (this.Header.IsRgb24)
+        {
+            return this.ToRgb24Bitmap();
+        }
+
+        var clone = this.Clone();
+        if (clone.Header.IsRgba32)
+        {
+            return clone.ToRgba32Bitmap();
+        }
+        else if (clone.Header.IsRgb24)
+        {
+            return clone.ToRgb24Bitmap();
+        }
+
+        throw new Exception("Unable to convert image to bitmap format.");
     }
-    
+
     public static PngImage CreateBlank(int width, int height, bool hasAlphaChannel)
     {
         int bpp = hasAlphaChannel ? 4 : 3;
@@ -51,8 +66,21 @@ public partial class PngImage
     }
 
     public static PngImage FromPixels(byte[] pixels, int width, int height, bool hasAlphaChannel)
+        => PngImage.FromPixelsInternal(pixels, width, height, hasAlphaChannel);
+
+    internal static PngImage FromPixelsInternal(byte[] pixels, int width, int height, bool hasAlphaChannel)
     {
-        throw new NotImplementedException();
+        const int bitDepthPerChannel = 8;
+        int bytesPerPixel = hasAlphaChannel ? 4 : 3;
+        var header = new ImageHeader(
+            width, height, 
+            bitDepthPerChannel,
+            hasAlphaChannel ? ColorType.ColorUsed | ColorType.AlphaChannelUsed : ColorType.ColorUsed,
+            CompressionMethod.DeflateWithSlidingWindow, 
+            FilterMethod.AdaptiveFiltering, 
+            InterlaceMethod.None);
+        var image = new PngImage(header, pixels, bytesPerPixel, null, hasTransparencyChunk: false);
+        return image;
     }
 
     /// <summary> The width of the image in pixels. </summary>
@@ -63,6 +91,12 @@ public partial class PngImage
 
     /// <summary> The bit depth of the image. </summary>
     public int BitDepth => this.Header.BitDepth;
+
+    /// <summary> Whether the image is a BGRA 32 image. </summary>
+    public bool IsBgra32 => this.Header.IsRgba32;
+
+    /// <summary> Whether the image is a BGR 24 image. </summary>
+    public bool IsBgr24 => this.Header.IsRgb24;
 
     /// <summary> Whether the image has an alpha (transparency) layer. </summary>
     public bool HasAlphaChannel => (this.Header.ColorType & ColorType.AlphaChannelUsed) != 0 || this.hasTransparencyChunk;

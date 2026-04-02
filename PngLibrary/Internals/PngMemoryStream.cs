@@ -9,19 +9,20 @@ internal class PngMemoryStream : MemoryStream
     // Holds the bytes written to the stream since the last call to WriteChunkHeader
     private readonly List<byte> written = [];
 
-    public void WriteChunkHeader(byte[] header)
-    {
-        written.Clear();
-        this.Write(header, 0, header.Length);
-    }
-
-    public void WriteChunkLength(int length) => this.WriteBigEndianInt32(length);
-
+    // Overridden Write must remain public 
     public override void Write(byte[] buffer, int offset, int count)
     {
         written.AddRange(buffer.Skip(offset).Take(count));
         base.Write(buffer, offset, count);
     }
 
-    public void WriteCrc() => this.WriteBigEndianInt32((int)Crc32.Calculate(written));
+    internal void WriteChunkHeader(byte[] header)
+    {
+        written.Clear();
+        this.Write(header, 0, header.Length);
+    }
+
+    internal void WriteChunkLength(int length) => this.WriteBigEndianInt32(length);
+
+    internal void WriteCrc() => this.WriteBigEndianInt32((int)Crc32.Calculate(written));
 }

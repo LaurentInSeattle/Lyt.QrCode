@@ -2,12 +2,12 @@
 
 internal class Palette
 {
-    public bool HasAlphaValues { get; private set; }
+    internal bool HasAlphaValues { get; private set; }
 
-    public byte[] Data { get; }
+    internal byte[] Data { get; }
 
     /// <summary> Creates a palette object. Input palette data length from PLTE chunk must be a multiple of 3. </summary>
-    public Palette(byte[] data)
+    internal Palette(byte[] data)
     {
         this.Data = new byte[data.Length * 4 / 3];
         int dataIndex = 0;
@@ -21,7 +21,7 @@ internal class Palette
     }
 
     /// <summary> Adds transparency values from tRNS chunk. </summary>
-    public void SetAlphaValues(byte[] bytes)
+    internal void SetAlphaValues(byte[] bytes)
     {
         this.HasAlphaValues = true;
 
@@ -31,7 +31,7 @@ internal class Palette
         }
     }
 
-    public Pixel GetPixel(int index)
+    internal Pixel GetPixel(int index)
     {
         int start = index * 4;
         return new Pixel(this.Data[start], this.Data[start + 1], this.Data[start + 2], this.Data[start + 3], false);

@@ -64,6 +64,16 @@ internal readonly struct ImageHeader
     /// <summary> The interlace method used by the image. </summary>
     internal InterlaceMethod InterlaceMethod { get; }
 
+    internal bool IsRgba32 =>
+        this.BitDepth == 8 &&
+        this.ColorType.HasFlag(ColorType.ColorUsed) &&
+        this.ColorType.HasFlag(ColorType.AlphaChannelUsed);
+
+    internal bool IsRgb24 =>
+        this.BitDepth == 8 &&
+        this.ColorType.HasFlag(ColorType.ColorUsed) &&
+        !this.ColorType.HasFlag(ColorType.AlphaChannelUsed);
+
     internal (byte bytesPerPixel, byte samplesPerPixel) GetBytesAndSamplesPerPixel()
     {
         int bitDepthCorrected = (this.BitDepth + 7) / 8;
