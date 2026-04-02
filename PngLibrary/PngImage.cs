@@ -1,5 +1,7 @@
 ﻿namespace Lyt.Png;
 
+using System.Net.NetworkInformation;
+
 // See: https://github.com/EliotJones/BigGustave
 
 /// <summary> Represents a PNG image.</summary>
@@ -20,13 +22,27 @@ public partial class PngImage
     /// <returns>A new <see cref="PngImage"/>.</returns>
     public static PngImage Open(Stream stream) => PngImage.OpenInternal(stream);
 
-    public static PngImage FromBytes(byte[] bytes) => PngImage.FromPngImage(PngImage.Open(bytes));
-
-    public static PngImage FromPngImage(PngImage pngImage)
+    public PngImage Clone()
     {
-        throw new NotImplementedException();
+        var newImage = PngImage.CreateBlank(this.Width, this.Height, this.HasAlphaChannel);
+        for (int y = 0; y < this.Height; y++)
+        {
+            for (int x = 0; x < this.Width; x++)
+            {
+                newImage.SetPixel(this.GetPixel(x, y), x, y);
+            }
+        }
+
+        return newImage;
     }
 
+    public (int Width, int Height, byte[] Pixels) ToBgraBitmap  ()
+    {
+        byte[] pixels = new byte[this.Width * this.Height * 4];
+        // TODO !
+        return (this.Width, this.Height, pixels);
+    }
+    
     public static PngImage CreateBlank(int width, int height, bool hasAlphaChannel)
     {
         int bpp = hasAlphaChannel ? 4 : 3;
@@ -50,6 +66,4 @@ public partial class PngImage
 
     /// <summary> Whether the image has an alpha (transparency) layer. </summary>
     public bool HasAlphaChannel => (this.Header.ColorType & ColorType.AlphaChannelUsed) != 0 || this.hasTransparencyChunk;
-
-    // public Pixel GetPixel(int x, int y) => data.GetPixel(x, y);
 }

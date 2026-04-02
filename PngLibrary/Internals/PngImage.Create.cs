@@ -4,7 +4,7 @@ public partial class PngImage
 {
     private readonly int backgroundColorInt;
     private readonly Dictionary<int, int> colorCounts = [];
-    private readonly List<(string keyword, byte[] data)> storedStrings = [];
+    private readonly List<(string keyword, byte[] data)> textualMetadata = [];
 
     /*
         Text data encoded in PNG files typically exists as metadata within tEXt, zTXt, or iTXt chunks to 
@@ -81,6 +81,50 @@ public partial class PngImage
         }
 
         // All checks passed, store the keyword and text data (as UTF-8 bytes) for later writing to the PNG file.
-        this.storedStrings.Add((keyword, bytes));
+        this.textualMetadata.Add((keyword, bytes));
+    }
+
+    /// <summary> Sets the RGB pixel value for the given column (x) and row (y). </summary>
+    public void SetPixel(byte r, byte g, byte b, int x, int y) => this.SetPixel(new Pixel(r, g, b), x, y);
+
+    /// <summary> Set the pixel value for the given column (x) and row (y). </summary>
+    public void SetPixel(Pixel pixel, int x, int y)
+    {
+        if (!this.hasTooManyColorsForPalette)
+        {
+            int colorIntValue = Pixel.ToColorInt(pixel);
+            if (colorIntValue != this.backgroundColorInt)
+            {
+                if (!this.colorCounts.TryGetValue(colorIntValue, out int value))
+                {
+                    this.colorCounts[colorIntValue] = 1;
+                }
+                else
+                {
+                    this.colorCounts[colorIntValue] = ++value;
+                }
+
+                this.colorCounts[backgroundColorInt]--;
+                if (this.colorCounts[backgroundColorInt] == 0)
+                {
+                    this.colorCounts.Remove(backgroundColorInt);
+                }
+            }
+
+            if (this.colorCounts.Count > 256)
+            {
+                this.hasTooManyColorsForPalette = true;
+            }
+        }
+
+        int start = (y * ((this.width * this.bytesPerPixel) + 1)) + 1 + (x * this.bytesPerPixel);
+        this.data[start++] = pixel.R;
+        this.data[start++] = pixel.G;
+        this.data[start++] = pixel.B;
+
+        if (this.hasAlphaChannel)
+        {
+            this.data[start] = pixel.A;
+        }
     }
 }

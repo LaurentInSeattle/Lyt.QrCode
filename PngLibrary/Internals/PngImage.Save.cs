@@ -120,7 +120,7 @@ public partial class PngImage
         stream.Write(imageData, 0, imageData.Length);
         stream.WriteCrc();
 
-        foreach (var storedString in storedStrings)
+        foreach (var storedString in textualMetadata)
         {
             byte[] keyword = Encoding.GetEncoding("iso-8859-1").GetBytes(storedString.keyword);
             int length = keyword.Length
