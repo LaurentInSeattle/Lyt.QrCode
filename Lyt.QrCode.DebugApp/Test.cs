@@ -39,12 +39,12 @@ internal sealed class Test
                 bitmap.Pixels);
         Decode(sourceImage);
 
-        var clone = image.Clone();
+        var clone = image.Duplicate();
         byte[] imageBytes = clone.Save();
         path = Path.Combine(desktop, "Screen-Qr-Clone.png");
         File.WriteAllBytes(path, imageBytes);
 
-        var save = PngImage.FromPixels(
+        var save = PngImage.FromBitmap(
             sourceImage.Pixels, 
             sourceImage.Width, 
             sourceImage.Height, 

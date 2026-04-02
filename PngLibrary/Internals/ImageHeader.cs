@@ -18,14 +18,14 @@ internal readonly struct ImageHeader
     /// <summary> Create a new <see cref="ImageHeader"/>. </summary>
     internal ImageHeader(int width, int height, byte bitDepth, ColorType colorType, CompressionMethod compressionMethod, FilterMethod filterMethod, InterlaceMethod interlaceMethod)
     {
-        if (width == 0)
+        if (width <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(width), "Invalid width (0) for image.");
+            throw new ArgumentOutOfRangeException(nameof(width), "Invalid width (<= 0) for image.");
         }
 
-        if (height == 0)
+        if (height <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(height), "Invalid height (0) for image.");
+            throw new ArgumentOutOfRangeException(nameof(height), "Invalid height (<= 0) for image.");
         }
 
         if (!PermittedBitDepths.TryGetValue(colorType, out var permitted)
@@ -50,6 +50,7 @@ internal readonly struct ImageHeader
     internal int Height { get; }
 
     /// <summary> The bit depth of the image. </summary>
+    /// <remarks> Bits per channel </remarks>
     internal byte BitDepth { get; }
 
     /// <summary> The color type of the image. </summary>

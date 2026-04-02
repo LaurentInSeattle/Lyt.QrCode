@@ -53,6 +53,42 @@ public partial class PngImage
     /// <summary> The header data from the PNG image. </summary>
     internal ImageHeader Header { get; }
 
+    internal static PngImage FromBitmapInternal(byte[] sourcePixels, int width, int height, bool hasAlphaChannel)
+    {
+        const int bitDepthPerChannel = 8;
+        int bytesPerPixel = hasAlphaChannel ? 4 : 3;
+        var header = new ImageHeader(
+            width, height,
+            bitDepthPerChannel,
+            hasAlphaChannel ? ColorType.ColorUsed | ColorType.AlphaChannelUsed : ColorType.ColorUsed,
+            CompressionMethod.DeflateWithSlidingWindow,
+            FilterMethod.AdaptiveFiltering,
+            InterlaceMethod.None);
+        int length = height * width * bytesPerPixel + height;
+        byte[] imagePixels = new byte[length];
+        var newImage = new PngImage(header, imagePixels, bytesPerPixel, null, hasTransparencyChunk: false);
+
+        // CONSIDER: Speed up by using unsafe code and pointers to copy the pixel data
+        int offset = 0;
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                byte r = sourcePixels[offset];
+                byte g = sourcePixels[offset + 1];
+                byte b = sourcePixels[offset + 2];
+                Pixel pixel =
+                    hasAlphaChannel ?
+                        new Pixel(r, g, b, sourcePixels[offset + 3], false) :
+                        new Pixel(r, g, b);
+                newImage.SetPixel(pixel, x, y);
+                offset += bytesPerPixel;
+            }
+        }
+
+        return newImage;
+    }
+
     internal static PngImage OpenInternal(Stream stream)
     {
         if (!stream.CanRead)
@@ -240,95 +276,164 @@ public partial class PngImage
                 imageHeader, bytesOut, bytesPerPixel, palette, palette?.HasAlphaValues ?? false);
     }
 
-    /// <summary> Get the pixel at the given column and row (x, y). </summary>
-    /// <remarks>
-    /// Pixel values are generated on demand from the underlying data to prevent holding many items in memory at once, 
-    /// so consumers should cache values if they're going to be looped over many time.
-    /// </remarks>
-    /// <param name="x">The x coordinate (column).</param>
-    /// <param name="y">The y coordinate (row).</param>
-    /// <returns>The pixel at the coordinate.</returns>
-    public Pixel GetPixel(int x, int y)
+    internal static byte[] Decode(byte[] decompressedData, ImageHeader header, byte bytesPerPixel, byte samplesPerPixel)
     {
-        if (palette != null)
+        void ReverseFilter(FilterType type, int previousRowStartByteAbsolute, int rowStartByteAbsolute, int byteAbsolute, int rowByteIndex, int bytesPerPixel)
         {
-            int pixelsPerByte = (8 / bitDepth);
-            int bytesInRow = (1 + (width / pixelsPerByte));
-            int byteIndexInRow = x / pixelsPerByte;
-            int paletteIndex = (1 + (y * bytesInRow)) + byteIndexInRow;
-            byte b = data[paletteIndex];
-
-            if (bitDepth == 8)
+            byte GetLeftByteValue()
             {
-                return palette.GetPixel(b);
+                int leftIndex = rowByteIndex - bytesPerPixel;
+                byte leftValue = leftIndex >= 0 ? decompressedData[rowStartByteAbsolute + leftIndex] : (byte)0;
+                return leftValue;
             }
 
-            int withinByteIndex = x % pixelsPerByte;
-            int rightShift = 8 - ((withinByteIndex + 1) * bitDepth);
-            int indexActual = (b >> rightShift) & ((1 << bitDepth) - 1);
+            byte GetAboveByteValue()
+            {
+                int upIndex = previousRowStartByteAbsolute + rowByteIndex;
+                return upIndex >= 0 ? decompressedData[upIndex] : (byte)0;
+            }
 
-            return palette.GetPixel(indexActual);
-        }
+            byte GetAboveLeftByteValue()
+            {
+                int index = previousRowStartByteAbsolute + rowByteIndex - bytesPerPixel;
+                return
+                    index < previousRowStartByteAbsolute || previousRowStartByteAbsolute < 0 ?
+                        (byte)0 :
+                        decompressedData[index];
+            }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static byte ToSingleByte(byte first, byte second)
-        {
-            int us = (first << 8) + second;
-            return (byte)Math.Round((255 * us) / (double)ushort.MaxValue);
-        }
-
-        int rowStartPixel = (rowOffset + (rowOffset * y)) + (bytesPerPixel * width * y);
-        int pixelStartIndex = rowStartPixel + (bytesPerPixel * x);
-        byte first = data[pixelStartIndex];
-
-        switch (bytesPerPixel)
-        {
-            case 1:
-                return new Pixel(first, first, first, 255, true);
-
-            case 2:
-                switch (colorType)
+            // Moved out of the switch for performance.
+            if (type == FilterType.Up)
+            {
+                int above = previousRowStartByteAbsolute + rowByteIndex;
+                if (above < 0)
                 {
-                    case ColorType.None:
-                        {
-                            byte second = data[pixelStartIndex + 1];
-                            byte value = ToSingleByte(first, second);
-                            return new Pixel(value, value, value, 255, true);
-                        }
-
-                    default:
-                        return new Pixel(first, first, first, data[pixelStartIndex + 1], true);
+                    return;
                 }
 
-            case 3:
-                return new Pixel(first, data[pixelStartIndex + 1], data[pixelStartIndex + 2], 255, false);
+                decompressedData[byteAbsolute] += decompressedData[above];
+                return;
+            }
 
-            case 4:
-                switch (colorType)
+            if (type == FilterType.Sub)
+            {
+                int leftIndex = rowByteIndex - bytesPerPixel;
+                if (leftIndex < 0)
                 {
-                    case ColorType.None | ColorType.AlphaChannelUsed:
-                        {
-                            byte second = data[pixelStartIndex + 1];
-                            byte firstAlpha = data[pixelStartIndex + 2];
-                            byte secondAlpha = data[pixelStartIndex + 3];
-                            byte gray = ToSingleByte(first, second);
-                            byte alpha = ToSingleByte(firstAlpha, secondAlpha);
-                            return new Pixel(gray, gray, gray, alpha, true);
-                        }
-
-                    default:
-                        return new Pixel(first, data[pixelStartIndex + 1], data[pixelStartIndex + 2], data[pixelStartIndex + 3], false);
+                    return;
                 }
 
-            case 6:
-                return new Pixel(first, data[pixelStartIndex + 2], data[pixelStartIndex + 4], 255, false);
+                decompressedData[byteAbsolute] += decompressedData[rowStartByteAbsolute + leftIndex];
+                return;
+            }
 
-            case 8:
-                return new Pixel(
-                    first, data[pixelStartIndex + 2], data[pixelStartIndex + 4], data[pixelStartIndex + 6], false);
+            /// <summary>
+            /// Computes a simple linear function of the three neighboring pixels (left, above, upper left),
+            /// then chooses as predictor the neighboring pixel closest to the computed value.
+            /// </summary>
+            static byte GetPaethValue(byte a, byte b, byte c)
+            {
+                int p = a + b - c;
+                int pa = Math.Abs(p - a);
+                int pb = Math.Abs(p - b);
+                int pc = Math.Abs(p - c);
+
+                if (pa <= pb && pa <= pc)
+                {
+                    return a;
+                }
+
+                return pb <= pc ? b : c;
+            }
+
+            switch (type)
+            {
+                case FilterType.None:
+                    return;
+
+                case FilterType.Average:
+                    decompressedData[byteAbsolute] += (byte)((GetLeftByteValue() + GetAboveByteValue()) / 2);
+                    break;
+
+                case FilterType.Paeth:
+                    byte a = GetLeftByteValue();
+                    byte b = GetAboveByteValue();
+                    byte c = GetAboveLeftByteValue();
+                    decompressedData[byteAbsolute] += GetPaethValue(a, b, c);
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
+        }
+
+        switch (header.InterlaceMethod)
+        {
+            case InterlaceMethod.None:
+                {
+                    int bytesPerScanline = header.BytesPerScanline(samplesPerPixel);
+                    int currentRowStartByteAbsolute = 1;
+                    for (int rowIndex = 0; rowIndex < header.Height; rowIndex++)
+                    {
+                        var filterType = (FilterType)decompressedData[currentRowStartByteAbsolute - 1];
+                        int previousRowStartByteAbsolute = (rowIndex) + (bytesPerScanline * (rowIndex - 1));
+                        int end = currentRowStartByteAbsolute + bytesPerScanline;
+                        for (int currentByteAbsolute = currentRowStartByteAbsolute; currentByteAbsolute < end; currentByteAbsolute++)
+                        {
+                            ReverseFilter(filterType, previousRowStartByteAbsolute, currentRowStartByteAbsolute, currentByteAbsolute, currentByteAbsolute - currentRowStartByteAbsolute, bytesPerPixel);
+                        }
+
+                        currentRowStartByteAbsolute += bytesPerScanline + 1;
+                    }
+
+                    return decompressedData;
+                }
+
+            case InterlaceMethod.Adam7:
+                {
+                    int pixelsPerRow = header.Width * bytesPerPixel;
+                    byte[] newBytes = new byte[header.Height * pixelsPerRow];
+                    int i = 0;
+                    int previousStartRowByteAbsolute = -1;
+
+                    // 7 passes
+                    for (int pass = 0; pass < 7; pass++)
+                    {
+                        int numberOfScanlines = Adam7.GetNumberOfScanlinesInPass(header, pass);
+                        int numberOfPixelsPerScanline = Adam7.GetPixelsPerScanlineInPass(header, pass);
+                        if (numberOfScanlines <= 0 || numberOfPixelsPerScanline <= 0)
+                        {
+                            continue;
+                        }
+
+                        for (int scanlineIndex = 0; scanlineIndex < numberOfScanlines; scanlineIndex++)
+                        {
+                            var filterType = (FilterType)decompressedData[i++];
+                            int rowStartByte = i;
+                            for (int j = 0; j < numberOfPixelsPerScanline; j++)
+                            {
+                                var (x, y) = Adam7.GetPixelIndexForScanlineInPass(pass, scanlineIndex, j);
+                                for (int k = 0; k < bytesPerPixel; k++)
+                                {
+                                    int byteLineNumber = (j * bytesPerPixel) + k;
+                                    ReverseFilter(filterType, previousStartRowByteAbsolute, rowStartByte, i, byteLineNumber, bytesPerPixel);
+                                    i++;
+                                }
+
+                                int start = pixelsPerRow * y + x * bytesPerPixel;
+                                Array.ConstrainedCopy(
+                                    decompressedData, rowStartByte + j * bytesPerPixel, newBytes, start, bytesPerPixel);
+                            }
+
+                            previousStartRowByteAbsolute = rowStartByte;
+                        }
+                    }
+
+                    return newBytes;
+                }
 
             default:
-                throw new InvalidOperationException($"Unreconized number of bytes per pixel: {bytesPerPixel}.");
+                throw new ArgumentOutOfRangeException($"Invalid interlace method: {header.InterlaceMethod}.");
         }
     }
 }

@@ -2,12 +2,51 @@
 
 public partial class PngImage
 {
-    /// <summary> Write the PNG file data bytes to a new byte array. </summary>
-    public byte[] Save()
+    internal (int Width, int Height, int Channels, byte[] Pixels) ToRgba32Bitmap()
     {
-        using var pngMemoryStream = new PngMemoryStream();
-        this.Save(pngMemoryStream);
-        return pngMemoryStream.ToArray();
+        byte[] pixels = new byte[this.Width * this.Height * 4];
+        if (this.Header.IsRgba32)
+        {
+            int offset = 0;
+            for (int y = 0; y < this.Height; y++)
+            {
+                for (int x = 0; x < this.Width; x++)
+                {
+                    Pixel pixel = this.GetPixel(x, y);
+                    pixels[offset++] = pixel.R;
+                    pixels[offset++] = pixel.G;
+                    pixels[offset++] = pixel.B;
+                    pixels[offset++] = pixel.A;
+                }
+            }
+
+            return (this.Width, this.Height, 4, pixels);
+        }
+
+        throw new Exception("Not a RGBA 32 image ");
+    }
+
+    internal (int Width, int Height, int Channels, byte[] Pixels) ToRgb24Bitmap()
+    {
+        byte[] pixels = new byte[this.Width * this.Height * 3];
+        if (this.Header.IsRgb24)
+        {
+            int offset = 0;
+            for (int y = 0; y < this.Height; y++)
+            {
+                for (int x = 0; x < this.Width; x++)
+                {
+                    Pixel pixel = this.GetPixel(x, y);
+                    pixels[offset++] = pixel.R;
+                    pixels[offset++] = pixel.G;
+                    pixels[offset++] = pixel.B;
+                }
+            }
+
+            return (this.Width, this.Height, 3, pixels);
+        }
+
+        throw new Exception("Not a RGB 24 image ");
     }
 
     /// <summary> Write the PNG file bytes to the provided stream. </summary>
