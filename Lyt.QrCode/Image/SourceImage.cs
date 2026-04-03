@@ -12,8 +12,6 @@ public sealed partial class SourceImage
 
     public byte[] Pixels { get; }
 
-    public bool IsLocked { get; }
-
     /// <summary> Creates a SourceImage instance from the provided information</summary>
     /// <param name="width"></param>
     /// <param name="height"></param>
@@ -23,7 +21,7 @@ public sealed partial class SourceImage
     /// <param name="isLocked"></param>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
-    public SourceImage(int width, int height, int stride, PixelFormat format, byte[] pixels, bool isLocked = true)
+    public SourceImage(int width, int height, int stride, PixelFormat format, byte[] pixels)
     {
         if ((width <= 0) || (height <= 0))
         {
@@ -50,7 +48,6 @@ public sealed partial class SourceImage
         this.Stride = stride;
         this.Format = format;
         this.Pixels = pixels;
-        this.IsLocked = isLocked;
     }
 
     internal GrayscaleImage ToGrayscale()
@@ -64,7 +61,7 @@ public sealed partial class SourceImage
             }
             else
             {
-                return new GrayscaleImage(this.Width, this.Height, this.Pixels, this.IsLocked);
+                return new GrayscaleImage(this.Width, this.Height, this.Pixels);
             }
         }
 
@@ -122,5 +119,58 @@ public sealed partial class SourceImage
         }
 
         return new GrayscaleImage(this.Width, this.Height, grayscalePixels);
+    }
+
+    // RGBA32 format for output
+    internal static SourceImage FromPixelProvider(
+        IPixelProvider pixelProvider,
+        int scale,
+        int border,
+        int foreground = 0,
+        int background = 0xFFFFFF)
+    {
+        int sourceWidth = pixelProvider.Width;
+        int sourceHeight = pixelProvider.Height;
+        int imageWidth = (sourceWidth + border * 2) * scale;
+        int imageHeight = (sourceHeight + border * 2) * scale;
+        int imageStride = imageWidth * 4;
+        byte[] pixelBytes = new byte[imageStride* imageHeight];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void SetPixel(int x, int y, int color)
+        {
+            // BGRA 
+            int offset = ((imageHeight - y - 1) * imageWidth + x) * 4;
+            pixelBytes[offset + 0] = (byte)(color & 0xFF);
+            pixelBytes[offset + 1] = (byte)((color >> 8) & 0xFF);
+            pixelBytes[offset + 2] = (byte)((color >> 16) & 0xFF);
+            pixelBytes[offset + 3] = 0xFF;
+        }
+
+        for (int y = 0; y < sourceHeight; y++)
+        {
+            int yOffset = (border + y) * scale * imageStride;
+
+            for (int x = 0; x < sourceWidth; x++)
+            {
+                int color = pixelProvider.GetPixel(x, y) ? foreground : background;
+                int pos = (border + x) * scale;
+                int end = pos + scale;
+
+                // set pixels for module ('scale' times)
+                for (; pos < end; pos++)
+                {
+                    SetPixel(pos, y, color);
+                }
+            }
+
+            // replicate line 'scale' times
+            for (int i = 1; i < scale; i++)
+            {
+                Array.Copy(pixelBytes, yOffset, pixelBytes, yOffset + i * imageStride, imageStride);
+            }
+        }
+
+        return new SourceImage(imageWidth, imageHeight, imageStride, PixelFormat.RGBA32, pixelBytes);
     }
 }

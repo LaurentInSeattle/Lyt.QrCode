@@ -53,10 +53,10 @@ internal sealed class Test
         path = Path.Combine(desktop, "Screen-Qr-Saved.png"); 
         File.WriteAllBytes(path, imageBytes);
 
-        string simpleText = "This a test plain text string.";
-        this.Encode(simpleText, "Text");
-
+        //string simpleText = "This a test plain text string.";
         //this.Encode(simpleText, "Text");
+
+        this.Encode("Link");
 
         //// Encode same content as a SVG vector image  
         //var encodeSvgParameters = new EncodeParameters()
@@ -329,7 +329,7 @@ internal sealed class Test
             Scale = 16,
         };
 
-        encodeImage = Qr.Encode<string, byte[]>(link);
+        encodeImage = Qr.Encode<string, byte[]>(link, encodeParameters);
         if (encodeImage.Success)
         {
             string fullPath = Path.Combine(rootPath, filename + ".bmp");

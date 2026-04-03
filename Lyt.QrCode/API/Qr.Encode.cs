@@ -150,17 +150,23 @@ public static partial class Qr
 
                         case EncodeParameters.QrImageFormat.Png:
                             byte[] pngImage =
-                                PngBuilder.ToImage(
-                                    qrCode,
-                                    encodeParameters.Scale,
-                                    encodeParameters.Border,
-                                    encodeParameters.Foreground,
-                                    encodeParameters.Background);
+                            //qrCode.ToPngImage(
+                            //    encodeParameters.Scale,
+                            //    encodeParameters.Border,
+                            //    encodeParameters.Foreground,
+                            //    encodeParameters.Background);
+                            PngBuilder.ToImage(
+                                qrCode,
+                                encodeParameters.Scale,
+                                encodeParameters.Border,
+                                encodeParameters.Foreground,
+                                encodeParameters.Background);
                             rawResult = pngImage;
                             break;
+
                         case EncodeParameters.QrImageFormat.Bmp:
                             byte[] bmpImage =
-                                PngBuilder.ToImage(
+                                BitmapBuilder.ToImage(
                                     qrCode,
                                     encodeParameters.Scale,
                                     encodeParameters.Border,

@@ -1,5 +1,7 @@
 ﻿namespace Lyt.QrCode.Render;
 
+using System.Drawing;
+
 internal sealed class BitmapBuilder
 {
     const int imageHeaderSize = 54;
@@ -48,9 +50,29 @@ internal sealed class BitmapBuilder
     /// <param name="scale">The scale</param>
     private void CreateBitmap(IPixelProvider pixelProvider, int border, int scale)
     {
+        // Set all pixel bytes to background color 
+        byte r = (byte ) ( this.background & 0xFF) ;
+        byte g = (byte)((this.background >> 8) & 0xFF);
+        byte b = (byte)((this.background >> 16 )& 0xFF);
+        for (int yy = 0; yy < height; yy++)
+        {
+            for (int xx = 0; xx < width; xx++)
+            {
+                int offset = 4 * xx + yy * width * 4 ;
+                this.pixelBytes[offset + 0] = r;
+                this.pixelBytes[offset + 1] = g;
+                this.pixelBytes[offset + 2] = b;
+                this.pixelBytes[offset + 3] = 0xFF;
+            }
+        }
+
         int sourceWidth = pixelProvider.Width;
         int sourceHeight = pixelProvider.Height;
         int bytesPerLine = this.width * 4;
+
+        r = (byte)(this.foreground & 0xFF);
+        g = (byte)((this.foreground >> 8) & 0xFF);
+        b = (byte)((this.foreground >> 16) & 0xFF);
 
         for (int y = 0; y < sourceHeight; y++)
         {
@@ -58,14 +80,24 @@ internal sealed class BitmapBuilder
 
             for (int x = 0; x < sourceWidth; x++)
             {
-                int color = pixelProvider.GetPixel(x, y) ? this.foreground : this.background;
-                int pos = (border + x) * scale;
-                int end = pos + scale;
+                if (!pixelProvider.GetPixel(x, sourceHeight - y - 1))
+                {
+                    // Background already set 
+                    continue; 
+                }
+                
+                int start = (border + x) * scale;
+                int end = start + scale;
 
                 // set pixels for module ('scale' times)
-                for (; pos < end; pos++)
+                for (int pos = start; pos < end; pos++)
                 {
-                    this.SetPixel(pos, y, color);
+                    // BGRA 
+                    int offset = yOffset + pos * 4;
+                    this.pixelBytes[offset + 0] = r;
+                    this.pixelBytes[offset + 1] = g;
+                    this.pixelBytes[offset + 2] = b;
+                    this.pixelBytes[offset + 3] = 0xFF;
                 }
             }
 
@@ -79,12 +111,10 @@ internal sealed class BitmapBuilder
 
     internal byte[] Bytes => this.bitmapBytes;
 
-    // Note: Forces alpha to fully opaque, consider improving 
-    internal void SetPixel(int x, int y, int color)
+    void SetPixel(int x, int y, int color)
     {
-        int offset = ((this.height - y - 1) * this.width + x) * 4;
-
         // BGRA 
+        int offset = y + x * 4 ; 
         this.pixelBytes[offset + 0] = (byte)(color & 0xFF);
         this.pixelBytes[offset + 1] = (byte)((color >> 8) & 0xFF);
         this.pixelBytes[offset + 2] = (byte)((color >> 16) & 0xFF);
@@ -104,5 +134,8 @@ internal sealed class BitmapBuilder
     }
 
     internal void CopyPixelBytes()
-        => Array.Copy(BitConverter.GetBytes(this.pixelBytes.Length), 0, this.bitmapBytes, 34, 4);
+    {
+        Array.Copy(BitConverter.GetBytes(this.pixelBytes.Length), 0, this.bitmapBytes, 34, 4);
+        Array.Copy(this.pixelBytes, 0, this.bitmapBytes, imageHeaderSize, this.pixelBytes.Length);
+    }
 }

@@ -37,6 +37,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PngLibrary\Lyt.Png.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Link.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>

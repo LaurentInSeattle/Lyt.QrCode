@@ -8,7 +8,7 @@ internal sealed partial class GrayscaleImage
 
     public byte[] Pixels { get; }
 
-    internal GrayscaleImage(int width, int height, byte[] pixels, bool isLocked = false)
+    internal GrayscaleImage(int width, int height, byte[] pixels)
     {
         if ((width <= 0) || (height <= 0))
         {
@@ -23,17 +23,11 @@ internal sealed partial class GrayscaleImage
         this.Width = width;
         this.Height = height;
 
-        if (isLocked)
-        {
-            // Copy the pixel data bacause the input array is locked in memory by the graphics framework of the app.
-            byte[] clonedPixels = new byte[pixels.Length];
-            Array.Copy(pixels, clonedPixels, pixels.Length);
-            this.Pixels = clonedPixels;
-        }
-        else
-        {
-            this.Pixels = pixels;
-        }
+        // Copy the pixel data bacause the input array might be locked in memory
+        // by the graphics framework of the app.
+        byte[] clonedPixels = new byte[pixels.Length];
+        Array.Copy(pixels, clonedPixels, pixels.Length);
+        this.Pixels = clonedPixels;
     }
 
     internal GrayscaleImage(int width, int height, int stride, byte[] pixels)
