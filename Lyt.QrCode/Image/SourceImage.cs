@@ -127,25 +127,38 @@ public sealed partial class SourceImage
         int scale,
         int border,
         int foreground = 0,
-        int background = 0xFFFFFF)
+        int background = 0xFFFFFF, 
+        bool flipVertical = false)
     {
+        // Enforce RGBA32
+        const int bytesPerPixel = 4; 
+
         int sourceWidth = pixelProvider.Width;
         int sourceHeight = pixelProvider.Height;
         int imageWidth = (sourceWidth + border * 2) * scale;
         int imageHeight = (sourceHeight + border * 2) * scale;
-        int imageStride = imageWidth * 4;
+        int imageStride = imageWidth * bytesPerPixel;
         byte[] pixelBytes = new byte[imageStride* imageHeight];
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void SetPixel(int x, int y, int color)
+        // First set all pixel bytes to background color 
+        byte r = (byte)(background & 0xFF);
+        byte g = (byte)((background >> 8) & 0xFF);
+        byte b = (byte)((background >> 16) & 0xFF);
+        for (int yy = 0; yy < imageHeight; yy++)
         {
-            // BGRA 
-            int offset = ((imageHeight - y - 1) * imageWidth + x) * 4;
-            pixelBytes[offset + 0] = (byte)(color & 0xFF);
-            pixelBytes[offset + 1] = (byte)((color >> 8) & 0xFF);
-            pixelBytes[offset + 2] = (byte)((color >> 16) & 0xFF);
-            pixelBytes[offset + 3] = 0xFF;
+            for (int xx = 0; xx < imageWidth; xx++)
+            {
+                int offset = bytesPerPixel * xx + yy * imageStride;
+                pixelBytes[offset + 0] = r;
+                pixelBytes[offset + 1] = g;
+                pixelBytes[offset + 2] = b;
+                pixelBytes[offset + 3] = 0xFF;
+            }
         }
+
+        r = (byte)(foreground & 0xFF);
+        g = (byte)((foreground >> 8) & 0xFF);
+        b = (byte)((foreground >> 16) & 0xFF);
 
         for (int y = 0; y < sourceHeight; y++)
         {
@@ -153,14 +166,25 @@ public sealed partial class SourceImage
 
             for (int x = 0; x < sourceWidth; x++)
             {
-                int color = pixelProvider.GetPixel(x, y) ? foreground : background;
-                int pos = (border + x) * scale;
-                int end = pos + scale;
+                int sourceY = flipVertical ? (sourceHeight - y - 1) : y;
+                if (!pixelProvider.GetPixel(x, sourceY))
+                {
+                    // Background already set 
+                    continue;
+                }
+
+                int start = (border + x) * scale;
+                int end = start + scale;
 
                 // set pixels for module ('scale' times)
-                for (; pos < end; pos++)
+                for (int pos = start; pos < end; pos++)
                 {
-                    SetPixel(pos, y, color);
+                    // BGRA 
+                    int offset = yOffset + pos * bytesPerPixel;
+                    pixelBytes[offset + 0] = r;
+                    pixelBytes[offset + 1] = g;
+                    pixelBytes[offset + 2] = b;
+                    pixelBytes[offset + 3] = 0xFF;
                 }
             }
 

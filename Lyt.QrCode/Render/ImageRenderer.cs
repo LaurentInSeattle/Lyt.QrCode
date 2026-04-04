@@ -13,15 +13,17 @@ internal static class ImageRenderer
     /// <param name="foreground">The foreground color (dark modules), in RGB value (little endian).</param>
     /// <param name="background">The background color (light modules), in RGB value (little endian).</param>
     /// <returns> A Bitmap image, as a byte array.</returns>
-    internal static byte[] ToBitmapImage(
+    internal static byte[] ToBmpImage(
         this IPixelProvider pixelProvider,
-        int scale, int border, int foreground = 0, int background = 0xFFFFFF)
+        int scale, int border, 
+        int foreground = 0, int background = 0xFFFFFF)
     {
         int width = pixelProvider.Width;
         int height = pixelProvider.Height;
         int imageWidth = (width + border * 2) * scale;
         int imageHeight = (height + border * 2) * scale;
-        var sourceImage = SourceImage.FromPixelProvider(pixelProvider, scale, border, foreground, background);
+        var sourceImage = 
+            SourceImage.FromPixelProvider(pixelProvider, scale, border, foreground, background, flipVertical: true);
         byte[] bitmapBytes = new byte[imageHeaderSize + sourceImage.Pixels.Length];
 
         // Generate Bitmap Header
@@ -45,10 +47,13 @@ internal static class ImageRenderer
 
     internal static byte[] ToPngImage(
         this IPixelProvider pixelProvider,
-        int scale, int border, int foreground = 0, int background = 0xFFFFFF)
+        int scale, int border, 
+        int foreground = 0, int background = 0xFFFFFF)
     {
-        var sourceImage = SourceImage.FromPixelProvider(pixelProvider, scale, border, foreground, background);
-        var pngImage = PngImage.FromBitmap(sourceImage.Pixels, sourceImage.Width, sourceImage.Height, true);
+        var sourceImage = 
+            SourceImage.FromPixelProvider(pixelProvider, scale, border, foreground, background);
+        var pngImage = 
+            PngImage.FromBitmap(sourceImage.Pixels, sourceImage.Width, sourceImage.Height, hasAlphaChannel: true);
         return pngImage.Save();
     }
 }
