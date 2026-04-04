@@ -91,8 +91,16 @@ Contributions are always welcome! Please feel free to submit a Pull Request.
 
 - Decoding:
 
-    Derivative work from Zebra Crossing by the Zebra Crossing Team and al. - Apache 2.0 License
+    Derivative work from Zebra Crossing (ZXing) by the Zebra Crossing Team and al. - Apache 2.0 License
 
-- QR Content classes, asynchrony, performance improvements, modernization: 
+- PNG images loading and saving:
+    
+    Derivative work from 'Big Gustave' by Eliot Jones - Unlicense license (Public domain)
+
+- QR Content classes, BMP Images, Asynchrony, Performance Improvements, Code Modernization: 
  
-    Original code and refactoring by Laurent Y. Testud 
+    Original code and refactorings by Laurent Y. Testud - Apache 2.0 License 
+
+- Demo applications: 
+
+    Original code by Laurent Y. Testud - Apache 2.0 License
