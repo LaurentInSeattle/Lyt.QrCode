@@ -2,6 +2,8 @@
 
 using Lyt.Png;
 
+using System.Reflection.PortableExecutable;
+
 internal sealed class Test
 {
     private const string link = "https://github.com/LaurentInSeattle/Lyt.QrCode";
@@ -285,12 +287,12 @@ internal sealed class Test
         this.SaveGrayscaleImage(imagePathSaveGrayEQ, grayscaleImageEQ);
 
         var bitMatrixImage1 = grayscaleImage.ToBitMatrixBasicThresholding();
-        byte[] bwImage1 = PngBuilder.ToImage(bitMatrixImage1);
+        byte[] bwImage1 = bitMatrixImage1.ToPngImage(16, 2);
         string bwPath1 = Path.Combine(rootPath, filename + "Bw1.png");
         File.WriteAllBytes(bwPath1, bwImage1);
 
         var bitMatrixImage2 = grayscaleImage.ToBitMatrixAdaptiveThresholding();
-        byte[] bwImage2 = PngBuilder.ToImage(bitMatrixImage2);
+        byte[] bwImage2 = bitMatrixImage2.ToPngImage(16, 2);
         string bwPath2 = Path.Combine(rootPath, filename + "Bw2.png");
         File.WriteAllBytes(bwPath2, bwImage2);
     }

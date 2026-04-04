@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lyt.QrCode" Version="1.0.2" />
+    <PackageReference Include="Lyt.QrCode" Version="1.0.3" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
   </ItemGroup>
 

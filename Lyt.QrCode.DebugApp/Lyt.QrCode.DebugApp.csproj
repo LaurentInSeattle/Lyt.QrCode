@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Lyt.QrCode\Lyt.QrCode.csproj" />
-    <ProjectReference Include="..\PngLibrary\Lyt.Png.csproj" />
   </ItemGroup>
 
 </Project>

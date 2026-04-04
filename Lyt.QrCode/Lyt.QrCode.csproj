@@ -13,8 +13,29 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>A QrCode Library for .Net 10, Encode and Decode, zero dependencies, all written in C#.</Description>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\PngLibrary\GlobalUsings.cs" Link="Lyt.Png\GlobalUsings.cs" />
+    <Compile Include="..\PngLibrary\Internals\ChunkHeader.cs" Link="Lyt.Png\Internals\ChunkHeader.cs" />
+    <Compile Include="..\PngLibrary\Internals\ColorType.cs" Link="Lyt.Png\Internals\ColorType.cs" />
+    <Compile Include="..\PngLibrary\Internals\CompressionMethod.cs" Link="Lyt.Png\Internals\CompressionMethod.cs" />
+    <Compile Include="..\PngLibrary\Internals\FilterMethod.cs" Link="Lyt.Png\Internals\FilterMethod.cs" />
+    <Compile Include="..\PngLibrary\Internals\FilterType.cs" Link="Lyt.Png\Internals\FilterType.cs" />
+    <Compile Include="..\PngLibrary\Internals\ImageHeader.cs" Link="Lyt.Png\Internals\ImageHeader.cs" />
+    <Compile Include="..\PngLibrary\Internals\InterlaceMethod.cs" Link="Lyt.Png\Internals\InterlaceMethod.cs" />
+    <Compile Include="..\PngLibrary\Internals\Palette.cs" Link="Lyt.Png\Internals\Palette.cs" />
+    <Compile Include="..\PngLibrary\Internals\PngImage.Load.cs" Link="Lyt.Png\Internals\PngImage.Load.cs" />
+    <Compile Include="..\PngLibrary\Internals\PngImage.Save.cs" Link="Lyt.Png\Internals\PngImage.Save.cs" />
+    <Compile Include="..\PngLibrary\Internals\PngMemoryStream.cs" Link="Lyt.Png\Internals\PngMemoryStream.cs" />
+    <Compile Include="..\PngLibrary\Internals\StreamExtensions.cs" Link="Lyt.Png\Internals\StreamExtensions.cs" />
+    <Compile Include="..\PngLibrary\Maths\Adam7.cs" Link="Lyt.Png\Maths\Adam7.cs" />
+    <Compile Include="..\PngLibrary\Maths\Adler32Checksum.cs" Link="Lyt.Png\Maths\Adler32Checksum.cs" />
+    <Compile Include="..\PngLibrary\Maths\Crc32.cs" Link="Lyt.Png\Maths\Crc32.cs" />
+    <Compile Include="..\PngLibrary\Pixel.cs" Link="Lyt.Png\Pixel.cs" />
+    <Compile Include="..\PngLibrary\PngImage.API.cs" Link="Lyt.Png\PngImage.API.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Lyt.QrCode.DebugApp" />
@@ -37,14 +58,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PngLibrary\Lyt.Png.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="Link.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Lyt.Png\Internals\" />
+    <Folder Include="Lyt.Png\Maths\" />
   </ItemGroup>
 
 </Project>
